@@ -129,4 +129,10 @@ env/
 
 # .bin directory
 .bin/
+bin/
+lib64
+pyvenv.cfg
+
+
+
 
