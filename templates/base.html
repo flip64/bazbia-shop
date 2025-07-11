@@ -1,26 +1,78 @@
-{% load static %}
-
 <!DOCTYPE html>
-<html lang="fa">
+<html lang="fa" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <title>{% block title %}بازبیا{% endblock %}</title>
-    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}بازبیا - فروشگاه آنلاین{% endblock %}</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
 </head>
-<body>
-    <header>
-        <h1><a href="/">بازبیا</a></h1>
-        <nav>
-            <a href="{% url 'products:product_list' %}">محصولات</a>
-        </nav>
+<body class="bg-gray-50 font-sans text-gray-800">
+
+    <!-- هدر شبیه دیجی‌کالا -->
+    <header class="bg-white shadow sticky top-0 z-50">
+        <div class="container mx-auto px-4 py-4 flex flex-wrap items-center justify-between">
+            <!-- لوگو -->
+            <a href="/" class="text-2xl font-bold text-blue-600 mb-2 sm:mb-0">بازبیا</a>
+
+            <!-- سرچ -->
+            <div class="flex-1 mx-4">
+                <input type="text" placeholder="جستجو در بازبیا..." class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600">
+            </div>
+
+            <!-- منو کوتاه -->
+            <nav class="space-x-4 space-x-reverse text-sm">
+                <a href="/login/" class="text-gray-600 hover:text-blue-600">ورود</a>
+                <a href="/cart/" class="text-gray-600 hover:text-blue-600">سبد خرید</a>
+            </nav>
+        </div>
+
+        <!-- منوی دسته‌بندی -->
+        <div class="bg-gray-100 py-2">
+            <div class="container mx-auto px-4 flex space-x-4 space-x-reverse overflow-x-auto">
+                <a href="/category/mobile/" class="text-gray-700 hover:text-blue-600 whitespace-nowrap">موبایل</a>
+                <a href="/category/laptop/" class="text-gray-700 hover:text-blue-600 whitespace-nowrap">لپ‌تاپ</a>
+                <a href="/category/watch/" class="text-gray-700 hover:text-blue-600 whitespace-nowrap">ساعت</a>
+                <a href="/category/home/" class="text-gray-700 hover:text-blue-600 whitespace-nowrap">خانه و آشپزخانه</a>
+                <a href="/category/toys/" class="text-gray-700 hover:text-blue-600 whitespace-nowrap">اسباب‌بازی</a>
+            </div>
+        </div>
     </header>
 
-    <main>
-        {% block content %}{% endblock %}
+    <!-- بنر بزرگ -->
+    <section class="bg-blue-600 text-white py-10">
+        <div class="container mx-auto px-4 text-center">
+            <h1 class="text-3xl md:text-5xl font-bold mb-4">خریدی دوباره و دوباره با بازبیا!</h1>
+            <p class="text-lg mb-6">همین امروز با تخفیف‌های استثنایی شروع کن.</p>
+            <a href="/products/" class="bg-white text-blue-600 font-semibold px-6 py-3 rounded-full hover:bg-gray-100 transition">مشاهده محصولات</a>
+        </div>
+    </section>
+
+    <!-- محتوای اصلی -->
+    <main class="container mx-auto px-4 py-8">
+        {% block content %}
+        <!-- محتوای هر صفحه اینجا قرار می‌گیرد -->
+        {% endblock %}
     </main>
 
-    <footer>
-        <p>© بازبیا</p>
+    <!-- فوتر -->
+    <footer class="bg-white mt-12 py-6 shadow-inner">
+        <div class="container mx-auto px-4 flex flex-wrap justify-between text-gray-500 text-sm">
+            <div class="mb-4">
+                <h4 class="font-bold mb-2">بازبیا</h4>
+                <p>فروشگاه آنلاین، با خیال راحت خرید کنید.</p>
+            </div>
+            <div class="mb-4">
+                <h4 class="font-bold mb-2">لینک‌های مفید</h4>
+                <a href="/about/" class="block hover:text-blue-600">درباره ما</a>
+                <a href="/contact/" class="block hover:text-blue-600">تماس با ما</a>
+                <a href="/faq/" class="block hover:text-blue-600">سوالات متداول</a>
+            </div>
+            <div class="mb-4">
+                <h4 class="font-bold mb-2">شبکه‌های اجتماعی</h4>
+                <p>اینستاگرام | تلگرام | واتساپ</p>
+            </div>
+        </div>
     </footer>
+
 </body>
 </html>
