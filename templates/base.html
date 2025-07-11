@@ -4,75 +4,91 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}بازبیا - فروشگاه آنلاین{% endblock %}</title>
-    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.rtl.min.css" rel="stylesheet">
 </head>
-<body class="bg-gray-50 font-sans text-gray-800">
+<body class="bg-light text-dark">
 
-    <!-- هدر شبیه دیجی‌کالا -->
-    <header class="bg-white shadow sticky top-0 z-50">
-        <div class="container mx-auto px-4 py-4 flex flex-wrap items-center justify-between">
-            <!-- لوگو -->
-            <a href="/" class="text-2xl font-bold text-blue-600 mb-2 sm:mb-0">بازبیا</a>
-
-            <!-- سرچ -->
-            <div class="flex-1 mx-4">
-                <input type="text" placeholder="جستجو در بازبیا..." class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600">
+    <!-- هدر -->
+    <header class="bg-white shadow sticky-top">
+        <div class="container py-4 d-flex flex-wrap align-items-center justify-content-between">
+            <a href="/" class="fs-3 fw-bold text-primary mb-2 mb-sm-0">بازبیا</a>
+            <div class="flex-fill mx-3">
+                <input type="text" placeholder="جستجو در بازبیا..." class="form-control">
             </div>
-
-            <!-- منو کوتاه -->
-            <nav class="space-x-4 space-x-reverse text-sm">
-                <a href="/login/" class="text-gray-600 hover:text-blue-600">ورود</a>
-                <a href="/cart/" class="text-gray-600 hover:text-blue-600">سبد خرید</a>
+            <nav class="d-flex gap-3 fs-6">
+                <a href="/login/" class="text-secondary text-decoration-none">ورود</a>
+                <a href="/cart/" class="text-secondary text-decoration-none">سبد خرید</a>
             </nav>
         </div>
-
         <!-- منوی دسته‌بندی -->
-        <div class="bg-gray-100 py-2">
-            <div class="container mx-auto px-4 flex space-x-4 space-x-reverse overflow-x-auto">
-                <a href="/category/mobile/" class="text-gray-700 hover:text-blue-600 whitespace-nowrap">موبایل</a>
-                <a href="/category/laptop/" class="text-gray-700 hover:text-blue-600 whitespace-nowrap">لپ‌تاپ</a>
-                <a href="/category/watch/" class="text-gray-700 hover:text-blue-600 whitespace-nowrap">ساعت</a>
-                <a href="/category/home/" class="text-gray-700 hover:text-blue-600 whitespace-nowrap">خانه و آشپزخانه</a>
-                <a href="/category/toys/" class="text-gray-700 hover:text-blue-600 whitespace-nowrap">اسباب‌بازی</a>
+        <div class="bg-light py-2 border-top">
+            <div class="container d-flex gap-3 overflow-auto">
+                <a href="/category/mobile/" class="text-dark text-decoration-none">موبایل</a>
+                <a href="/category/laptop/" class="text-dark text-decoration-none">لپ‌تاپ</a>
+                <a href="/category/watch/" class="text-dark text-decoration-none">ساعت</a>
+                <a href="/category/home/" class="text-dark text-decoration-none">خانه و آشپزخانه</a>
+                <a href="/category/toys/" class="text-dark text-decoration-none">اسباب‌بازی</a>
             </div>
         </div>
     </header>
 
-    <!-- بنر بزرگ -->
-    <section class="bg-blue-600 text-white py-10">
-        <div class="container mx-auto px-4 text-center">
-            <h1 class="text-3xl md:text-5xl font-bold mb-4">خریدی دوباره و دوباره با بازبیا!</h1>
-            <p class="text-lg mb-6">همین امروز با تخفیف‌های استثنایی شروع کن.</p>
-            <a href="/products/" class="bg-white text-blue-600 font-semibold px-6 py-3 rounded-full hover:bg-gray-100 transition">مشاهده محصولات</a>
-        </div>
-    </section>
+    <!-- اسلایدر Carousel -->
+{% if show_banner %}
+ <div id="mainCarousel" class="carousel slide" data-bs-ride="carousel">
+  <div class="carousel-inner">
+    {% for banner in banners %}
+      <div class="carousel-item {% if forloop.first %}active{% endif %}">
+        <a href="{{ banner.link|default:'#' }}">
+          <img src="{{ banner.image.url }}" class="d-block w-100" alt="{{ banner.title }}">
+        </a>
+      </div>
+    {% empty %}
+      <div class="carousel-item active">
+        <img src="https://via.placeholder.com/1200x400?text=بنر+پیش‌فرض" class="d-block w-100" alt="بنر پیش‌فرض">
+      </div>
+    {% endfor %}
+  </div>
+  <button class="carousel-control-prev" type="button" data-bs-target="#mainCarousel" data-bs-slide="prev">
+    <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+    <span class="visually-hidden">قبلی</span>
+  </button>
+  <button class="carousel-control-next" type="button" data-bs-target="#mainCarousel" data-bs-slide="next">
+    <span class="carousel-control-next-icon" aria-hidden="true"></span>
+    <span class="visually-hidden">بعدی</span>
+  </button>
+</div>
 
+{% endif %}
     <!-- محتوای اصلی -->
-    <main class="container mx-auto px-4 py-8">
+    <main class="container py-5">
         {% block content %}
-        <!-- محتوای هر صفحه اینجا قرار می‌گیرد -->
+        <h2 class="text-center mb-4">محصولات ویژه بازبیا</h2>
+        <p class="text-center text-secondary">این قسمت برای محتوای هر صفحه است.</p>
         {% endblock %}
     </main>
 
     <!-- فوتر -->
-    <footer class="bg-white mt-12 py-6 shadow-inner">
-        <div class="container mx-auto px-4 flex flex-wrap justify-between text-gray-500 text-sm">
-            <div class="mb-4">
-                <h4 class="font-bold mb-2">بازبیا</h4>
+    <footer class="bg-white mt-5 py-4 border-top">
+        <div class="container d-flex flex-wrap justify-content-between text-secondary small">
+            <div class="mb-3">
+                <h5 class="fw-bold mb-2">بازبیا</h5>
                 <p>فروشگاه آنلاین، با خیال راحت خرید کنید.</p>
             </div>
-            <div class="mb-4">
-                <h4 class="font-bold mb-2">لینک‌های مفید</h4>
-                <a href="/about/" class="block hover:text-blue-600">درباره ما</a>
-                <a href="/contact/" class="block hover:text-blue-600">تماس با ما</a>
-                <a href="/faq/" class="block hover:text-blue-600">سوالات متداول</a>
+            <div class="mb-3">
+                <h5 class="fw-bold mb-2">لینک‌های مفید</h5>
+                <ul class="list-unstyled">
+                    <li><a href="/about/" class="text-decoration-none text-secondary">درباره ما</a></li>
+                    <li><a href="/contact/" class="text-decoration-none text-secondary">تماس با ما</a></li>
+                    <li><a href="/faq/" class="text-decoration-none text-secondary">سوالات متداول</a></li>
+                </ul>
             </div>
-            <div class="mb-4">
-                <h4 class="font-bold mb-2">شبکه‌های اجتماعی</h4>
+            <div class="mb-3">
+                <h5 class="fw-bold mb-2">شبکه‌های اجتماعی</h5>
                 <p>اینستاگرام | تلگرام | واتساپ</p>
             </div>
         </div>
     </footer>
 
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

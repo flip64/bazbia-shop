@@ -16,7 +16,9 @@ def product_list(request):
         products = products.filter(tags__slug=tag_slug)
 
     context = {
-        'products': products
+        'products': products ,
+        'show_banner': True,
+
     }
     return render(request, 'products/product_list.html', context)
 
