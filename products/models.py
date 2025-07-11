@@ -130,6 +130,16 @@ class ProductVariant(models.Model):
         AttributeValue, related_name='variants',
         blank=True
     )
+    expiration_date = models.DateField(blank=True, null=True, help_text="تاریخ انقضای محصول")
+
+  
+    stock = models.PositiveIntegerField(default=0)
+    low_stock_threshold = models.PositiveIntegerField(
+        default=5,
+        help_text="آستانه هشدار اتمام موجودی برای این واریانت"
+    )
+
+    
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
