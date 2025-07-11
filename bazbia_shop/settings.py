@@ -48,6 +48,7 @@ INSTALLED_APPS = [
     'promotions',
     'notifications',
     'accounting', 
+    'inventory',
 
 ]
 
