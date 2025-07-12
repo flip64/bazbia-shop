@@ -1,0 +1,8 @@
+{
+  "app": "hungry-mclean-5rdgfpt17",
+  "port": 80,
+  "build": {
+    "location": "iran"
+  },
+  "disks": []
+}
