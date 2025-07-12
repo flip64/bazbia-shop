@@ -101,8 +101,8 @@ WSGI_APPLICATION = 'bazbia_shop.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.0/ref/settings/#databases
 
-# برای مثال اگر در لیارا ENV متغیر LIARA است
-if os.environ.get("LIARA", "") == "true":
+# برای زمان که از POSTGRES استفاده می کنیم 
+if os.environ.get("USE_POSTGRES", "").lower() == "true":
     # تنظیمات PostgreSQL
     DATABASES = {
         'default': {
