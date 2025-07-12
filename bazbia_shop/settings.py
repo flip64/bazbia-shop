@@ -124,7 +124,10 @@ else:
 }
 
 
-
+CSRF_TRUSTED_ORIGINS = [
+    "https://bazbia2.runflare.run",
+    "https://bazbia.com",
+]
 
 
 # Password validation
