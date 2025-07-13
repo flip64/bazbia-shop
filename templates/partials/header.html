@@ -1,64 +1,38 @@
-<div class="top-alert text-center py-2">
-    🚀 ارسال رایگان برای خریدهای بالای 500 هزار تومان!
-</div>
+{% load static %}
 
-<header class="bg-white shadow-sm sticky-top">
-    <div class="container py-3 d-flex align-items-center justify-content-between">
-        <a href="/" class="fs-3 fw-bold text-danger">بازبیا</a>
-        <div class="flex-fill mx-4">
-            <input type="text" placeholder="جستجو در بازبیا..." class="form-control">
+<header class="bg-white shadow-sm sticky top-0 z-50">
+    <div class="max-w-7xl mx-auto flex items-center justify-between py-4 px-6">
+
+        <!-- Logo -->
+        <a href="{% url 'home' %}">
+            <img src="{% static 'images/logo.png' %}" alt="بازبیا" class="h-10 w-auto">
+        </a>
+
+        <!-- Navigation -->
+        <nav class="hidden md:flex space-x-8 rtl:space-x-reverse">
+            <a href="{% url 'home' %}" class="text-gray-700 hover:text-red-600 transition">خانه</a>
+            <a href="{% url 'product_list' %}" class="text-gray-700 hover:text-red-600 transition">محصولات</a>
+            <a href="{% url 'about' %}" class="text-gray-700 hover:text-red-600 transition">درباره ما</a>
+            <a href="{% url 'contact' %}" class="text-gray-700 hover:text-red-600 transition">تماس</a>
+        </nav>
+
+        <!-- Search -->
+        <div class="hidden lg:flex items-center space-x-2 rtl:space-x-reverse">
+            <form method="get" action="{% url 'product_search' %}" class="flex items-center border rounded px-2 py-1">
+                <input type="text" name="q" placeholder="جستجو..." class="outline-none w-48 placeholder-gray-500 text-sm">
+                <button type="submit" class="ml-2 text-red-600">🔍</button>
+            </form>
         </div>
-        <div class="d-flex gap-3">
-            <a href="/login/" class="text-dark text-decoration-none"><i class="bi bi-person"></i> ورود</a>
-            <a href="/cart/" class="text-dark text-decoration-none position-relative">
-                <i class="bi bi-cart"></i> سبد خرید
-                <span class="position-absolute top-0 start-0 translate-middle badge rounded-pill bg-danger">3</span>
+
+        <!-- Cart & User -->
+        <div class="flex items-center space-x-4 rtl:space-x-reverse">
+            <a href="{% url 'cart' %}">
+                <img src="{% static 'icons/cart.svg' %}" alt="سبد خرید" class="h-6 w-6">
+            </a>
+            <a href="{% url 'account' %}">
+                <img src="{% static 'icons/user.svg' %}" alt="حساب کاربری" class="h-6 w-6">
             </a>
         </div>
-    </div>
-<div class="bg-light border-top py-2">
-  <div class="container overflow-auto">
-    <div class="d-flex gap-3 flex-nowrap">
-     {% for category in categories %}
-  <a href="{% url 'products:category_detail' category.slug %}"
-     class="text-dark text-decoration-none d-flex flex-column align-items-center" 
-     style="min-width: 80px;">
-    {% if category.icon %}
-    <img src="{{ category.icon.url }}" alt="{{ category.name }}" class="rounded-circle mb-1" style="width:48px; height:48px;">
-    {% else %}
-    <div class="rounded-circle mb-1 bg-secondary" style="width:48px; height:48px;"></div>
-    {% endif %}
-    <small>{{ category.name }}</small>
-  </a>
-{% endfor %}
-    </div>
-  </div>
-</div>
 
-</header>
-...
-<!-- اسلایدر داینامیک -->
-<div id="mainCarousel" class="carousel slide mt-3" data-bs-ride="carousel">
-    <div class="carousel-inner">
-        {% for banner in banners %}
-            <div class="carousel-item {% if forloop.first %}active{% endif %}">
-                <a href="{{ banner.link|default:'#' }}">
-                    <img src="{{ banner.image.url }}" class="d-block w-100" alt="{{ banner.title }}">
-                </a>
-            </div>
-        {% empty %}
-            <div class="carousel-item active">
-                <img src="https://via.placeholder.com/1200x400?text=بنر+پیش‌فرض" class="d-block w-100" alt="بنر پیش‌فرض">
-            </div>
-        {% endfor %}
     </div>
-    <button class="carousel-control-prev" type="button" data-bs-target="#mainCarousel" data-bs-slide="prev">
-        <span class="carousel-control-prev-icon"></span>
-        <span class="visually-hidden">قبلی</span>
-    </button>
-    <button class="carousel-control-next" type="button" data-bs-target="#mainCarousel" data-bs-slide="next">
-        <span class="carousel-control-next-icon"></span>
-        <span class="visually-hidden">بعدی</span>
-    </button>
-</div>
-...
+</header>
