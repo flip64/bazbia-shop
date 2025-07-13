@@ -39,7 +39,7 @@ def product_detail(request, slug):
     return render(request, 'products/product_detail.html', context)
 
 from django.shortcuts import render, get_object_or_404
-from .models import Category, Product
+
 
 def category_detail(request, slug):
     category = get_object_or_404(Category, slug=slug)
@@ -50,4 +50,22 @@ def category_detail(request, slug):
     })
 
 
+def home(request):
+    products = Product.objects.filter(is_active=True)
+
+    # فیلتر با دسته یا تگ
+    category_slug = request.GET.get('category')
+    tag_slug = request.GET.get('tag')
+
+    if category_slug:
+        products = products.filter(category__slug=category_slug)
+    if tag_slug:
+        products = products.filter(tags__slug=tag_slug)
+
+    context = {
+        'products': products ,
+        'show_banner': True,
+
+    }
+    return render(request, 'home.html', context)
 
