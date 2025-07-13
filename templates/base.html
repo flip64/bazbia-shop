@@ -1,3 +1,4 @@
+<!-- templates/base.html -->
 <!DOCTYPE html>
 <html lang="fa" dir="rtl">
 <head>
@@ -5,90 +6,49 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}بازبیا - فروشگاه آنلاین{% endblock %}</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.rtl.min.css" rel="stylesheet">
+    <style>
+        body { font-family: Tahoma, sans-serif; }
+        .product-card:hover {
+            transform: scale(1.02);
+            transition: all 0.3s ease-in-out;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        .top-alert { background: #ef394e; color: white; font-size: 14px; }
+    </style>
+    {% block extra_head %}{% endblock %}
 </head>
 <body class="bg-light text-dark">
 
-    <!-- هدر -->
-    <header class="bg-white shadow sticky-top">
-        <div class="container py-4 d-flex flex-wrap align-items-center justify-content-between">
-            <a href="/" class="fs-3 fw-bold text-primary mb-2 mb-sm-0">بازبیا</a>
-            <div class="flex-fill mx-3">
-                <input type="text" placeholder="جستجو در بازبیا..." class="form-control">
+    {% include 'partials/header.html' %}
+
+    {% block content %}
+    <!-- پیش‌فرض: اسلایدر -->
+    <div id="mainCarousel" class="carousel slide mt-3" data-bs-ride="carousel">
+        <div class="carousel-inner">
+            <div class="carousel-item active">
+                <img src="https://via.placeholder.com/1200x400?text=بنر+اول" class="d-block w-100" alt="بنر اول">
             </div>
-            <nav class="d-flex gap-3 fs-6">
-                <a href="/login/" class="text-secondary text-decoration-none">ورود</a>
-                <a href="/cart/" class="text-secondary text-decoration-none">سبد خرید</a>
-            </nav>
-        </div>
-        <!-- منوی دسته‌بندی -->
-        <div class="bg-light py-2 border-top">
-            <div class="container d-flex gap-3 overflow-auto">
-                <a href="/category/mobile/" class="text-dark text-decoration-none">موبایل</a>
-                <a href="/category/laptop/" class="text-dark text-decoration-none">لپ‌تاپ</a>
-                <a href="/category/watch/" class="text-dark text-decoration-none">ساعت</a>
-                <a href="/category/home/" class="text-dark text-decoration-none">خانه و آشپزخانه</a>
-                <a href="/category/toys/" class="text-dark text-decoration-none">اسباب‌بازی</a>
+            <div class="carousel-item">
+                <img src="https://via.placeholder.com/1200x400?text=بنر+دوم" class="d-block w-100" alt="بنر دوم">
+            </div>
+            <div class="carousel-item">
+                <img src="https://via.placeholder.com/1200x400?text=بنر+سوم" class="d-block w-100" alt="بنر سوم">
             </div>
         </div>
-    </header>
+        <button class="carousel-control-prev" type="button" data-bs-target="#mainCarousel" data-bs-slide="prev">
+            <span class="carousel-control-prev-icon"></span>
+            <span class="visually-hidden">قبلی</span>
+        </button>
+        <button class="carousel-control-next" type="button" data-bs-target="#mainCarousel" data-bs-slide="next">
+            <span class="carousel-control-next-icon"></span>
+            <span class="visually-hidden">بعدی</span>
+        </button>
+    </div>
+    {% endblock %}
 
-    <!-- اسلایدر Carousel -->
-{% if show_banner %}
- <div id="mainCarousel" class="carousel slide" data-bs-ride="carousel">
-  <div class="carousel-inner">
-    {% for banner in banners %}
-      <div class="carousel-item {% if forloop.first %}active{% endif %}">
-        <a href="{{ banner.link|default:'#' }}">
-          <img src="{{ banner.image.url }}" class="d-block w-100" alt="{{ banner.title }}">
-        </a>
-      </div>
-    {% empty %}
-      <div class="carousel-item active">
-        <img src="https://via.placeholder.com/1200x400?text=بنر+پیش‌فرض" class="d-block w-100" alt="بنر پیش‌فرض">
-      </div>
-    {% endfor %}
-  </div>
-  <button class="carousel-control-prev" type="button" data-bs-target="#mainCarousel" data-bs-slide="prev">
-    <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-    <span class="visually-hidden">قبلی</span>
-  </button>
-  <button class="carousel-control-next" type="button" data-bs-target="#mainCarousel" data-bs-slide="next">
-    <span class="carousel-control-next-icon" aria-hidden="true"></span>
-    <span class="visually-hidden">بعدی</span>
-  </button>
-</div>
-
-{% endif %}
-    <!-- محتوای اصلی -->
-    <main class="container py-5">
-        {% block content %}
-        <h2 class="text-center mb-4">محصولات ویژه بازبیا</h2>
-        <p class="text-center text-secondary">این قسمت برای محتوای هر صفحه است.</p>
-        {% endblock %}
-    </main>
-
-    <!-- فوتر -->
-    <footer class="bg-white mt-5 py-4 border-top">
-        <div class="container d-flex flex-wrap justify-content-between text-secondary small">
-            <div class="mb-3">
-                <h5 class="fw-bold mb-2">بازبیا</h5>
-                <p>فروشگاه آنلاین، با خیال راحت خرید کنید.</p>
-            </div>
-            <div class="mb-3">
-                <h5 class="fw-bold mb-2">لینک‌های مفید</h5>
-                <ul class="list-unstyled">
-                    <li><a href="/about/" class="text-decoration-none text-secondary">درباره ما</a></li>
-                    <li><a href="/contact/" class="text-decoration-none text-secondary">تماس با ما</a></li>
-                    <li><a href="/faq/" class="text-decoration-none text-secondary">سوالات متداول</a></li>
-                </ul>
-            </div>
-            <div class="mb-3">
-                <h5 class="fw-bold mb-2">شبکه‌های اجتماعی</h5>
-                <p>اینستاگرام | تلگرام | واتساپ</p>
-            </div>
-        </div>
-    </footer>
+    {% include 'partials/footer.html' %}
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    {% block extra_js %}{% endblock %}
 </body>
 </html>

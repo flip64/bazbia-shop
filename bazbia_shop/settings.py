@@ -87,8 +87,10 @@ TEMPLATES = [
 
 
 
-                # اضافه کردن context processor بنرها
+                # اضافه کردن context processor بنرها و دست بندی
                 'promotions.context_processors.banners_processor',
+                'promotions.context_processors.categories_processor',
+
 
             ],
         },
