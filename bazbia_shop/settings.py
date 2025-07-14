@@ -176,7 +176,11 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # تنظیمات SMTP برای Gmail
 # تنظیمات ایمیل
-load_dotenv(os.path.join(BASE_DIR, '.env'))
+if os.environ.get("USE_DOTENV", "False") == "True":
+    load_dotenv(os.path.join(BASE_DIR, '.env'))
+
+
+
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = os.getenv('EMAIL_HOST')
 EMAIL_PORT = os.getenv('EMAIL_PORT')
