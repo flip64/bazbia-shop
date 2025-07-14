@@ -25,15 +25,30 @@ def send_price_alert(name , new_price, old_price):
     # محاسبه درصد تغییر
     change_percent = 0
     if old_price and old_price > 0:
-        change_percent = ((new_price - old_price) / old_price) * 100
-    
+      if old_price is not None and new_price is not None:
+        diff = new_price - old_price
+      else:
+        # مثلا اگر اولین بار است که قیمت ذخیره شده یا قیمت ناقص است
+        diff = 0
     # پیام هشدار
+    
+    old_price_str = f"{old_price:.2f}" if old_price is not None else "N/A"
+    new_price_str = f"{new_price:.2f}" if new_price is not None else "N/A"
+    
+
     message = (
-        f"🚨 تغییر قیمت برای محصول {name or 'نامشخص'}\n"
-        f"💰 قیمت قبلی: {old_price:,} تومان\n"
-        f"💵 قیمت جدید: {new_price:,} تومان\n"
-        f"📊 تغییر: {change_percent:+.2f}%"
-    )
+    f"🚨 تغییر قیمت برای محصول {name or 'نامشخص'}\n"
+    f"💰 قیمت قبلی: {old_price:,} تومان\n"
+    f"💵 قیمت جدید: {new_price:,} تومان\n"
+    f"📊 تغییر: {change_percent:+.2f}%"
+)
+
+    if old_price is None:
+     message = message.replace(f"{old_price:,}", "نامشخص")
+    if new_price is None:
+     message = message.replace(f"{new_price:,}", "نامشخص")
+    if change_percent is None:
+     message = message.replace(f"{change_percent:+.2f}%", "نامشخص")
 
     # اینجا می‌توانید روش‌های مختلف ارسال هشدار را پیاده‌سازی کنید
 
