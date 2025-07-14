@@ -176,8 +176,7 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # تنظیمات SMTP برای Gmail
 # تنظیمات ایمیل
-if os.environ.get("USE_DOTENV", "False") == "True":
-    load_dotenv(os.path.join(BASE_DIR, '.env'))
+load_dotenv(os.path.join(BASE_DIR, '.env'))
 
 
 
