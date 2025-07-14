@@ -4,21 +4,21 @@
     <div class="max-w-7xl mx-auto flex items-center justify-between py-4 px-6">
 
         <!-- Logo -->
-        <a href="{% url 'home' %}">
+        <a href="{% url 'products:home' %}">
             <img src="{% static 'images/logo.png' %}" alt="بازبیا" class="h-10 w-auto">
         </a>
 
         <!-- Navigation -->
         <nav class="hidden md:flex space-x-8 rtl:space-x-reverse">
-            <a href="{% url 'home' %}" class="text-gray-700 hover:text-red-600 transition">خانه</a>
-            <a href="{% url 'product_list' %}" class="text-gray-700 hover:text-red-600 transition">محصولات</a>
-            <a href="{% url 'about' %}" class="text-gray-700 hover:text-red-600 transition">درباره ما</a>
-            <a href="{% url 'contact' %}" class="text-gray-700 hover:text-red-600 transition">تماس</a>
+            <a href="{% url 'products:product_list' %}" class="text-gray-700 hover:text-red-600 transition">خانه</a>
+            <a href="{% url 'products:product_list' %}" class="text-gray-700 hover:text-red-600 transition">محصولات</a>
+            <a href="" class="text-gray-700 hover:text-red-600 transition">درباره ما</a>
+            <a href="" class="text-gray-700 hover:text-red-600 transition">تماس</a>
         </nav>
 
         <!-- Search -->
         <div class="hidden lg:flex items-center space-x-2 rtl:space-x-reverse">
-            <form method="get" action="{% url 'product_search' %}" class="flex items-center border rounded px-2 py-1">
+            <form method="get" action="" class="flex items-center border rounded px-2 py-1">
                 <input type="text" name="q" placeholder="جستجو..." class="outline-none w-48 placeholder-gray-500 text-sm">
                 <button type="submit" class="ml-2 text-red-600">🔍</button>
             </form>
@@ -26,10 +26,10 @@
 
         <!-- Cart & User -->
         <div class="flex items-center space-x-4 rtl:space-x-reverse">
-            <a href="{% url 'cart' %}">
+            <a href="">
                 <img src="{% static 'icons/cart.svg' %}" alt="سبد خرید" class="h-6 w-6">
             </a>
-            <a href="{% url 'account' %}">
+            <a href="">
                 <img src="{% static 'icons/user.svg' %}" alt="حساب کاربری" class="h-6 w-6">
             </a>
         </div>
