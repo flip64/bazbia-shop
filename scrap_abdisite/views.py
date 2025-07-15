@@ -6,7 +6,7 @@ from scrap_abdisite.form import WatchedURLForm
 from django.contrib.auth.decorators import login_required
 from scrap_abdisite.utils.feach_price import fetch_product_details,send_price_alert
 from django.utils import timezone
-
+import time
 import re
 import json
 
@@ -141,7 +141,8 @@ def change_price_all(request):
          "sendemail_status" : send_status_email
        } 
        list_url.append(status)
-    
+       time.sleep(2)  # وقفه به مدت ۳ ثانیه
+
 
     return JsonResponse(list_url , safe=False ) 
 
