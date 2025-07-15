@@ -3,13 +3,15 @@ from django.contrib.auth.models import User
 from django.db import models
 from products.models import Product
 from suppliers.models import Supplier 
+from django.conf import settings
 
 class WatchedURL(models.Model):
     """
     این مدل برای نگهداری لینک‌ها و قیمت‌های پایش شده محصولات در سایت‌های تأمین‌کننده است.
     هر رکورد نشان‌دهنده یک لینک از یک تأمین‌کننده برای یک محصول خاص است.
     """
-
+   
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     # ارتباط با محصول فروشگاه شما (هر WatchedUrl به یک محصول وصل می‌شود)
     product = models.ForeignKey(
         Product,
