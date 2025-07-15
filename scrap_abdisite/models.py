@@ -2,7 +2,7 @@ from django.db import models
 from django.contrib.auth.models import User
 
 from django.db import models
-from shop.models import Product
+from Product.models import Product
 from suppliers.models import Supplier  # فرض می‌کنیم مدل Supplier در این اپ هست
 
 class WatchedUrl(models.Model):
