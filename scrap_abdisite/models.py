@@ -14,14 +14,16 @@ class WatchedURL(models.Model):
     product = models.ForeignKey(
         Product,
         on_delete=models.CASCADE,
-        related_name='watched_urls'  # از طریق product.watched_urls می‌توان به همه لینک‌ها دسترسی داشت
+        related_name='watched_urls' ,
+        null=True  # از طریق product.watched_urls می‌توان به همه لینک‌ها دسترسی داشت
     )
 
     # ارتباط با تأمین‌کننده محصول (هر WatchedUrl به یک Supplier وصل می‌شود)
     supplier = models.ForeignKey(
         Supplier,
         on_delete=models.CASCADE,
-        related_name='watched_urls'  # از طریق supplier.watched_urls می‌توان به همه لینک‌های آن تأمین‌کننده دسترسی داشت
+        related_name='watched_urls',
+            # از طریق supplier.watched_urls می‌توان به همه لینک‌های آن تأمین‌کننده دسترسی داشت
     )
 
     # لینک صفحه محصول در سایت تأمین‌کننده
@@ -31,19 +33,20 @@ class WatchedURL(models.Model):
     price = models.DecimalField(
         max_digits=10,
         decimal_places=0,
+        default=0 , 
         blank=True,
-        null=True
+        
     )
 
     # زمان ایجاد رکورد (زمانی که این لینک برای اولین بار پایش شده یا ثبت شده)
-    created = models.DateTimeField(auto_now_add=True)
+    created_at = models.DateTimeField(auto_now_add=True)
 
     # زمان آخرین باری که این لینک بررسی یا به‌روزرسانی شده
     last_checked = models.DateTimeField(auto_now=True)
 
     class Meta:
         # مرتب‌سازی پیش‌فرض: جدیدترین‌ها ابتدا
-        ordering = ['-created']
+        ordering = ['-created_at']
 
     def __str__(self):
         # نمایش رشته‌ای خوانا از نام محصول، نام تأمین‌کننده و قیمت
