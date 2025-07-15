@@ -60,6 +60,7 @@ INSTALLED_APPS = [
     'accounting', 
     'inventory',
     'scrap_abdisite'
+    'suppliers'
 
 ]
 
