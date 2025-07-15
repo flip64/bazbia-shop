@@ -61,6 +61,7 @@ def clean_price_text(price_text):
 
 @csrf_exempt
 def check_price(request):
+    print(">>> check_price called")
     if request.method == 'POST':
         data = json.loads(request.body)
         url = data.get('url')
