@@ -1,11 +1,10 @@
 from django.db import models
 from django.contrib.auth.models import User
-
 from django.db import models
 from products.models import Product
-from suppliers.models import Supplier  # فرض می‌کنیم مدل Supplier در این اپ هست
+from suppliers.models import Supplier 
 
-class WatchedUrl(models.Model):
+class WatchedURL(models.Model):
     """
     این مدل برای نگهداری لینک‌ها و قیمت‌های پایش شده محصولات در سایت‌های تأمین‌کننده است.
     هر رکورد نشان‌دهنده یک لینک از یک تأمین‌کننده برای یک محصول خاص است.

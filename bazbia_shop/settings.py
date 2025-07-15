@@ -59,8 +59,8 @@ INSTALLED_APPS = [
     'notifications',
     'accounting', 
     'inventory',
-    'scrap_abdisite'
-    'suppliers'
+    'scrap_abdisite',
+    'suppliers',
 
 ]
 

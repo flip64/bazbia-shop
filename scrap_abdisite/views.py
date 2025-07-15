@@ -2,7 +2,7 @@ from django.shortcuts import render, redirect
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from .models import WatchedURL, PriceHistory
-from scrap_abdisite.form import WatchedURLForm
+from scrap_abdisite.form import WatchedURL
 from django.contrib.auth.decorators import login_required
 from scrap_abdisite.utils.feach_price import fetch_product_details,send_price_alert
 from django.utils import timezone
