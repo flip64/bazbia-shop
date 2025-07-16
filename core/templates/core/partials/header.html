@@ -4,7 +4,7 @@
   <!-- Alert Bar -->
 
 <div class="top-alert text-center py-2 bg-primary text-white">
-    بازبیا — انتخابی که تکرار می‌کنید
+    بازبیا  انتخابی که تکرار می‌کنید
 </div>
   <!-- Main Navigation -->
   <nav class="navbar navbar-expand-lg navbar-light bg-white py-3 border-bottom">
@@ -23,7 +23,7 @@
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#bazbiaNavbar">
           <span class="navbar-toggler-icon"></span>
         </button>
-      </div>
+              </div>
 
       <!-- Desktop Search -->
       <div class="d-none d-lg-flex ms-auto me-3" style="width: 300px;">
@@ -37,21 +37,25 @@
         </form>
       </div>
 
-      <!-- Nav Items -->
-      <div class="collapse navbar-collapse" id="bazbiaNavbar">
-        <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-          <li class="nav-item"><a class="nav-link active" href="#">خانه</a></li>
-          <li class="nav-item"><a class="nav-link" href="#">محصولات</a></li>
-          <li class="nav-item"><a class="nav-link" href="#">درباره ما</a></li>
-          <li class="nav-item"><a class="nav-link" href="#">تماس با ما</a></li>
-        </ul>
-        
+              
         <!-- Desktop Cart -->
         <div class="d-none d-lg-flex">
-          <a href="#" class="btn btn-outline-secondary position-relative">
-            <i class="bi bi-cart"></i>
-            <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">0</span>
-          </a>
+          
+         <div class="d-flex align-items-center gap-2">
+    <!-- دکمه ورود -->
+       <a href="" class="btn btn-sm btn-outline-secondary px-3 py-1">
+        <i class="bi bi-person"></i>
+        <span class="d-none d-md-inline">ورود | ثبت‌نام</span>
+        </a>
+    
+    <!-- دکمه سبد خرید -->
+    <a href="" class="btn btn-sm btn-outline-secondary px-3 py-1 position-relative">
+        <i class="bi bi-cart"></i>
+        <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+            {{ request.cart_count|default:0 }}
+        </span>
+    </a>
+</div>
         </div>
       </div>
 
@@ -67,3 +71,36 @@
     </div>
   </nav>
 </header>
+
+
+<!--   بنر متغیر از دیتابیس -->
+<div id="mainBanner" class="carousel slide" data-bs-ride="carousel">
+    <div class="carousel-inner">
+        {% for banner in banners %}
+        <div class="carousel-item {% if forloop.first %}active{% endif %}">
+            <img src="{{ banner.image.url }}" class="d-block w-100" alt="{{ banner.title }}">
+            {% if banner.title or banner.link %}
+            <div class="carousel-caption d-none d-md-block">
+                {% if banner.title %}<h3>{{ banner.title }}</h3>{% endif %}
+                {% if banner.link %}
+                <a href="{{ banner.link }}" class="btn btn-primary mt-3">
+                    مشاهده بیشتر
+                </a>
+                {% endif %}
+            </div>
+            {% endif %}
+        </div>
+        {% endfor %}
+    </div>
+        
+    <!-- دکمه‌های کنترلی بهبود یافته -->
+    <button class="carousel-control-prev" type="button" data-bs-target="#mainBanner" data-bs-slide="prev">
+        <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+        <span class="visually-hidden">قبلی</span>
+    </button>
+    <button class="carousel-control-next" type="button" data-bs-target="#mainBanner" data-bs-slide="next">
+        <span class="carousel-control-next-icon" aria-hidden="true"></span>
+        <span class="visually-hidden">بعدی</span>
+    </button>
+</div>
+    
