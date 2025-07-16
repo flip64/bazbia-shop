@@ -17,8 +17,19 @@ from dotenv import load_dotenv
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 
+# مسیر ذخیره‌سازی فایل‌های استاتیک جمع‌آوری شده
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+
+
+# مسیرهای اضافی برای فایل‌های استاتیک
+STATICFILES_DIRS = [
+    os.path.join(BASE_DIR, 'static'),
+]
+
+# مسیر ذخیره‌سازی فایل‌های استاتیک جمع‌آوری‌شده
 STATIC_URL = '/static/'
-STATICFILES_DIRS = [ BASE_DIR / 'static' ]
+
+
 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
@@ -79,7 +90,6 @@ ROOT_URLCONF = 'bazbia_shop.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [BASE_DIR / "templates"],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [

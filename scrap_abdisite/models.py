@@ -5,6 +5,10 @@ from products.models import Product
 from suppliers.models import Supplier 
 from django.conf import settings
 
+# ==============================
+# مدل بررسی لینکها  = (WatchedURL)
+# ==============================
+
 class WatchedURL(models.Model):
     """
     این مدل برای نگهداری لینک‌ها و قیمت‌های پایش شده محصولات در سایت‌های تأمین‌کننده است.

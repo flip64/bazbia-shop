@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+
+{% block title %}{{ product.name }}{% endblock %}
+
+{% block content %}
+<h2>{{ product.name }}</h2>
+<p>{{ product.description }}</p>
+
+<h4>مشخصات:</h4>
+<ul>
+  {% for spec in specifications %}
+    <li>{{ spec.name }}: {{ spec.value }}</li>
+  {% endfor %}
+</ul>
+
+<h4>ویژگی‌ها:</h4>
+<ul>
+  {% for variant in variants %}
+    <li>SKU: {{ variant.sku }} | {{ variant.price|floatformat:0  }} تومان | موجودی: {{ variant.stock }}</li>
+  {% endfor %}
+</ul>
+
+<h4>تصاویر:</h4>
+{% for img in images %}
+  <img src="{{ img.image.url }}" width="150">
+{% endfor %}
+{% endblock %}

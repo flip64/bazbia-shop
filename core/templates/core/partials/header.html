@@ -1,0 +1,69 @@
+{% load static %}
+
+<header class="bg-white shadow-sm sticky-top">
+  <!-- Alert Bar -->
+
+<div class="top-alert text-center py-2 bg-primary text-white">
+    بازبیا — انتخابی که تکرار می‌کنید
+</div>
+  <!-- Main Navigation -->
+  <nav class="navbar navbar-expand-lg navbar-light bg-white py-3 border-bottom">
+    <div class="container">
+      <a class="navbar-brand fw-bold fs-4" href="#">بازبیا</a>
+      
+      <!-- Mobile Toggle -->
+      <div class="d-flex d-lg-none align-items-center gap-2">
+        <button class="btn btn-outline-secondary rounded-circle" type="button" data-bs-toggle="collapse" data-bs-target="#searchBox">
+          <i class="bi bi-search"></i>
+        </button>
+        <a href="#" class="btn btn-outline-secondary rounded-circle position-relative">
+          <i class="bi bi-cart"></i>
+          <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">0</span>
+        </a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#bazbiaNavbar">
+          <span class="navbar-toggler-icon"></span>
+        </button>
+      </div>
+
+      <!-- Desktop Search -->
+      <div class="d-none d-lg-flex ms-auto me-3" style="width: 300px;">
+        <form class="w-100" role="search">
+          <div class="input-group">
+            <input type="search" class="form-control rounded-start" placeholder="جستجو..." aria-label="Search">
+            <button class="btn btn-outline-secondary" type="submit">
+              <i class="bi bi-search"></i>
+            </button>
+          </div>
+        </form>
+      </div>
+
+      <!-- Nav Items -->
+      <div class="collapse navbar-collapse" id="bazbiaNavbar">
+        <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+          <li class="nav-item"><a class="nav-link active" href="#">خانه</a></li>
+          <li class="nav-item"><a class="nav-link" href="#">محصولات</a></li>
+          <li class="nav-item"><a class="nav-link" href="#">درباره ما</a></li>
+          <li class="nav-item"><a class="nav-link" href="#">تماس با ما</a></li>
+        </ul>
+        
+        <!-- Desktop Cart -->
+        <div class="d-none d-lg-flex">
+          <a href="#" class="btn btn-outline-secondary position-relative">
+            <i class="bi bi-cart"></i>
+            <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">0</span>
+          </a>
+        </div>
+      </div>
+
+      <!-- Mobile Search (Collapsed) -->
+      <div class="collapse w-100 mt-2" id="searchBox">
+        <form class="d-flex" role="search">
+          <input type="search" class="form-control me-2" placeholder="جستجو...">
+          <button class="btn btn-outline-secondary" type="submit">
+            <i class="bi bi-search"></i>
+          </button>
+        </form>
+      </div>
+    </div>
+  </nav>
+</header>
