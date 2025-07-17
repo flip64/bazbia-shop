@@ -1,4 +1,4 @@
-inasgiref==3.9.1
+asgiref==3.9.1
 beautifulsoup4==4.13.4
 certifi==2025.7.9
 charset-normalizer==3.4.2
