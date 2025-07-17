@@ -72,6 +72,8 @@ INSTALLED_APPS = [
     'inventory',
     'scrap_abdisite',
     'suppliers',
+    'schema_viewer',
+
 
 ]
 
