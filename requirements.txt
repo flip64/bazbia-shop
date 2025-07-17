@@ -1,4 +1,4 @@
-asgiref==3.9.1
+inasgiref==3.9.1
 beautifulsoup4==4.13.4
 certifi==2025.7.9
 charset-normalizer==3.4.2
@@ -13,3 +13,4 @@ soupsieve==2.7
 sqlparse==0.5.3
 typing_extensions==4.14.1
 urllib3==2.5.0
+django-schema-viewer
