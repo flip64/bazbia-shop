@@ -65,7 +65,8 @@ def home(request):
     context = {
         'products': products ,
         'show_banner': True,
+        
 
     }
-    return render(request, 'home.html', context)
+    return render(request, 'core/home.html', context)
 
