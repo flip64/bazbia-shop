@@ -173,7 +173,7 @@ LANGUAGE_CODE = 'en-us'
 # تنظیمات منطقه زمانی 
 USE_TZ = False
 
-TIME_ZONE = 'UTC'
+TIME_ZONE = 'GMT'
 
 USE_I18N = True
 
