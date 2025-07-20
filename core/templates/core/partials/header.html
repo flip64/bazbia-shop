@@ -1,111 +1,65 @@
 {% load static %}
 
-<header class="bg-white shadow-sm sticky-top">
-  <!-- Alert Bar -->
-
-<div class="top-alert text-center py-2 bg-primary text-white">
-    بازبیا  انتخابی که تکرار می‌کنید
-</div>
-  <!-- Main Navigation -->
-  <nav class="navbar navbar-expand-lg navbar-light bg-white py-3 border-bottom">
-    <div class="container">
-        
-     <a class="navbar-brand d-flex align-items-center text-success logo h1" href="/">
-      <img src="{% static 'images/logo.webp' %}" alt="بازبیا" style="height: 70px;">
-      <span class="ms-2"></span>
-      </a>
-
-      
-      <!-- Mobile Toggle -->
-      <div class="d-flex d-lg-none align-items-center gap-2">
-        <button class="btn btn-outline-secondary rounded-circle" type="button" data-bs-toggle="collapse" data-bs-target="#searchBox">
-          <i class="bi bi-search"></i>
-        </button>
-        <a href="#" class="btn btn-outline-secondary rounded-circle position-relative">
-          <i class="bi bi-cart"></i>
-          <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">0</span>
-        </a>
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#bazbiaNavbar">
-          <span class="navbar-toggler-icon"></span>
-        </button>
-              </div>
-
-      <!-- Desktop Search -->
-      <div class="d-none d-lg-flex ms-auto me-3" style="width: 300px;">
-        <form class="w-100" role="search">
-          <div class="input-group">
-            <input type="search" class="form-control rounded-start" placeholder="جستجو..." aria-label="Search">
-            <button class="btn btn-outline-secondary" type="submit">
-              <i class="bi bi-search"></i>
-            </button>
-          </div>
-        </form>
-      </div>
-
-              
-        <!-- Desktop Cart -->
-        <div class="d-none d-lg-flex">
-          
-         <div class="d-flex align-items-center gap-2">
-    <!-- دکمه ورود -->
-       <a href="" class="btn btn-sm btn-outline-secondary px-3 py-1">
-        <i class="bi bi-person"></i>
-        <span class="d-none d-md-inline">ورود | ثبت‌نام</span>
-        </a>
-    
-    <!-- دکمه سبد خرید -->
-    <a href="" class="btn btn-sm btn-outline-secondary px-3 py-1 position-relative">
-        <i class="bi bi-cart"></i>
-        <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
-            {{ request.cart_count|default:0 }}
-        </span>
-    </a>
-</div>
-        </div>
-      </div>
-
-      <!-- Mobile Search (Collapsed) -->
-      <div class="collapse w-100 mt-2" id="searchBox">
-        <form class="d-flex" role="search">
-          <input type="search" class="form-control me-2" placeholder="جستجو...">
-          <button class="btn btn-outline-secondary" type="submit">
-            <i class="bi bi-search"></i>
-          </button>
-        </form>
-      </div>
-    </div>
-  </nav>
-</header>
-
-
-<!--   بنر متغیر از دیتابیس -->
-<div id="mainBanner" class="carousel slide" data-bs-ride="carousel">
-    <div class="carousel-inner">
-        {% for banner in banners %}
-        <div class="carousel-item {% if forloop.first %}active{% endif %}">
-            <img src="{{ banner.image.url }}" class="d-block w-100" alt="{{ banner.title }}">
-            {% if banner.title or banner.link %}
-            <div class="carousel-caption d-none d-md-block">
-                {% if banner.title %}<h3>{{ banner.title }}</h3>{% endif %}
-                {% if banner.link %}
-                <a href="{{ banner.link }}" class="btn btn-primary mt-3">
-                    مشاهده بیشتر
-                </a>
-                {% endif %}
+  <!-- Topbar Start -->
+    <div class="container-fluid">
+        <div class="row bg-secondary py-2 px-xl-5">
+            <div class="col-lg-6 d-none d-lg-block">
+                <div class="d-inline-flex align-items-center">
+                    <a class="text-dark" href="">FAQs</a>
+                    <span class="text-muted px-2">|</span>
+                    <a class="text-dark" href="">Help</a>
+                    <span class="text-muted px-2">|</span>
+                    <a class="text-dark" href="">Support</a>
+                </div>
             </div>
-            {% endif %}
+            <div class="col-lg-6 text-center text-lg-right">
+                <div class="d-inline-flex align-items-center">
+                    <a class="text-dark px-2" href="">
+                        <i class="fab fa-facebook-f"></i>
+                    </a>
+                    <a class="text-dark px-2" href="">
+                        <i class="fab fa-twitter"></i>
+                    </a>
+                    <a class="text-dark px-2" href="">
+                        <i class="fab fa-linkedin-in"></i>
+                    </a>
+                    <a class="text-dark px-2" href="">
+                        <i class="fab fa-instagram"></i>
+                    </a>
+                    <a class="text-dark pl-2" href="">
+                        <i class="fab fa-youtube"></i>
+                    </a>
+                </div>
+            </div>
         </div>
-        {% endfor %}
+        <div class="row align-items-center py-3 px-xl-5">
+            <div class="col-lg-3 d-none d-lg-block">
+                <a href="" class="text-decoration-none">
+                    <h1 class="m-0 display-5 font-weight-semi-bold"><span class="text-primary font-weight-bold border px-3 mr-1">E</span>Shopper</h1>
+                </a>
+            </div>
+            <div class="col-lg-6 col-6 text-left">
+                <form action="">
+                    <div class="input-group">
+                        <input type="text" class="form-control" placeholder="Search for products">
+                        <div class="input-group-append">
+                            <span class="input-group-text bg-transparent text-primary">
+                                <i class="fa fa-search"></i>
+                            </span>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="col-lg-3 col-6 text-right">
+                <a href="" class="btn border">
+                    <i class="fas fa-heart text-primary"></i>
+                    <span class="badge">0</span>
+                </a>
+                <a href="" class="btn border">
+                    <i class="fas fa-shopping-cart text-primary"></i>
+                    <span class="badge">0</span>
+                </a>
+            </div>
+        </div>
     </div>
-        
-    <!-- دکمه‌های کنترلی بهبود یافته -->
-    <button class="carousel-control-prev" type="button" data-bs-target="#mainBanner" data-bs-slide="prev">
-        <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-        <span class="visually-hidden">قبلی</span>
-    </button>
-    <button class="carousel-control-next" type="button" data-bs-target="#mainBanner" data-bs-slide="next">
-        <span class="carousel-control-next-icon" aria-hidden="true"></span>
-        <span class="visually-hidden">بعدی</span>
-    </button>
-</div>
-    
+    <!-- Topbar End -->
