@@ -172,6 +172,9 @@ AUTH_PASSWORD_VALIDATORS = [
 LANGUAGE_CODE = 'en-us'
 # تنظیمات منطقه زمانی 
 USE_TZ = False
+TIME_ZONE = "Etc/GMT"  
+
+
 
 
 
