@@ -170,12 +170,13 @@ AUTH_PASSWORD_VALIDATORS = [
 # https://docs.djangoproject.com/en/5.0/topics/i18n/
 
 LANGUAGE_CODE = 'en-us'
+# تنظیمات منطقه زمانی 
+USE_TZ = os.environ.get("DJANGO_USE_TZ", "true").lower() != "false"
 
 TIME_ZONE = 'UTC'
 
 USE_I18N = True
 
-USE_TZ = True
 
 
 # Static files (CSS, JavaScript, Images)
