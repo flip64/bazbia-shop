@@ -118,7 +118,7 @@ def change_price_all(request):
        price = clean_price_text(price)
        if price != waching.price :
            
-           send_status = send_price_alert(name,price,waching.last_price)
+           send_status = send_price_alert(name,price,waching.price)
            if(send_status) : 
                send_status_email= send_status['email']
            else: 
