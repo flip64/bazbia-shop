@@ -171,7 +171,7 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = 'en-us'
 # تنظیمات منطقه زمانی 
-USE_TZ = os.environ.get("DJANGO_USE_TZ", "true").lower() != "false"
+USE_TZ = false
 
 TIME_ZONE = 'UTC'
 
