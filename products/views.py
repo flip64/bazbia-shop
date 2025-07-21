@@ -88,7 +88,7 @@ def category_create(request):
     form = CategoryForm(request.POST or None, request.FILES or None)
     if form.is_valid():
         form.save()
-        return redirect('products/category_list')
+        return redirect('products:category_list')
     return render(request, 'products/category_form.html', {'form': form})
 
 def category_edit(request, pk):
@@ -96,5 +96,5 @@ def category_edit(request, pk):
     form = CategoryForm(request.POST or None, request.FILES or None, instance=category)
     if form.is_valid():
         form.save()
-        return redirect('products/category_list')
+        return redirect('products:category_list')
     return render(request, 'products/category_form.html', {'form': form})
