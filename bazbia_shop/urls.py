@@ -22,7 +22,6 @@ from products import views
 
 
 
-urlpatterns = [
 
     
 urlpatterns = [
@@ -36,4 +35,4 @@ urlpatterns = [
 
     
    
-]
+
