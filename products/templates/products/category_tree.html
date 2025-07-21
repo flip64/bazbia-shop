@@ -1,0 +1,11 @@
+<ul>
+    {% for category in categories %}
+        <li>
+            {{ category.name }}
+            <a href="{% url 'products:category_edit' category.id %}" class="edit-link">ویرایش</a>
+            {% if category.subcategories.all %}
+                {% include 'products/category_tree.html' with categories=category.subcategories.all %}
+            {% endif %}
+        </li>
+    {% endfor %}
+</ul>
