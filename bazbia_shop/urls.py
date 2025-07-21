@@ -27,10 +27,10 @@ from products import views
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('products/', include('products.urls', namespace='products')),
-    path('', include('products.urls', namespace='products')),
+    path('', include('products.urls', namespace='root')),
     path('scrap_abdisite/', include('scrap_abdisite.urls', namespace='scrap_abdisite')),
     path('schema/', include(('schema_viewer.urls', 'schema_page'), namespace='schema_page')),
-    path('accounts/', include('core.urls')),  # آدرس‌های مربوط به login/signup
+    path('accounts/', include('core.urls'),namespace = 'core'),  # آدرس‌های مربوط به login/signup
 ]
 
     
