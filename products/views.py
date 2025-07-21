@@ -3,6 +3,13 @@ from django.shortcuts import  get_object_or_404
 from .models import Product, Category, Tag
 from .forms import CategoryForm
 
+
+
+
+# ==============================
+# ویو های مربوط به محصولات (Category)
+# ==============================
+
 def product_list(request):
     products = Product.objects.all()
 
@@ -24,31 +31,22 @@ def product_list(request):
     return render(request, 'products/product_list.html', context)
 
 def product_detail(request, slug):
-    product = get_object_or_404(Product, slug=slug, is_active=True)
-    variants = product.variants.all()
-    specifications = product.specifications.all()
-    images = product.images.all()
-    videos = product.videos.all()
-
-    context = {
-        'product': product,
-        'variants': variants,
-        'specifications': specifications,
-        'images': images,
-        'videos': videos
+  product = get_object_or_404(Product, slug=slug, is_active=True)
+  variants = product.variants.all()
+  specifications = product.specifications.all()
+  images = product.images.all()
+  videos = product.videos.all()
+  context = {
+         'product': product,
+         'variants': variants,
+         'specifications': specifications,
+         'images': images,
+         'videos': videos
     }
-    return render(request, 'products/product_detail.html', context)
+  return render(request, 'products/product_detail.html', context)
 
 
 
-
-def category_detail(request, slug):
-    category = get_object_or_404(Category, slug=slug)
-    products = Product.objects.filter(category=category)
-    return render(request, 'products/category_detail.html', {
-        'category': category,
-        'products': products
-    })
 
 
 def home(request):
@@ -74,6 +72,21 @@ def home(request):
 
 
 
+
+
+
+
+# ==============================
+# ویو های مربوط به دسته بندی (Category)
+# ==============================
+
+def category_detail(request, slug):
+    category = get_object_or_404(Category, slug=slug)
+    products = Product.objects.filter(category=category)
+    return render(request, 'products/category_detail.html', {
+        'category': category,
+        'products': products
+    })
 
 
 
