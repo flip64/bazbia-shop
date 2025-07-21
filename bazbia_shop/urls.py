@@ -25,7 +25,7 @@ from products.views import product_list
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('products/', include('products.urls', namespace='products')),
-    path('', product_list, name='home'),  # فقط صفحه اصلی
+    path('G', product_list, name='home'),  # فقط صفحه اصلی
     path('scrap_abdisite/', include('scrap_abdisite.urls', namespace='scrap_abdisite')),
     path('schema/', include(('schema_viewer.urls', 'schema_page'), namespace='schema_page')),
 
