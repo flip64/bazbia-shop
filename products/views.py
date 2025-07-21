@@ -1,7 +1,7 @@
 from django.shortcuts import render
 from django.shortcuts import render, get_object_or_404
 from .models import Product, Category, Tag
-
+from .forms import CategoryForm
 
 def product_list(request):
     products = Product.objects.filter(is_active=True)
@@ -39,7 +39,7 @@ def product_detail(request, slug):
     }
     return render(request, 'products/product_detail.html', context)
 
-from django.shortcuts import render, get_object_or_404
+
 
 
 def category_detail(request, slug):
@@ -71,3 +71,29 @@ def home(request):
     }
     return render(request, 'core/home.html', context)
 
+
+
+
+
+
+
+
+
+def category_list(request):
+    top_categories = Category.objects.filter(parent__isnull=True)
+    return render(request, 'products/category_list.html', {'categories': top_categories})
+
+def category_create(request):
+    form = CategoryForm(request.POST or None, request.FILES or None)
+    if form.is_valid():
+        form.save()
+        return redirect('category_list')
+    return render(request, 'products/category_form.html', {'form': form})
+
+def category_edit(request, pk):
+    category = get_object_or_404(Category, pk=pk)
+    form = CategoryForm(request.POST or None, request.FILES or None, instance=category)
+    if form.is_valid():
+        form.save()
+        return redirect('category_list')
+    return render(request, 'products/category_form.html', {'form': form})
