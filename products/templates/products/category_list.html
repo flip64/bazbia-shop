@@ -47,19 +47,19 @@
 </head>
 <body>
     <h2>لیست دسته‌بندی‌ها</h2>
-    <a href="{% url 'category_create' %}" class="button">➕ افزودن دسته‌بندی</a>
+    <a href="{% url 'products:category_create' %}" class="button">➕ افزودن دسته‌بندی</a>
 
     <ul>
         {% for category in categories %}
             <li>
                 {{ category.name }}
-                <a href="{% url 'category_edit' category.id %}" class="edit-link">ویرایش</a>
+                <a href="{% url 'products:category_edit' category.id %}" class="edit-link">ویرایش</a>
                 {% if category.subcategories.all %}
                     <ul>
                         {% for sub in category.subcategories.all %}
                             <li>
                                 {{ sub.name }}
-                                <a href="{% url 'category_edit' sub.id %}" class="edit-link">ویرایش</a>
+                                <a href="{% url 'products:category_edit' sub.id %}" class="edit-link">ویرایش</a>
                             </li>
                         {% endfor %}
                     </ul>
