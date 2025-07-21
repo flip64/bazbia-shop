@@ -5,9 +5,7 @@ from core import views
 app_name = 'core'
 
 urlpatterns = [
-    path('', views.product_list, name='product_list'),
-    path('login', views.login, name='login'),
-    path('<slug:slug>/', views.product_detail, name='product_detail'),
-    path('category/<slug:slug>/', views.category_detail, name='category_detail'),
-
+    path('signup/', views.signup_view, name='signup'),
+    path('login/', views.login_view, name='login'),
+    path('logout/', views.logout_view, name='logout'),
 ]
