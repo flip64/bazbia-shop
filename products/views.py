@@ -14,10 +14,11 @@ def product_list(request):
         products = products.filter(category__slug=category_slug)
     if tag_slug:
         products = products.filter(tags__slug=tag_slug)
-
+    categories = Category.objects.filter(parent__isnull=True)
     context = {
         'products': products ,
         'show_banner': True,
+        'categories': categories
 
     }
     return render(request, 'products/product_list.html', context)
