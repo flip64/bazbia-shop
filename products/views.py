@@ -4,7 +4,7 @@ from .models import Product, Category, Tag
 from .forms import CategoryForm
 
 def product_list(request):
-    products = Product.objects.filter(is_active=True)
+    products = Product.objects.all()
 
     # فیلتر با دسته یا تگ
     category_slug = request.GET.get('category')
