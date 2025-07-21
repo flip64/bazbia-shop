@@ -1,5 +1,5 @@
-from django.shortcuts import render
-from django.shortcuts import render, get_object_or_404
+from django.shortcuts import render,redirect
+from django.shortcuts import  get_object_or_404
 from .models import Product, Category, Tag
 from .forms import CategoryForm
 
@@ -80,6 +80,7 @@ def home(request):
 
 
 def category_list(request):
+    print("ok")
     top_categories = Category.objects.filter(parent__isnull=True)
     return render(request, 'products/category_list.html', {'categories': top_categories})
 
