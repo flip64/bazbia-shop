@@ -2,7 +2,7 @@ from django.shortcuts import render,redirect
 from django.shortcuts import  get_object_or_404
 from .models import Product, Category, Tag
 from .forms import CategoryForm
-
+from promotions.models import Banner
 
 
 
@@ -22,11 +22,13 @@ def product_list(request):
     if tag_slug:
         products = products.filter(tags__slug=tag_slug)
     categories = Category.objects.filter(parent__isnull=True)
+    banners = Banner.objects.all()
+
     context = {
         'products': products ,
         'show_banner': True,
-        'categories': categories
-
+        'categories': categories,
+        'baners' : banners
     }
     return render(request, 'products/product_list.html', context)
 
@@ -48,26 +50,6 @@ def product_detail(request, slug):
 
 
 
-
-def home(request):
-    products = Product.objects.filter(is_active=True)
-
-    # فیلتر با دسته یا تگ
-    category_slug = request.GET.get('category')
-    tag_slug = request.GET.get('tag')
-
-    if category_slug:
-        products = products.filter(category__slug=category_slug)
-    if tag_slug:
-        products = products.filter(tags__slug=tag_slug)
-
-    context = {
-        'products': products ,
-        'show_banner': True,
-        
-
-    }
-    return render(request, 'core/home.html', context)
 
 
 

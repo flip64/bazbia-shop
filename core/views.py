@@ -2,6 +2,22 @@ from django.shortcuts import render, redirect
 from django.contrib.auth import login, logout, authenticate
 from .forms import SignUpForm
 
+
+
+def home(request):
+
+    # فیلتر با دسته یا تگ
+        
+    context = {}
+    
+    return render(request, 'core/home.html', context)
+
+
+
+
+
+
+
 def signup_view(request):
     if request.method == 'POST':
         form = SignUpForm(request.POST)

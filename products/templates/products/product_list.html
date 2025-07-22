@@ -2,67 +2,57 @@
 
 {% load static %}
 
+
 {% block title %}لیست محصولات{% endblock %}
 
 {% block content %}
 
-<li class="nav-item dropdown position-static">
-    <a class="nav-link px-3 py-2 text-dark fw-bold" href="#" id="megaMenuDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-    <i class="bi bi-grid me-1"></i>
-    دسته‌بندی‌ها
-    <i class="bi bi-chevron-down ms-1 small"></i>
-  </a>
-  <div class="dropdown-menu w-100 mt-0 border-top-0 shadow-sm" aria-labelledby="megaMenuDropdown" style="right: 0; left: auto;">
-    <div class="container py-4">
-      <div class="row">
-        <!-- دسته ۱ -->
-        <div class="col-md-3">
-          <h6 class="text-success fw-bold">موبایل و تبلت</h6>
-          <ul class="list-unstyled">
-            <li><a class="dropdown-item" href="#">گوشی هوشمند</a></li>
-            <li><a class="dropdown-item" href="#">تبلت</a></li>
-            <li><a class="dropdown-item" href="#">لوازم جانبی</a></li>
-          </ul>
-        </div>
-        <!-- دسته ۲ -->
-        <div class="col-md-3">
-          <h6 class="text-success fw-bold">کالای دیجیتال</h6>
-          <ul class="list-unstyled">
-            <li><a class="dropdown-item" href="#">هدفون و هندزفری</a></li>
-            <li><a class="dropdown-item" href="#">ساعت هوشمند</a></li>
-            <li><a class="dropdown-item" href="#">اسپیکر</a></li>
-          </ul>
-        </div>
-        <!-- دسته ۳ -->
-        <div class="col-md-3">
-          <h6 class="text-success fw-bold">خانه و آشپزخانه</h6>
-          <ul class="list-unstyled">
-            <li><a class="dropdown-item" href="#">لوازم برقی</a></li>
-            <li><a class="dropdown-item" href="#">نور و روشنایی</a></li>
-            <li><a class="dropdown-item" href="#">لوازم نظافت</a></li>
-          </ul>
-        </div>
-        <!-- دسته ۴ -->
-        <div class="col-md-3">
-          <h6 class="text-success fw-bold">پیشنهاد ویژه</h6>
-          <ul class="list-unstyled">
-            <li><a class="dropdown-item text-danger" href="#">تخفیف‌دارها</a></li>
-            <li><a class="dropdown-item" href="#">محبوب‌ترین‌ها</a></li>
-            <li><a class="dropdown-item" href="#">جدیدترین‌ها</a></li>
-          </ul>
-        </div>
+<!-- Page Header Start -->
+{% if banners %}
+<div id="bannerCarousel" class="carousel slide mb-5" data-bs-ride="carousel">
+  <div class="carousel-inner">
+    {% for banner in banners %}
+    <div class="carousel-item {% if forloop.first %}active{% endif %}">
+      {% if banner.link %}
+      <a href="{{ banner.link }}">
+        <img src="{{ banner.image.url }}" class="d-block w-100" alt="{{ banner.title }}">
+      </a>
+      {% else %}
+      <img src="{{ banner.image.url }}" class="d-block w-100" alt="{{ banner.title }}">
+      {% endif %}
+      <div class="carousel-caption d-none d-md-block">
+        <h5>{{ banner.title }}</h5>
       </div>
     </div>
+    {% endfor %}
   </div>
-</li>
+  <button class="carousel-control-prev" type="button" data-bs-target="#bannerCarousel" data-bs-slide="prev">
+    <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+    <span class="visually-hidden">قبلی</span>
+  </button>
+  <button class="carousel-control-next" type="button" data-bs-target="#bannerCarousel" data-bs-slide="next">
+    <span class="carousel-control-next-icon" aria-hidden="true"></span>
+    <span class="visually-hidden">بعدی</span>
+  </button>
+</div>
+
+{% endif %}
+
+<div class="container-fluid bg-secondary mb-5">
+    <div class="d-flex flex-column align-items-center justify-content-center" style="min-height: 300px">
+        <h1 class="font-weight-semi-bold text-uppercase mb-3">بازبیا</h1>
+        <div class="d-inline-flex">
+            <p class="m-0"><a href="">Home</a></p>
+            <p class="m-0 px-2">-</p>
+            <p class="m-0">Shop</p>
+        </div>
+    </div>
+</div>
+
+<!-- Page Header End -->
+
 
 <h2 class="text-center fw-bold my-4 fs-4">محصولات</h2>
 
 
-{% for product in products %}
-    <div>
-        <h3><a href="{% url 'products:product_detail' product.slug %}">{{ product.name }}</a></h3>
-        <p>قیمت: {{ product.base_price }} تومان</p>
-    </div>
-{% endfor %}
 {% endblock %}
