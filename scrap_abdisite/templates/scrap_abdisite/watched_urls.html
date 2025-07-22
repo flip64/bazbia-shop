@@ -23,9 +23,9 @@
     </tr>
     {% for url in urls %}
     <tr>
-        <td>{{ url.product_name|default:"نامشخص" }}</td>
+        <td>{{ url.product.name|default:"نامشخص" }}</td>
         <td><a href="{{ url.url }}" target="_blank">{{ url.url }}</a></td>
-        <td>{{ url.last_price|default:"-" }}</td>
+        <td>{{ url.price|default:"-" }}</td>
         <td>{{ url.last_checked|date:"Y-m-d H:i" }}</td>
         <td><a href="../delet/{{url.id}} " style="display: inline-block; padding: 10px 20px; background-color: #4CAF50; color: white; text-align: center; text-decoration: none; border-radius: 5px;"> حذف  </a>
 </td>

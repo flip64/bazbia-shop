@@ -34,7 +34,7 @@ def watched_urls_view(request):
 
             cleaned_price = clean_price_text(product_price_text)
             if cleaned_price is not None:
-                watched_url.last_price = cleaned_price
+                watched_url.price = cleaned_price
                 watched_url.last_checked = timezone.now()
 
             watched_url.save()
