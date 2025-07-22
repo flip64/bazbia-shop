@@ -10,12 +10,8 @@ import time
 import re
 import json
 
-from django.contrib.auth.decorators import login_required
-from django.shortcuts import render, redirect
-from django.utils import timezone
-from .forms import WatchedURLForm
-from .models import WatchedURL, PriceHistory
-from .utils import fetch_product_details, clean_price_text  # فرض بر این است که این توابع جای جداگانه‌ای هستند
+
+
 
 @login_required
 def watched_urls_view(request):
