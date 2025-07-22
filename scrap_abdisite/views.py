@@ -10,29 +10,39 @@ import time
 import re
 import json
 
+from django.contrib.auth.decorators import login_required
+from django.shortcuts import render, redirect
+from django.utils import timezone
+from .forms import WatchedURLForm
+from .models import WatchedURL, PriceHistory
+from .utils import fetch_product_details, clean_price_text  # فرض بر این است که این توابع جای جداگانه‌ای هستند
 
 @login_required
 def watched_urls_view(request):
     user = request.user
+
     if request.method == 'POST':
-        form = WatchedURLForm(request.POST, user=user)  # پاس دادن user به فرم
+        form = WatchedURLForm(request.POST, user=user)
         if form.is_valid():
             watched_url = form.save(commit=False)
-            watched_url.user = user
 
-            product_name, product_price_text = fetch_product_details(watched_url.url)
-            if product_name:
-                watched_url.product_name = product_name
+            # فقط قیمت را از تابع دریافت می‌کنیم، نام محصول فعلاً نادیده گرفته می‌شود
+            try:
+                _, product_price_text = fetch_product_details(watched_url.url)
+            except Exception as e:
+                form.add_error('url', f'خطا در دریافت اطلاعات محصول: {e}')
+                return render(request, 'scrap_abdisite/watched_urls.html', {
+                    'form': form,
+                    'urls': WatchedURL.objects.filter(user=user).order_by('-created_at')
+                })
 
             cleaned_price = clean_price_text(product_price_text)
             if cleaned_price is not None:
                 watched_url.last_price = cleaned_price
-                watched_url.last_checked = timezone.now() 
-
+                watched_url.last_checked = timezone.now()
 
             watched_url.save()
 
-            # ذخیره در تاریخچه قیمت
             if cleaned_price is not None:
                 PriceHistory.objects.create(
                     watched_url=watched_url,
@@ -40,14 +50,15 @@ def watched_urls_view(request):
                 )
 
             return redirect('scrap_abdisite:watched_urls')
+
     else:
-        form = WatchedURLForm(user=user)  # پاس دادن user به فرم
+        form = WatchedURLForm(user=user)
 
     urls = WatchedURL.objects.filter(user=user).order_by('-created_at')
-    
-
-    return render(request, 'scrap_abdisite/watched_urls.html', {'form': form, 'urls': urls})
-
+    return render(request, 'scrap_abdisite/watched_urls.html', {
+        'form': form,
+        'urls': urls
+    })
 
 def clean_price_text(price_text):
     """
