@@ -20,7 +20,9 @@ def login_view(request):
         user = authenticate(request, username=username, password=password)
         if user:
             login(request, user)
-            return redirect('home')
+            next_url = request.GET.get('next') or 'home'
+            
+            return redirect(next_url)
         else:
             return render(request, 'core/login.html', {'error': 'نام کاربری یا رمز اشتباه است'})
     return render(request, 'core/login.html')
