@@ -8,7 +8,9 @@ def signup_view(request):
         if form.is_valid():
             user = form.save()
             login(request, user)
-            return redirect('home')  # بعداً به صفحه اصلی یا سبد خرید هدایت کن
+            next_url = request.GET.get('next') or 'products:product_list'
+            return redirect(next_url)
+              
     else:
         form = SignUpForm()
     return render(request, 'core/signup.html', {'form': form})
@@ -20,7 +22,7 @@ def login_view(request):
         user = authenticate(request, username=username, password=password)
         if user:
             login(request, user)
-            next_url = request.GET.get('next') or 'home'
+            next_url = request.GET.get('next') or 'products:product_list'
             
             return redirect(next_url)
         else:
