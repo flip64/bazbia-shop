@@ -53,4 +53,4 @@ def import_categories(request):
     for cat_item in payload:
         create_or_get_category(cat_item)
 
-    return JsonResponse({"status": "done"
+    return JsonResponse({"status": "done","created": created})
