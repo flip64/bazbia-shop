@@ -37,7 +37,7 @@ urlpatterns = [
 
 
     # مسیرهای api
-    path('APİ/products/', include('products.api.urls')),
+    path('api/products/', include('products.APİ.urls')),
 
 
 ]
