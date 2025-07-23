@@ -1,5 +1,8 @@
 from django.http import JsonResponse
 from products.models import Category
+from django.views.decorators.csrf import csrf_exempt
+
+
 
 def list_categories(request):
     def build_tree(parent=None):
