@@ -32,19 +32,20 @@ def signup_view(request):
     return render(request, 'core/signup.html', {'form': form})
 
 def login_view(request):
+
     if request.method == 'POST':
         username = request.POST['username']
         password = request.POST['password']
         user = authenticate(request, username=username, password=password)
         if user:
             login(request, user)
-            next_url = request.GET.get('next') or 'products:product_list'
+            next_url = request.GET.get('next') or 'products:root_product'
             
-            return redirect(next_url)
+            return redirect("products:root_product")
         else:
             return render(request, 'core/login.html', {'error': 'نام کاربری یا رمز اشتباه است'})
     return render(request, 'core/login.html')
 
 def logout_view(request):
     logout(request)
-    return redirect('login')
+    return redirect('products:root_product')

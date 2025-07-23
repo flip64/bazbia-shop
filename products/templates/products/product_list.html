@@ -3,51 +3,40 @@
 {% load static %}
 
 
+  {% block style %}
+        
+  
+  {% endblock %}
+    
+
+
 {% block title %}لیست محصولات{% endblock %}
 
 {% block content %}
 
 <!-- Page Header Start -->
-{% if banners %}
-<div id="bannerCarousel" class="carousel slide mb-5" data-bs-ride="carousel">
-  <div class="carousel-inner">
-    {% for banner in banners %}
-    <div class="carousel-item {% if forloop.first %}active{% endif %}">
-      {% if banner.link %}
-      <a href="{{ banner.link }}">
-        <img src="{{ banner.image.url }}" class="d-block w-100" alt="{{ banner.title }}">
-      </a>
-      {% else %}
-      <img src="{{ banner.image.url }}" class="d-block w-100" alt="{{ banner.title }}">
-      {% endif %}
-      <div class="carousel-caption d-none d-md-block">
-        <h5>{{ banner.title }}</h5>
+<div class="container my-4">
+  <div class="d-flex flex-nowrap overflow-auto gap-3 py-2">
+
+    {% for category in categories %}
+      <div class="card text-center flex-shrink-0" style="min-width: 140px; border: none;">
+        <a href="" class="text-decoration-none text-dark">
+          <div class="card-body p-2">
+            {% if category.image %}
+              <img src="{{ category.image.url }}" class="rounded mb-2" width="60" height="60" alt="{{ category.title }}">
+            {% else %}
+              <img src="{% static 'images/default-category.jpg' %}" class="rounded mb-2" width="60" height="60" alt="{{ category.title }}">
+            {% endif %}
+            <h6 class="small">{{ category.title }}</h6>
+          </div>
+        </a>
       </div>
-    </div>
     {% endfor %}
+
   </div>
-  <button class="carousel-control-prev" type="button" data-bs-target="#bannerCarousel" data-bs-slide="prev">
-    <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-    <span class="visually-hidden">قبلی</span>
-  </button>
-  <button class="carousel-control-next" type="button" data-bs-target="#bannerCarousel" data-bs-slide="next">
-    <span class="carousel-control-next-icon" aria-hidden="true"></span>
-    <span class="visually-hidden">بعدی</span>
-  </button>
 </div>
 
-{% endif %}
 
-<div class="container-fluid bg-secondary mb-5">
-    <div class="d-flex flex-column align-items-center justify-content-center" style="min-height: 300px">
-        <h1 class="font-weight-semi-bold text-uppercase mb-3">بازبیا</h1>
-        <div class="d-inline-flex">
-            <p class="m-0"><a href="">Home</a></p>
-            <p class="m-0 px-2">-</p>
-            <p class="m-0">Shop</p>
-        </div>
-    </div>
-</div>
 
 <!-- Page Header End -->
 

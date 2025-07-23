@@ -21,6 +21,28 @@
   --gray-dark: #2e2e2e;
 
   /* اینا مهم‌ترن برای برند بازبیا */
+  
+ .text-turquoise {
+    color: #40E0D0; /* turquoise */
+  }
+
+  .bg-turquoise {
+    background-color: #40E0D0;
+    color: white;
+  }
+
+  .btn-turquoise {
+    background-color: #40E0D0;
+    color: white;
+    border: none;
+  }
+
+  .btn-turquoise:hover {
+    background-color: #30cfc0;
+  }
+
+
+  
   --primary: #40e0d0;
   --secondary: #e0f7fa;
   --success: #388e3c;
