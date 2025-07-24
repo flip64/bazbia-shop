@@ -61,7 +61,11 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
 
+
     
+    'django.contrib.humanize',
+    
+
     # اپ های پروژه
     'core',
     'customers',
