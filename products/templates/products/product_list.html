@@ -14,6 +14,30 @@
 
 {% block content %}
 
+
+<!-- دکمه باز کردن -->
+<button class="btn btn-primary" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasExample" aria-controls="offcanvasExample">
+  باز کردن منو
+</button>
+
+<!-- ساختار Offcanvas -->
+<div class="offcanvas offcanvas-start" tabindex="-1" id="offcanvasExample" aria-labelledby="offcanvasExampleLabel">
+  <div class="offcanvas-header">
+    <h5 class="offcanvas-title" id="offcanvasExampleLabel">منوی کناری</h5>
+    <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas" aria-label="بستن"></button>
+  </div>
+  <div class="offcanvas-body">
+    <p>لینک‌ها یا محتوای دلخواه اینجا قرار می‌گیره.</p>
+    <ul class="list-unstyled">
+      <li><a href="#">خانه</a></li>
+      <li><a href="#">محصولات</a></li>
+      <li><a href="#">تماس با ما</a></li>
+    </ul>
+  </div>
+</div>
+
+
+
 <!-- Page Header Start -->
 <div class="container my-4">
   <div class="d-flex flex-nowrap overflow-auto gap-3 py-2">
