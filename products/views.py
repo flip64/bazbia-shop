@@ -1,13 +1,11 @@
-from django.shortcuts import render,redirect
-from django.shortcuts import  get_object_or_404
+from django.shortcuts import render, redirect
+from django.shortcuts import get_object_or_404
 from .models import Product, Category, Tag
 from .forms import CategoryForm
 from promotions.models import Banner
 
-
-
 # ==============================
-# ویو های مربوط به محصولات (Category)
+# ویو های مربوط به محصولات (Product)
 # ==============================
 
 def product_list(request):
@@ -21,48 +19,39 @@ def product_list(request):
         products = products.filter(category__slug=category_slug)
     if tag_slug:
         products = products.filter(tags__slug=tag_slug)
+
     categories = Category.objects.filter(parent__isnull=True)
     banners = Banner.objects.all()
+
     # ست کردن تصویر اصلی هر محصول
     for product in products:
-     product.main_image = product.images.filter(is_main=True).first()
+        product.main_image = product.images.filter(is_main=True).first()
         
-  context = {
-        'products': products ,
+    context = {
+        'products': products,
         'show_banner': True,
         'categories': categories,
-        'baners' : banners
+        'baners': banners
     }
     return render(request, 'products/product_list.html', context)
 
 def product_detail(request, slug):
-  product = get_object_or_404(Product, slug=slug, is_active=True)
-  variants = product.variants.all()
-  specifications = product.specifications.all()
-  images = product.images.all()
-  videos = product.videos.all()
-  context = {
-         'product': product,
-         'variants': variants,
-         'specifications': specifications,
-         'images': images,
-         'videos': videos
+    product = get_object_or_404(Product, slug=slug, is_active=True)
+    variants = product.variants.all()
+    specifications = product.specifications.all()
+    images = product.images.all()
+    videos = product.videos.all()
+    context = {
+        'product': product,
+        'variants': variants,
+        'specifications': specifications,
+        'images': images,
+        'videos': videos
     }
-  return render(request, 'products/product_detail.html', context)
-
-
-
-
-
-
-
-
-
-
-
+    return render(request, 'products/product_detail.html', context)
 
 # ==============================
-# ویو های مربوط به دسته بندی (Category)
+# ویو های مربوط به دسته‌بندی‌ها (Category)
 # ==============================
 
 def category_detail(request, slug):
@@ -72,10 +61,6 @@ def category_detail(request, slug):
         'category': category,
         'products': products
     })
-
-
-
-
 
 def category_list(request):
     print("ok")
