@@ -1,6 +1,7 @@
 from django.db import models
-
-from django.db import models
+import os
+import uuid
+from django.utils.text import slugify
 
 
 
@@ -145,6 +146,8 @@ class ProductVariant(models.Model):
 
     def __str__(self):
         return f"{self.product.name} - {self.sku}"
+
+
 
 
 

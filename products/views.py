@@ -25,8 +25,8 @@ def product_list(request):
 
     # ست کردن تصویر اصلی هر محصول
     for product in products:
-        product.main_image = product.images.filter(is_main=True).first()
-        
+        product.main_image = product.images.filter(is_main=True).first() or product.images.first()
+         
     context = {
         'products': products,
         'show_banner': True,
