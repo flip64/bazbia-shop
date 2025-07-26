@@ -23,8 +23,11 @@ def product_list(request):
         products = products.filter(tags__slug=tag_slug)
     categories = Category.objects.filter(parent__isnull=True)
     banners = Banner.objects.all()
-
-    context = {
+    # ست کردن تصویر اصلی هر محصول
+    for product in products:
+     product.main_image = product.images.filter(is_main=True).first()
+        
+  context = {
         'products': products ,
         'show_banner': True,
         'categories': categories,
