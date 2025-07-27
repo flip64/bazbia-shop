@@ -55,42 +55,47 @@
 <!-- پیشنهاد شگفت‌انگیز -->
 <div class="container my-5">
   <div class="bg-danger rounded-4 p-3 text-white position-relative">
-
-    <!-- عنوان سمت راست -->
-    <h4 class="fw-bold mb-3 text-end">🔥 پیشنهاد شگفت‌انگیز</h4>
-
-    <!-- Swiper -->
-    <div class="swiper mySwiper">
-      <div class="swiper-wrapper">
-
-        {% for product in products %}
-        <div class="swiper-slide">
-          <div class="card position-relative border-0">
-            
-            <!-- نوار تخفیف -->
-            <span class="badge bg-danger position-absolute top-0 start-0 m-2">٪۲۵ تخفیف</span>
-            
-            <img src="{{ product.main_image.image.url }}"
-                 alt="{{ product.name }}"
-                 class="card-img-top rounded m-2"
-                 style="height: 200px; object-fit: cover;">
-
-            <div class="card-body text-center">
-              <h6 class="card-title">{{ product.name }}</h6>
-              <p class="text-success fw-bold">{{ product.base_price|intcomma }} تومان</p>
-              
-              <!-- شمارش معکوس -->
-              <div class="bg-light rounded-pill p-1 small text-dark mt-2">
-                باقی‌مانده: <span class="fw-bold">02:15:43</span>
-              </div>
+<div class="container product-slider">
+  <h2 class="text-center mb-4">محصولات پیشنهادی</h2>
+  
+  <!-- Swiper Container -->
+  <div class="swiper mySwiper" dir="rtl">
+    <div class="swiper-wrapper">
+      
+      <!-- اسلاید ۱ -->
+      <div class="swiper-slide">
+        <div class="card product-card h-100">
+          <img src="https://digifycdn.com/media/item_images/IMG_%DB%B2%DB%B0%DB%B2%DB%B5%DB%B0%DB%B5%DB%B1%DB%B7_%DB%B1%DB%B9%DB%B4%DB%B8%DB%B5%DB%B5.jpg" class="card-img-top p-3" alt="سکه دو روبل">
+          <div class="card-body">
+            <h5 class="card-title">سکه دو روبل روسیه</h5>
+            <div class="d-flex justify-content-between align-items-center">
+              <p class="card-text text-danger fw-bold mb-0">50,000 تومان</p>
+              <span class="badge bg-success">جدید</span>
             </div>
           </div>
         </div>
-        {% endfor %}
-
       </div>
+      
+      <!-- اسلاید ۲ -->
+      <div class="swiper-slide">
+        <div class="card product-card h-100">
+          <img src="https://digifycdn.com/media/item_images/%D8%A8%D8%A7%D8%B7%D8%B1%DB%8C-%D8%B4%D8%A7%D8%B1%DA%98%DB%8C-%D9%82%D9%84%D9%85%DB%8C-%D8%A8%D8%B3%D8%AA%D9%87-4-%D8%B9%D8%AF%D8%AF%DB%8C_w1uxMAR.jpg" class="card-img-top p-3" alt="باطری نیم قلمی">
+          <div class="card-body">
+            <h5 class="card-title">ست باطری نیم قلمی قابل شارژ</h5>
+            <div class="d-flex justify-content-between align-items-center">
+              <p class="card-text text-danger fw-bold mb-0">550,000 تومان</p>
+              <span class="badge bg-warning text-dark">پرفروش</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- بقیه اسلایدها -->
     </div>
-
+    
+    <!-- دکمه‌های ناوبری -->
+    <div class="swiper-button-next"></div>
+    <div class="swiper-button-prev"></div>
   </div>
 </div>
 
