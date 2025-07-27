@@ -13,6 +13,17 @@
 {% block title %}لیست محصولات{% endblock %}
 
 {% block content %}
+<style>
+
+.swiper {
+  padding-bottom: 20px;
+}
+.swiper-slide {
+  width: 200px !important;
+}
+
+</style>
+
 
 
 <!-- دکمه باز کردن -->
@@ -36,108 +47,58 @@
   </div>
 </div>
 
+<!-- Swiper CDN -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@10/swiper-bundle.min.css"/>
+<script src="https://cdn.jsdelivr.net/npm/swiper@10/swiper-bundle.min.js"></script>
 
 
-<!-- Page Header Start -->
-<div class="container my-4">
-  <div class="d-flex flex-nowrap overflow-auto gap-3 py-2">
-
-    {% for category in categories %}
-      <div class="card text-center flex-shrink-0" style="min-width: 140px; border: none;">
-        <a href="" class="text-decoration-none text-dark">
-          <div class="card-body p-3">
-            {% if category.image %}
-              <img src="{{ category.image.url }}" class="rounded mb-2" width="60" height="60" alt="{{ category.title }}">
-            {% else %}
-              <img src="{% static 'images/default-category.jpg' %}" class="rounded mb-2" width="60" height="60" alt="{{ category.title }}">
-            {% endif %}
-            <h6 class="small">{{ category.title }}</h6>
-          </div>
-        </a>
-      </div>
-    {% endfor %}
-
-  </div>
-</div>
-
-
-
-<!-- Page Header End -->
-
-<h2 class="text-center fw-bold my-4 fs-4">محصولات</h2>
-<div class="container">
-  <div class="row row-cols-3">
-
-    {% for product in products %}
-      <div class="col mb-4">
-        <div class="card h-100 shadow-sm">
-          <img src="{{ product.main_image.image.url }}"
-               class="card-img-top m-2"
-               style="max-height: 200px; width: auto; object-fit: cover;"
-               alt="{{ product.main_image.alt_text|default:product.name }}">
-          <div class="card-body d-flex flex-column justify-content-between">
-            <h5 class="card-title">{{ product.name }}</h5>
-            <p class="card-text text-success fw-bold">قیمت: {{ product.base_price|floatformat:"0"|intcomma }} تومان</p>
-            <a href="{% url 'products:product_detail' product.slug %}" class="btn btn-primary mt-auto">مشاهده</a>
-          </div>
-        </div>
-      </div>
-    {% endfor %}
-
-  </div> <!-- end row -->
-</div> <!-- end container -->
-
+<!-- پیشنهاد شگفت‌انگیز -->
 <div class="container my-5">
-    <div class="row">
-        <div class="col-md-4">
-            <div class="card">
-                <img src="product.jpg" class="card-img-top">
-                <div class="card-body">
-                    <h5 class="card-title">پیشنهاد ویژه!</h5>
-                    <p class="card-text">تخفیف ۵۰٪ برای خرید اول</p>
-                    <a href="#" class="btn btn-primary">خرید کنید</a>
-                </div>
+  <div class="bg-danger rounded-4 p-3 text-white position-relative">
+
+    <!-- عنوان سمت راست -->
+    <h4 class="fw-bold mb-3 text-end">🔥 پیشنهاد شگفت‌انگیز</h4>
+
+    <!-- Swiper -->
+    <div class="swiper mySwiper">
+      <div class="swiper-wrapper">
+
+        {% for product in products %}
+        <div class="swiper-slide">
+          <div class="card position-relative border-0">
+            
+            <!-- نوار تخفیف -->
+            <span class="badge bg-danger position-absolute top-0 start-0 m-2">٪۲۵ تخفیف</span>
+            
+            <img src="{{ product.main_image.image.url }}"
+                 alt="{{ product.name }}"
+                 class="card-img-top rounded m-2"
+                 style="height: 200px; object-fit: cover;">
+
+            <div class="card-body text-center">
+              <h6 class="card-title">{{ product.name }}</h6>
+              <p class="text-success fw-bold">{{ product.base_price|intcomma }} تومان</p>
+              
+              <!-- شمارش معکوس -->
+              <div class="bg-light rounded-pill p-1 small text-dark mt-2">
+                باقی‌مانده: <span class="fw-bold">02:15:43</span>
+              </div>
             </div>
-        </div>
-    </div>
-</div>
-<div class="container my-5">
-  <h2 class="mb-4 text-end">محصولات پیشنهادی</h2>
-  
-  <!-- Swiper Container -->
-  <div class="swiper productSwiper" dir="rtl">
-    <div class="swiper-wrapper">
-      
-      <!-- Slide 1 -->
-      <div class="swiper-slide">
-        <div class="card">
-          <img src="https://digifycdn.com/media/item_images/IMG_%DB%B2%DB%B0%DB%B2%DB%B5%DB%B0%DB%B5%DB%B1%DB%B7_%DB%B1%DB%B9%DB%B4%DB%B8%DB%B5%DB%B5.jpg" class="card-img-top" alt="سکه دو روبل">
-          <div class="card-body">
-            <h5 class="card-title">سکه دو روبل روسیه</h5>
-            <p class="card-text text-danger">50,000 تومان</p>
           </div>
         </div>
+        {% endfor %}
+
       </div>
-      
-      <!-- Slide 2 -->
-      <div class="swiper-slide">
-        <div class="card">
-          <img src="https://digifycdn.com/media/item_images/%D8%A8%D8%A7%D8%B7%D8%B1%DB%8C-%D8%B4%D8%A7%D8%B1%DA%98%DB%8C-%D9%82%D9%84%D9%85%DB%8C-%D8%A8%D8%B3%D8%AA%D9%87-4-%D8%B9%D8%AF%D8%AF%DB%8C_w1uxMAR.jpg" class="card-img-top" alt="باطری نیم قلمی">
-          <div class="card-body">
-            <h5 class="card-title">ست باطری نیم قلمی</h5>
-            <p class="card-text text-danger">550,000 تومان</p>
-          </div>
-        </div>
-      </div>
-      
-      <!-- بقیه اسلایدها -->
     </div>
-    
-    <!-- Navigation Buttons -->
-    <div class="swiper-button-next"></div>
-    <div class="swiper-button-prev"></div>
+
   </div>
 </div>
+
+
+
+
+
+
 
 {% endblock %}
 
