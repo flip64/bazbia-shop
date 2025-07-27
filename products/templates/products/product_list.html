@@ -3,29 +3,43 @@
 {% load static %}
 {% load humanize %}
 
-  {% block style %}
-        
-  
-  {% endblock %}
-    
-
+{% block style %}
+<style>
+  .swiper {
+    padding-bottom: 20px;
+  }
+  .swiper-slide {
+    width: 200px !important;
+  }
+  .product-card {
+    border: none;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s;
+    height: 100%;
+  }
+  .product-card:hover {
+    transform: translateY(-5px);
+  }
+  .swiper-button-next, 
+  .swiper-button-prev {
+    color: #333;
+    background: rgba(255, 255, 255, 0.8);
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+  }
+  .swiper-button-next::after, 
+  .swiper-button-prev::after {
+    font-size: 1.2rem;
+  }
+</style>
+{% endblock %}
 
 {% block title %}لیست محصولات{% endblock %}
 
 {% block content %}
-<style>
-
-.swiper {
-  padding-bottom: 20px;
-}
-.swiper-slide {
-  width: 200px !important;
-}
-
-</style>
-
-
-
 <!-- دکمه باز کردن -->
 <button class="btn btn-primary" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasExample" aria-controls="offcanvasExample">
   باز کردن منو
@@ -47,86 +61,80 @@
   </div>
 </div>
 
+<!-- پیشنهاد شگفت‌انگیز -->
+<div class="container my-5">
+  <div class="bg-danger rounded-4 p-3 text-white position-relative">
+    <div class="container product-slider">
+      <h2 class="text-center mb-4">محصولات پیشنهادی</h2>
+      
+      <!-- Swiper Container -->
+      <div class="swiper productSwiper" dir="rtl">
+        <div class="swiper-wrapper">
+          <!-- اسلاید ۱ -->
+          <div class="swiper-slide">
+            <div class="card product-card">
+              <img src="https://digifycdn.com/media/item_images/IMG_%DB%B2%DB%B0%DB%B2%DB%B5%DB%B0%DB%B5%DB%B1%DB%B7_%DB%B1%DB%B9%DB%B4%DB%B8%DB%B5%DB%B5.jpg" class="card-img-top p-3" alt="سکه دو روبل">
+              <div class="card-body">
+                <h5 class="card-title">سکه دو روبل روسیه</h5>
+                <div class="d-flex justify-content-between align-items-center">
+                  <p class="card-text text-danger fw-bold mb-0">50,000 تومان</p>
+                  <span class="badge bg-success">جدید</span>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <!-- اسلاید ۲ -->
+          <div class="swiper-slide">
+            <div class="card product-card">
+              <img src="https://digifycdn.com/media/item_images/%D8%A8%D8%A7%D8%B7%D8%B1%DB%8C-%D8%B4%D8%A7%D8%B1%DA%98%DB%8C-%D9%82%D9%84%D9%85%DB%8C-%D8%A8%D8%B3%D8%AA%D9%87-4-%D8%B9%D8%AF%D8%AF%DB%8C_w1uxMAR.jpg" class="card-img-top p-3" alt="باطری نیم قلمی">
+              <div class="card-body">
+                <h5 class="card-title">ست باطری نیم قلمی قابل شارژ</h5>
+                <div class="d-flex justify-content-between align-items-center">
+                  <p class="card-text text-danger fw-bold mb-0">550,000 تومان</p>
+                  <span class="badge bg-warning text-dark">پرفروش</span>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <!-- می‌توانید اسلایدهای بیشتری اینجا اضافه کنید -->
+        </div>
+        
+        <!-- دکمه‌های ناوبری -->
+        <div class="swiper-button-next"></div>
+        <div class="swiper-button-prev"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
 <!-- Swiper CDN -->
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@10/swiper-bundle.min.css"/>
 <script src="https://cdn.jsdelivr.net/npm/swiper@10/swiper-bundle.min.js"></script>
 
-
-<!-- پیشنهاد شگفت‌انگیز -->
-<div class="container my-5">
-  <div class="bg-danger rounded-4 p-3 text-white position-relative">
-<div class="container product-slider">
-  <h2 class="text-center mb-4">محصولات پیشنهادی</h2>
-  
-  <!-- Swiper Container -->
-  <div class="swiper mySwiper" dir="rtl">
-    <div class="swiper-wrapper">
-      
-      <!-- اسلاید ۱ -->
-      <div class="swiper-slide">
-        <div class="card product-card h-100">
-          <img src="https://digifycdn.com/media/item_images/IMG_%DB%B2%DB%B0%DB%B2%DB%B5%DB%B0%DB%B5%DB%B1%DB%B7_%DB%B1%DB%B9%DB%B4%DB%B8%DB%B5%DB%B5.jpg" class="card-img-top p-3" alt="سکه دو روبل">
-          <div class="card-body">
-            <h5 class="card-title">سکه دو روبل روسیه</h5>
-            <div class="d-flex justify-content-between align-items-center">
-              <p class="card-text text-danger fw-bold mb-0">50,000 تومان</p>
-              <span class="badge bg-success">جدید</span>
-            </div>
-          </div>
-        </div>
-      </div>
-      
-      <!-- اسلاید ۲ -->
-      <div class="swiper-slide">
-        <div class="card product-card h-100">
-          <img src="https://digifycdn.com/media/item_images/%D8%A8%D8%A7%D8%B7%D8%B1%DB%8C-%D8%B4%D8%A7%D8%B1%DA%98%DB%8C-%D9%82%D9%84%D9%85%DB%8C-%D8%A8%D8%B3%D8%AA%D9%87-4-%D8%B9%D8%AF%D8%AF%DB%8C_w1uxMAR.jpg" class="card-img-top p-3" alt="باطری نیم قلمی">
-          <div class="card-body">
-            <h5 class="card-title">ست باطری نیم قلمی قابل شارژ</h5>
-            <div class="d-flex justify-content-between align-items-center">
-              <p class="card-text text-danger fw-bold mb-0">550,000 تومان</p>
-              <span class="badge bg-warning text-dark">پرفروش</span>
-            </div>
-          </div>
-        </div>
-      </div>
-      
-      <!-- بقیه اسلایدها -->
-    </div>
-    
-    <!-- دکمه‌های ناوبری -->
-    <div class="swiper-button-next"></div>
-    <div class="swiper-button-prev"></div>
-  </div>
-</div>
-
-
-
-
-
-
-
 {% endblock %}
 
-
-{% block extra_js %} 
-
+{% block extra_js %}
 <script>
   document.addEventListener('DOMContentLoaded', function() {
     const swiper = new Swiper('.productSwiper', {
-      slidesPerView: 4, // تعداد اسلایدهای قابل مشاهده
-      spaceBetween: 10, // فاصله بین اسلایدها
-      loop: true, // حلقه زدن اسلایدها
+      slidesPerView: 1,
+      spaceBetween: 20,
+      loop: true,
       navigation: {
         nextEl: '.swiper-button-next',
         prevEl: '.swiper-button-prev',
       },
+      autoplay: {
+        delay: 3000,
+      },
       breakpoints: {
-        320: { slidesPerView: 1 }, // موبایل
-        768: { slidesPerView: 2 }, // تبلت
-        1024: { slidesPerView: 4 }, // دسکتاپ
+        576: { slidesPerView: 2 },
+        768: { slidesPerView: 3 },
+        992: { slidesPerView: 4 }
       }
     });
   });
 </script>
-
-{% endblock%}
+{% endblock %}
