@@ -140,3 +140,27 @@
 </div>
 
 {% endblock %}
+
+
+{% block extra_js %} 
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    const swiper = new Swiper('.productSwiper', {
+      slidesPerView: 4, // تعداد اسلایدهای قابل مشاهده
+      spaceBetween: 10, // فاصله بین اسلایدها
+      loop: true, // حلقه زدن اسلایدها
+      navigation: {
+        nextEl: '.swiper-button-next',
+        prevEl: '.swiper-button-prev',
+      },
+      breakpoints: {
+        320: { slidesPerView: 1 }, // موبایل
+        768: { slidesPerView: 2 }, // تبلت
+        1024: { slidesPerView: 4 }, // دسکتاپ
+      }
+    });
+  });
+</script>
+
+{% endblock%}
