@@ -20,7 +20,12 @@ def product_list(request):
     if tag_slug:
         products = products.filter(tags__slug=tag_slug)
 
-    categories = Category.objects.filter(parent__isnull=True)
+    categories = Category.objects.filter(parent=None)
+    for category in categories : 
+      child = Category.objects,filter(parent = category)
+      if (child):
+         category.child = child
+
     banners = Banner.objects.all()
 
     # ست کردن تصویر اصلی هر محصول
@@ -31,7 +36,8 @@ def product_list(request):
         'products': products,
         'show_banner': True,
         'categories': categories,
-        'baners': banners
+        'baners': banners ,
+        'main_category' : categories
     }
     return render(request, 'products/product_list.html', context)
 
