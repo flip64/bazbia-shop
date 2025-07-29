@@ -3,7 +3,7 @@ from django.shortcuts import get_object_or_404
 from .models import Product, Category, Tag
 from .forms import CategoryForm
 from promotions.models import Banner
-from order.cart.cart import Cart
+from orders.cart.cart import Cart
 
 # ==============================
 # ویو های مربوط به محصولات (Product)
