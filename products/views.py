@@ -22,7 +22,7 @@ def product_list(request):
 
     categories = Category.objects.filter(parent=None)
     for category in categories : 
-      child = Category.objects,filter(parent = category)
+      child = Category.objects.filter(parent = category)
       if (child):
          category.child = child
 
