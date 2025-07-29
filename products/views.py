@@ -3,6 +3,7 @@ from django.shortcuts import get_object_or_404
 from .models import Product, Category, Tag
 from .forms import CategoryForm
 from promotions.models import Banner
+from order.cart.cart import Cart
 
 # ==============================
 # ویو های مربوط به محصولات (Product)
@@ -31,13 +32,17 @@ def product_list(request):
     # ست کردن تصویر اصلی هر محصول
     for product in products:
         product.main_image = product.images.filter(is_main=True).first() or product.images.first()
-         
+
+    #ارسال سبد خرید به صفحه 
+
+    cart = Cart(request)
     context = {
         'products': products,
         'show_banner': True,
         'categories': categories,
         'baners': banners ,
-        'main_category' : categories
+        'main_category' : categories,
+        'cart':cart
     }
     return render(request, 'products/product_list.html', context)
 
@@ -52,7 +57,8 @@ def product_detail(request, slug):
         'variants': variants,
         'specifications': specifications,
         'images': images,
-        'videos': videos
+        'videos': videos,
+        
     }
     return render(request, 'products/product_detail.html', context)
 
