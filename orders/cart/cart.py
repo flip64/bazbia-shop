@@ -1,6 +1,6 @@
 from decimal import Decimal
 from django.conf import settings
-from your_app.models import Product  # یا اسم مدل محصولت هر چی هست
+from Products.models import Product  
 from django.shortcuts import get_object_or_404
 
 class Cart:
