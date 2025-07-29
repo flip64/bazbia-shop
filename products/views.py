@@ -40,7 +40,7 @@ def product_list(request):
         'products': products,
         'show_banner': True,
         'categories': categories,
-        'baners': banners ,
+        'banners': banners ,
         'main_category' : categories,
         'cart':cart
     }
