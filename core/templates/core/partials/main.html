@@ -1,43 +1,44 @@
-{% load static%}
+{% load static %}
 
-    <section class="py-5 overflow-hidden">
-      <div class="container-fluid">
-        <div class="row">
-          <div class="col-md-12">
+<section class="py-5 overflow-hidden">
+  <div class="container-fluid">
+    <div class="row">
+      <div class="col-md-12">
 
-            <div class="section-header d-flex flex-wrap justify-content-between mb-5">
-              <h2 class="section-title">دسته بندی</h2>
+        <div class="section-header d-flex flex-wrap justify-content-between mb-5">
+          <h2 class="section-title">دسته بندی</h2>
 
-              <div class="d-flex align-items-center">
-                <a href="#" class="btn-link text-decoration-none"> کل محصولات  →</a>
-                <div class="swiper-buttons">
-                  <button class="swiper-prev category-carousel-prev btn btn-yellow">❮</button>
-                  <button class="swiper-next category-carousel-next btn btn-yellow">❯</button>
-                </div>
-              </div>
+          <div class="d-flex align-items-center">
+            <a href="#" class="btn-link text-decoration-none"> کل محصولات  →</a>
+            <div class="swiper-buttons">
+              <button class="swiper-prev category-carousel-prev btn btn-yellow">❮</button>
+              <button class="swiper-next category-carousel-next btn btn-yellow">❯</button>
             </div>
-            
           </div>
         </div>
-        <div class="row">
-          <div class="col-md-12">
 
-            <div class="category-carousel swiper">
-              <div class="swiper-wrapper">
-              {% for category  in categories%}
-                <a href="index.html" class="nav-link category-item swiper-slide">
-                  {% if category.image.url %}
-                    <img src="{{category.image.url}}" alt="{{category.slug}}">
-                  {% else %}  
-                    <img src="{%static 'images/defult_cat.png'%}" alt="{{category.slug}}">
-                   {% endif %}
-                  <h3 class="category-title">{{ category.name}}</h3>
-                </a>
-              {% endfor %}
-              </div>
-            </div>
-
-          </div>
-        </div>
       </div>
-    </section>
+    </div>
+    <div class="row">
+      <div class="col-md-12">
+
+        <div class="category-carousel swiper">
+          <div class="swiper-wrapper">
+            {% for category in categories %}
+              <a href="index.html" class="nav-link category-item swiper-slide">
+                {% if category.image.url %}
+                  <img src="{{ category.image.url }}" alt="{{ category.slug }}">
+                {% else %}
+                  <img src="{% static 'images/defult_cat.png' %}" alt="{{ category.slug }}">
+                {% endif %}
+
+                <h3 class="category-title">{{ category.name }}</h3>
+              </a>
+            {% endfor %}
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</section>
