@@ -26,11 +26,12 @@
           <div class="swiper-wrapper">
             {% for category in categories %}
               <a href="index.html" class="nav-link category-item swiper-slide">
-                {% if category.image %}
-                  <img src="{{ category.image.url }}" alt="{{ category.slug }}" class="img-fluid rounded mx-auto d-block" style="max-height: 100px;">
-                {% else %}
-                  <img src="{% static 'images/defult_cat.png' %}" alt="{{ category.slug }}" class="img-fluid rounded mx-auto d-block" style="max-height: 100px;">
-                {% endif %}
+                <img 
+                  src="{% if category.image %}{{ category.image.url }}{% else %}{% static 'images/defult_cat.png' %}{% endif %}" 
+                  alt="{{ category.slug }}" 
+                  class="img-thumbnail mx-auto d-block" 
+                  style="max-width: 120px; height: auto;"
+                   />
 
                 <h3 class="category-title">{{ category.name }}</h3>
               </a>
