@@ -29,7 +29,7 @@
                   {% if category.image.url %}
                     <img src="{{category.image.url}}" alt="{{category.slug}}">
                   {% else %}  
-                    <img src="{{static 'images/defult_cat.png'}}" alt="{{category.slug}}">
+                    <img src="{%static 'images/defult_cat.png'%}" alt="{{category.slug}}">
 
                   <h3 class="category-title">{{ category.name}}</h3>
                 </a>
