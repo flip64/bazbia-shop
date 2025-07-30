@@ -29,7 +29,7 @@
                 {% if category.image %}
                   <img src="{{ category.image.url }}" alt="{{ category.slug }}" class="img-fluid rounded mx-auto d-block" style="max-height: 100px;">
                 {% else %}
-                  <img src="{% static 'images/defult_cat.png' %}" alt="{{ category.slug }}">
+                  <img src="{% static 'images/defult_cat.png' %}" alt="{{ category.slug }}" class="img-fluid rounded mx-auto d-block" style="max-height: 100px;">
                 {% endif %}
 
                 <h3 class="category-title">{{ category.name }}</h3>
