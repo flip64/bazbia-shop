@@ -27,7 +27,7 @@
             {% for category in categories %}
               <a href="index.html" class="nav-link category-item swiper-slide">
                 {% if category.image %}
-                  <img src="{{ category.image.url }}" alt="{{ category.slug }}">
+                  <img src="{{ category.image.url }}" alt="{{ category.slug }}" class="img-fluid rounded mx-auto d-block" style="max-height: 100px;">
                 {% else %}
                   <img src="{% static 'images/defult_cat.png' %}" alt="{{ category.slug }}">
                 {% endif %}
