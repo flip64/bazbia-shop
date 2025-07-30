@@ -30,7 +30,7 @@
                     <img src="{{category.image.url}}" alt="{{category.slug}}">
                   {% else %}  
                     <img src="{%static 'images/defult_cat.png'%}" alt="{{category.slug}}">
-
+                   {% endif %}
                   <h3 class="category-title">{{ category.name}}</h3>
                 </a>
               {% endfor %}
