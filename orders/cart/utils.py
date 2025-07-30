@@ -1,5 +1,5 @@
 from django.conf import settings
-from .models import Cart, CartItem
+from orders.models import Cart, CartItem
 from products.models import ProductVariant
 
 class CartManager:
