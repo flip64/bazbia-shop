@@ -153,3 +153,13 @@ def change_price_all(request):
 
     return JsonResponse(list_url , safe=False ) 
 
+def create_product(request):
+  list = []
+  
+  from scrap_abdisite.utils.create_product import import_products_from_json
+  user = request.user  # یا هر کاربر دلخواه
+  if user.is_authenticated:
+   import_products_from_json("products.json", user)
+
+
+  return JsonResponse(list , safe=False ) 
