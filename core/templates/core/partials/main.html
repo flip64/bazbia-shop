@@ -26,7 +26,7 @@
           <div class="swiper-wrapper">
             {% for category in categories %}
               <a href="index.html" class="nav-link category-item swiper-slide">
-                {% if category.image.url %}
+                {% if category.image %}
                   <img src="{{ category.image.url }}" alt="{{ category.slug }}">
                 {% else %}
                   <img src="{% static 'images/defult_cat.png' %}" alt="{{ category.slug }}">
