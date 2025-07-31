@@ -182,15 +182,23 @@ def create_product(request):
 def create_feauchers(request):
   
   if request.method == 'POST':
-   form = Create_productForm(request.POST, request.FILES)
+   form = Create_feauchersForm(request.POST, request.FILES)
    if form.is_valid():
      file = form.cleaned_data['file']
+     data = json.load(file)
+       
      user = request.user  # یا هر کاربر دلخواه
      if user.is_authenticated:
-      import_products_from_json(file, user) 
-     return render(request, 'upload_success.html')  # یا هر صفحه‌ی دلخواه
+     for item in data:
+        product_link = item.get('product_link')
+        specifications = item.get('specifications')
+        if (specifications)
+          print(create_feauchers(product_link))
+         
+       
+     return render(request, 'Create_feauchers_suseful.html')  # یا هر صفحه‌ی دلخواه
   else : 
-    form = Create_productForm()
+    form = Create_feauchersForm()
 
   return render(request, 'scrap_abdisite/create_product.html', {'form': form})
     
