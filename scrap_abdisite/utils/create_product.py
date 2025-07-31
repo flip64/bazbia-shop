@@ -33,7 +33,7 @@ def import_products_from_json(file, user):
         if not product:
          product = Product.objects.create(
           name=name,
-          slug=slugify(name),
+          slug= generate_unique_slug(name),
           base_price=price * Decimal("1.2"),  # قیمت با ۲۰٪ سود
           category=category,
           description=item.get('description', ''),
@@ -57,4 +57,11 @@ def import_products_from_json(file, user):
             defaults={'price': price}
         )
 
-
+def generate_unique_slug(name):
+    base_slug = slugify(name)
+    slug = base_slug
+    counter = 1
+    while Product.objects.filter(slug=slug).exists():
+        slug = f"{base_slug}-{counter}"
+        counter += 1
+    return slug
