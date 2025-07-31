@@ -26,16 +26,20 @@ def import_products_from_json(file, user):
             )
 
         # محصول را ایجاد یا بروزرسانی کن
-        product, created = Product.objects.get_or_create(
-            slug=slugify(name),
-            defaults={
-                'name': name,
-                'base_price': price * Decimal("1.2"),  # قیمت با ۲۰٪ سود
-                'category': category,
-                'description': item.get('description', ''),
-                'is_active': True,
-            }
-        )
+        # بررسی کن آیا محصولی با همین نام وجود دارد
+        product = Product.objects.filter(name=name).first()
+
+        # اگر وجود نداشت، محصول جدید بساز
+        if not product:
+         product = Product.objects.create(
+          name=name,
+          slug=slugify(name),
+          base_price=price * Decimal("1.2"),  # قیمت با ۲۰٪ سود
+          category=category,
+          description=item.get('description', ''),
+          is_active=True,
+      )
+    
 
         # تگ‌ها رو اضافه کن (در صورت نیاز)
         for tag_name in item.get('tags', []):
@@ -44,6 +48,7 @@ def import_products_from_json(file, user):
             product.tags.add(tag)
 
         # لینک WatchedURL برای کاربر بساز
+        
         WatchedURL.objects.get_or_create(
             user=user,
             product=product,
