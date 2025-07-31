@@ -192,8 +192,9 @@ def create_feauchers(request):
      for item in data:
         product_link = item.get('product_link')
         specifications = item.get('specifications')
-        if (specifications)
-          print(create_feauchers(product_link))
+        newSpecifications = extract_features(product_link)
+        item['specifications'] = list(set(newSpecifications,specifications)
+          
          
        
      return render(request, 'Create_feauchers_suseful.html')  # یا هر صفحه‌ی دلخواه
