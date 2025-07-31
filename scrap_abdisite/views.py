@@ -178,28 +178,37 @@ def create_product(request):
 
 
 
+
 @login_required
 def create_feauchers(request):
-  
-  if request.method == 'POST':
-   form = Create_feauchersForm(request.POST, request.FILES)
-   if form.is_valid():
-     file = form.cleaned_data['file']
-     data = json.load(file)
-       
-     user = request.user  # یا هر کاربر دلخواه
-     if user.is_authenticated:
-     for item in data:
-        product_link = item.get('product_link')
-        specifications = item.get('specifications')
-        newSpecifications = extract_features(product_link)
-        item['specifications'] = list(set(newSpecifications,specifications)
-          
-         
-       
-     return render(request, 'Create_feauchers_suseful.html')  # یا هر صفحه‌ی دلخواه
-  else : 
-    form = Create_feauchersForm()
+    if request.method == 'POST':
+        form = Create_feauchersForm(request.POST, request.FILES)
+        if form.is_valid():
+            file = form.cleaned_data['file']
+            data = json.load(file)
 
-  return render(request, 'scrap_abdisite/create_product.html', {'form': form})
-    
+            for item in data:
+                product_link = item.get('product_link')
+                old_spec = item.get('specifications', [])
+                if product_link:
+                    new_spec = extract_features(product_link)
+                    # ترکیب بدون تکرار و حفظ ترتیب
+                    merged = []
+                    seen = set()
+                    for spec in old_spec + new_spec:
+                        if spec not in seen:
+                            merged.append(spec)
+                            seen.add(spec)
+                    item['specifications'] = merged
+
+            # ارسال فایل به عنوان دانلود
+            response = HttpResponse(
+                json.dumps(data, ensure_ascii=False, indent=2),
+                content_type='application/json; charset=utf-8'
+            )
+            response['Content-Disposition'] = 'attachment; filename="with_features.json"'
+            return response
+    else:
+        form = Create_feauchersForm()
+
+    return render(request, 'scrap_abdisite/create_feauchers.html', {'form': form})
