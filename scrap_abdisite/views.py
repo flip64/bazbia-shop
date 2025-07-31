@@ -173,4 +173,4 @@ def create_product(request):
   else : 
     form = Create_productForm()
 
-  return render(request, 'scrap_abdisite:create_product_form.html', {'form': form})
+  return render(request, 'scrap_abdisite/create_product_form.html', {'form': form})
