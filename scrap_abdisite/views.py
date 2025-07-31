@@ -1,11 +1,16 @@
 from django.shortcuts import render, redirect
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
-from .models import WatchedURL, PriceHistory
-from scrap_abdisite.form import WatchedURLForm
-from django.contrib.auth.decorators import login_required
+from scrap_abdisite.models import WatchedURL, PriceHistory
+from scrap_abdisite.forms import WatchedURLForm ,Create_productForm
 from scrap_abdisite.utils.feach_price import fetch_product_details,send_price_alert
+from scrap_abdisite.utils.create_product import import_products_from_json
+
+
+from django.contrib.auth.decorators import login_required
 from django.utils import timezone
+
+from suppliers.models import Supplier
 import time
 import re
 import json
@@ -153,13 +158,19 @@ def change_price_all(request):
 
     return JsonResponse(list_url , safe=False ) 
 
+
+@login_required
 def create_product(request):
-  list = []
   
-  from scrap_abdisite.utils.create_product import import_products_from_json
-  user = request.user  # یا هر کاربر دلخواه
-  if user.is_authenticated:
-   import_products_from_json("products.json", user)
+  if request.method == 'POST':
+   form = Create_productForm(request.POST, request.FILES)
+   if form.is_valid():
+     file = form.cleaned_data['file']
+     user = request.user  # یا هر کاربر دلخواه
+     if user.is_authenticated:
+      import_products_from_json(file, user) 
+     return render(request, 'upload_success.html')  # یا هر صفحه‌ی دلخواه
+  else : 
+    form = Create_productForm()
 
-
-  return JsonResponse(list , safe=False ) 
+  return render(request, 'scrap_abdisite:create_product_form.html', {'form': form})

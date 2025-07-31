@@ -34,3 +34,7 @@ class WatchedURLForm(forms.ModelForm):
         if commit:
             instance.save()
         return instance
+
+
+class Create_productForm(forms.Form):
+    file = forms.FileField(label='آپلود فایل محصولات (JSON)', required=True)

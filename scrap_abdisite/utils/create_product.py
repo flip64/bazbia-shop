@@ -5,9 +5,8 @@ from products.models import Product, Category, Tag
 from scrap_abdisite.models import  WatchedURL
 from suppliers.models import  Supplier
 
-def import_products_from_json(json_path, user):
-    with open(json_path, 'r', encoding='utf-8') as f:
-        data = json.load(f)
+def import_products_from_json(file, user):
+    data = json.load(file)
 
     # تأمین‌کننده پخش عبدی را پیدا یا ایجاد کن
     supplier, _ = Supplier.objects.get_or_create(name="عمده فروش عبدی")
