@@ -40,5 +40,10 @@ class Create_productForm(forms.Form):
     file = forms.FileField(label='آپلود فایل محصولات (JSON)', required=True)
 
 
-class Create_feauchersForm(forms.Form):
-    file = forms.FileField(label='آپلود فایل محصولات (JSON)', 
+class Create_specificationsForm(forms.Form):
+    file = forms.FileField(label='آپلود فایل محصولات (JSON)')
+
+class Create_tagsForm(forms.Form):
+    file = forms.FileField(label='آپلود فایل محصولات (JSON)')
+
+

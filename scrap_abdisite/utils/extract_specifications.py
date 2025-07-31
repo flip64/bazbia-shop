@@ -1,13 +1,13 @@
 import requests
 from bs4 import BeautifulSoup
 
-def extract_features(url):
+def extract_specifications(url):
     headers = {"User-Agent": "Mozilla/5.0"}
     resp = requests.get(url, headers=headers)
     resp.raise_for_status()
 
     soup = BeautifulSoup(resp.text, "html.parser")
-    features = {}
+    feature_list = []
 
     # جستجو برای بخش "ویژگی های محصول"
     section_title = soup.find(text=lambda t: "ویژگی های محصول" in t)
@@ -17,6 +17,6 @@ def extract_features(url):
             for li in ul.find_all("li"):
                 if ":" in li.text:
                     key, val = li.text.split(":", 1)
-                    features[key.strip()] = val.strip()
+                    feature_list.append(f"{key.strip()}: {val.strip()}")
 
-    return features
+    return feature_list
