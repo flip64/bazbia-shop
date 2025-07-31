@@ -38,3 +38,7 @@ class WatchedURLForm(forms.ModelForm):
 
 class Create_productForm(forms.Form):
     file = forms.FileField(label='آپلود فایل محصولات (JSON)', required=True)
+
+
+class Create_feauchersForm(forms.Form):
+    file = forms.FileField(label='آپلود فایل محصولات (JSON)', 
