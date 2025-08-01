@@ -1,0 +1,138 @@
+{% load static %}
+
+<section class="py-5 overflow-hidden">
+  <div class="container-fluid">
+    <div class="row">
+      <div class="col-md-12">
+
+        <div class="section-header d-flex flex-wrap justify-content-between mb-5">
+          <h2 class="section-title">دسته بندی</h2>
+          <div class="d-flex align-items-center">
+            <a href="{% url 'products:root_product' %}" class="btn-link text-decoration-none"> کل محصولات →</a>
+            <div class="swiper-buttons">
+              <button class="swiper-prev category-carousel-prev btn btn-yellow">❮</button>
+              <button class="swiper-next category-carousel-next btn btn-yellow">❯</button>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-md-12">
+
+        <div class="category-carousel swiper">
+          <div class="swiper-wrapper">
+            {% for category in categories %}
+              <a href="{% url 'products:root_product' %}?category={{ category.slug }}" class="nav-link category-item swiper-slide">
+                <img 
+                  src="{% if category.image %}{{ category.image.url }}{% else %}{% static 'images/defult_cat.png' %}{% endif %}" 
+                  alt="{{ category.slug }}" 
+                  class="img-thumbnail mx-auto d-block" 
+                  style="max-width: 120px; height: auto;" />
+                <h3 class="category-title">{{ category.name }}</h3>
+              </a>
+            {% endfor %}
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="container mt-5">
+  <h2 class="mb-4">
+       {% if selected_category %}
+         محصولات دسته {{ selected_category.name }}
+       {% else %}
+        همه محصولات
+       {% endif %}
+  </h2>
+  
+  
+  <div class="row">
+    {% for product in products %}
+    <div class="col-md-4 mb-4">
+      <div class="card h-100">
+
+        <!-- تصویر اصلی -->
+        {% if product.main_image %}
+         <img src="{{ product.main_image.image.url }}" class="card-img-top" alt="{{ product.name }}" style="height: 200px; object-fit: cover;">
+        {% else %}
+         <img src="{% static 'images/no-image.jpg' %}" class="card-img-top" alt="بدون تصویر" style="height: 200px; object-fit: cover;">
+        {% endif %}
+        
+        <div class="card-body">
+          <h5 class="card-title">{{ product.name }}</h5>
+          
+          <!-- دسته‌بندی -->
+          {% if product.category %}
+          <span class="badge bg-primary mb-2">{{ product.category.name }}</span>
+          {% endif %}
+          
+          <!-- قیمت -->
+          <p class="card-text text-success fw-bold">
+            {{ product.base_price|floatformat:"0" }} تومان
+          </p>
+          
+          <!-- ویژگی‌ها -->
+          <ul class="list-unstyled">
+            {% for spec in product.specifications.all|slice:":3" %}
+              <li><small>{{ spec.name }}: {{ spec.value }}</small></li>
+            {% endfor %}
+          </ul>
+        </div>
+        
+        <div class="card-footer bg-transparent">
+          {% if product.slug %}
+          <a href="{% url 'products:product_detail' product.slug %}" class="btn btn-primary btn-sm">مشاهده جزئیات</a>
+          {% else %}
+          <button class="btn btn-secondary btn-sm" disabled>ناموجود</button>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+    {% empty %}
+    <div class="col-12">
+      <div class="alert alert-warning">محصولی یافت نشد</div>
+    </div>
+    {% endfor %}
+  </div>
+
+  <!-- صفحه‌بندی -->
+     {% if products.paginator.num_pages > 1 %}
+  <div class="pagination justify-content-center mt-4">
+    <nav aria-label="Page navigation">
+      <ul class="pagination">
+
+        {# دکمه قبلی #}
+        {% if products.has_previous %}
+          <li class="page-item">
+            <a class="page-link" href="?page={{ products.previous_page_number }}">قبلی</a>
+          </li>
+        {% endif %}
+
+        {# صفحات با خلاصه‌سازی #}
+        {% for i in products.paginator.page_range %}
+          {% if i == 1 or i == products.paginator.num_pages or i >= products.number|add:-1 and i <= products.number|add:1 %}
+            <li class="page-item {% if i == products.number %}active{% endif %}">
+              <a class="page-link" href="?page={{ i }}">{{ i }}</a>
+            </li>
+          {% elif i == 2 and products.number > 3 %}
+            <li class="page-item disabled"><span class="page-link">…</span></li>
+          {% elif i == products.paginator.num_pages|add:-1 and products.number < products.paginator.num_pages|add:-2 %}
+            <li class="page-item disabled"><span class="page-link">…</span></li>
+          {% endif %}
+        {% endfor %}
+
+        {# دکمه بعدی #}
+        {% if products.has_next %}
+          <li class="page-item">
+            <a class="page-link" href="?page={{ products.next_page_number }}">بعدی</a>
+          </li>
+        {% endif %}
+
+      </ul>
+    </nav>
+  </div>
+{% endif %}

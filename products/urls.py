@@ -9,7 +9,7 @@ urlpatterns = [
     path('categories/', views.category_list, name='category_list'),  # /products/categories/
     path('category/create/', views.category_create, name='category_create'),  # /products/category/create/
     path('category/<int:pk>/edit/', views.category_edit, name='category_edit'),  # /products/category/1/edit/
-
-
-    path('<slug:slug>/', views.product_detail, name='product_detail'),
+   
+    
+    path('product_detail/<slug:slug>/', views.product_detail, name='product_detail'),
 ]

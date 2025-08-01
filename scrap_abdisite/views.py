@@ -235,7 +235,7 @@ def create_tags(request):
               if count > 50 :
                   break
               
-              if not item.get('abdi_tagh', False): 
+              if not item.get('abdi_tags', False): 
                   product_link = item.get('product_link')
                   old_spec = item.get('tags', [])
                   if product_link:
@@ -249,7 +249,7 @@ def create_tags(request):
                             merged.append(spec)
                             seen.add(spec)
                     item['tags'] = merged
-                    item['abdi_tagh'] = True
+                    item['abdi_tags'] = True
                     count =count + 1
 
 

@@ -1,15 +1,22 @@
 from django.shortcuts import render, redirect
 from django.shortcuts import get_object_or_404
-from .models import Product, Category, Tag
-from .forms import CategoryForm
+from products.models import Product, Category, Tag
+from products.forms import CategoryForm
 from promotions.models import Banner
 from orders.cart.cart import Cart
+from django.core.paginator import Paginator
+
+
+
 
 # ==============================
 # ویو های مربوط به محصولات (Product)
 # ==============================
 
+
+
 def product_list(request):
+    selected_category = None  # مقداردهی اولیه
     products = Product.objects.all()
 
     # فیلتر با دسته یا تگ
@@ -17,34 +24,46 @@ def product_list(request):
     tag_slug = request.GET.get('tag')
 
     if category_slug:
+        selected_category = Category.objects.filter(slug=category_slug).first()
         products = products.filter(category__slug=category_slug)
+    
     if tag_slug:
         products = products.filter(tags__slug=tag_slug)
 
+
+
+    # صفحه‌بندی: هر صفحه 15 محصول
+    paginator = Paginator(products, 15)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+
+    # ست کردن تصویر اصلی هر محصول در صفحه جاری
+    for product in page_obj:
+        product.main_image = product.images.filter(is_main=True).first() or product.images.first()
+
+    # دسته‌بندی‌ها و بنرها
     categories = Category.objects.filter(parent=None)
-    for category in categories : 
-      child = Category.objects.filter(parent = category)
-      if (child):
-         category.child = child
+    for category in categories:
+        child = Category.objects.filter(parent=category)
+        if child:
+            category.child = child
 
     banners = Banner.objects.all()
 
-    # ست کردن تصویر اصلی هر محصول
-    for product in products:
-        product.main_image = product.images.filter(is_main=True).first() or product.images.first()
-
-    #ارسال سبد خرید به صفحه 
-
     cart = Cart(request)
+
     context = {
-        'products': products,
+        'products': page_obj,  # حالا صفحه شده
         'show_banner': True,
         'categories': categories,
-        'banners': banners ,
-        'main_category' : categories,
-        'cart':cart
+        'banners': banners,
+        'main_category': categories,
+        'cart': cart,
+        'selected_category': selected_category,  
+
     }
     return render(request, 'products/product_list.html', context)
+
 
 def product_detail(request, slug):
     product = get_object_or_404(Product, slug=slug, is_active=True)
@@ -61,6 +80,10 @@ def product_detail(request, slug):
         
     }
     return render(request, 'products/product_detail.html', context)
+
+
+
+
 
 # ==============================
 # ویو های مربوط به دسته‌بندی‌ها (Category)
