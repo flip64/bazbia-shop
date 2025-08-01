@@ -8,6 +8,53 @@ from django.utils import timezone
 from django.core.mail import send_mail
 
 
+
+logger = logging.getLogger(__name__)
+
+
+
+def fetch_product_details(url):
+    print(f"Fetching URL: {url}")
+    headers = {
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
+                      "(KHTML, like Gecko) Chrome/115.0 Safari/537.36"
+    }
+    try:
+        response = requests.get(url, headers=headers, timeout=10)
+        response.raise_for_status()
+    except requests.RequestException as e:
+        print(f"خطا در دریافت صفحه: {e}")
+        return None, None
+
+    soup = BeautifulSoup(response.text, "html.parser")
+
+    # استخراج نام محصول
+    name_tag = soup.find("h1", class_="product_title")
+    product_name = name_tag.text.strip() if name_tag else None
+
+
+
+    # جستجوی چندگانه برای کلاس‌های ممکن قیمت
+    if "ناموجود" in soup.text or "تمام شد" in soup.text:
+       product_price = "0"
+    else:   
+      price_tag = soup.find("span", class_="woocommerce-Price-amount amount")
+      if not price_tag:
+        price_tag = soup.find("span", class_="woocommerce-Price-amount")
+      product_price = price_tag.text.strip() if price_tag else None
+ 
+
+    if not product_name and not product_price:
+        print("نام و قیمت محصول یافت نشد.")
+    elif not product_name:
+        print("نام محصول یافت نشد.")
+    elif not product_price:
+        print("قیمت محصول یافت نشد.")
+    
+
+    return product_name, product_price
+
+
 def send_price_alert(name , new_price, old_price):
     """
     ارسال هشدار تغییر قیمت
@@ -80,50 +127,6 @@ def send_email_view(message):
     return ("ایمیل با موفقیت ارسال شد!")
 
 
-def fetch_product_details(url):
-    print(f"Fetching URL: {url}")
-    headers = {
-        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
-                      "(KHTML, like Gecko) Chrome/115.0 Safari/537.36"
-    }
-    try:
-        response = requests.get(url, headers=headers, timeout=10)
-        response.raise_for_status()
-    except requests.RequestException as e:
-        print(f"خطا در دریافت صفحه: {e}")
-        return None, None
-
-    soup = BeautifulSoup(response.text, "html.parser")
-
-    # استخراج نام محصول
-    name_tag = soup.find("h1", class_="product_title")
-    product_name = name_tag.text.strip() if name_tag else None
-
-
-
-    # جستجوی چندگانه برای کلاس‌های ممکن قیمت
-    if "ناموجود" in soup.text or "تمام شد" in soup.text:
-       product_price = "0"
-    else:   
-      price_tag = soup.find("span", class_="woocommerce-Price-amount amount")
-      if not price_tag:
-        price_tag = soup.find("span", class_="woocommerce-Price-amount")
-      product_price = price_tag.text.strip() if price_tag else None
- 
-
-    if not product_name and not product_price:
-        print("نام و قیمت محصول یافت نشد.")
-    elif not product_name:
-        print("نام محصول یافت نشد.")
-    elif not product_price:
-        print("قیمت محصول یافت نشد.")
-    
-
-    return product_name, product_price
-
-
-logger = logging.getLogger(__name__)
-
 def check_price_changes():
     """
     بررسی تغییرات قیمت برای تمام URLهای کاربر (یا همه کاربران)
@@ -173,3 +176,45 @@ def check_price_changes():
             stats['errors'] += 1
 
     return stats
+
+
+
+def extract_specifications(url):
+    headers = {"User-Agent": "Mozilla/5.0"}
+    resp = requests.get(url, headers=headers)
+    resp.raise_for_status()
+
+    soup = BeautifulSoup(resp.text, "html.parser")
+    feature_list = []
+
+    # جستجو برای بخش "ویژگی های محصول"
+    section_title = soup.find(text=lambda t: "ویژگی های محصول" in t)
+    if section_title:
+        ul = section_title.find_next("ul")
+        if ul:
+            for li in ul.find_all("li"):
+                if ":" in li.text:
+                    key, val = li.text.split(":", 1)
+                    feature_list.append(f"{key.strip()}: {val.strip()}")
+
+    return feature_list
+
+
+def extract_tags(url):
+    headers = {"User-Agent": "Mozilla/5.0"}
+    resp = requests.get(url, headers=headers)
+    resp.raise_for_status()
+
+    soup = BeautifulSoup(resp.text, "html.parser")
+    tags = []
+
+    # تگ‌ها معمولا در بخش "برچسب: ..." هستند و دارای rel="tag" هستند
+    tag_links = soup.find_all("a", rel="tag")
+    for tag in tag_links:
+        text = tag.get_text(strip=True)
+        if text:
+            tags.append(text)
+
+    return tags
+
+

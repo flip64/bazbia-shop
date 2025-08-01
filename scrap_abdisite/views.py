@@ -1,12 +1,12 @@
 from django.shortcuts import render, redirect
 from django.http import JsonResponse,HttpResponse
 from django.views.decorators.csrf import csrf_exempt
+
 from scrap_abdisite.models import WatchedURL, PriceHistory
 from scrap_abdisite.forms import WatchedURLForm ,Create_productForm,Create_specificationsForm,Create_tagsForm
-from scrap_abdisite.utils.feach_price import fetch_product_details,send_price_alert
+from scrap_abdisite.utils.abdi_fetcher import fetch_product_details,send_price_alert
+from scrap_abdisite.utils.abdi_fetcher import extract_specifications,extract_tags
 from scrap_abdisite.utils.create_product import import_products_from_json
-from scrap_abdisite.utils.extract_specifications import extract_specifications
-from scrap_abdisite.utils.extract_tags import extract_tags
 
 
 from django.contrib.auth.decorators import login_required
@@ -188,22 +188,26 @@ def create_specifications(request):
         if form.is_valid():
             file = form.cleaned_data['file']
             data = json.load(file)
-
+            count = 1   
             for item in data:
-                product_link = item.get('product_link')
-                old_spec = item.get('specifications', [])
-                if product_link:
-                    new_spec = extract_specifications(product_link)
-                    print(new_spec)
-                    # ترکیب بدون تکرار و حفظ ترتیب
-                    merged = []
-                    seen = set()
-                    for spec in old_spec + new_spec:
+                if count > 50:
+                    break
+                if not item.get('abdi_specifications', False): 
+                  product_link = item.get('product_link')
+                  old_spec = item.get('specifications', [])
+                  if product_link:
+                     new_spec = extract_specifications(product_link)
+                     print(new_spec)
+                     # ترکیب بدون تکرار و حفظ ترتیب
+                     merged = []
+                     seen = set()
+                     for spec in old_spec + new_spec:
                         if spec not in seen:
                             merged.append(spec)
                             seen.add(spec)
-                    item['specifications'] = merged
-
+                     item['specifications'] = merged
+                     item['abdi_specifications']  = True
+                     count += 1
             # ارسال فایل به عنوان دانلود
             response = HttpResponse(
                 json.dumps(data, ensure_ascii=False, indent=2),
@@ -217,6 +221,8 @@ def create_specifications(request):
     return render(request, 'scrap_abdisite/create_specifications.html', {'form': form})
 
 
+
+
 @login_required
 def create_tags(request):
     if request.method == 'POST':
@@ -224,11 +230,15 @@ def create_tags(request):
         if form.is_valid():
             file = form.cleaned_data['file']
             data = json.load(file)
-
+            count = 1 
             for item in data:
-                product_link = item.get('product_link')
-                old_spec = item.get('tags', [])
-                if product_link:
+              if count > 50 :
+                  break
+              
+              if not item.get('abdi_tagh', False): 
+                  product_link = item.get('product_link')
+                  old_spec = item.get('tags', [])
+                  if product_link:
                     new_tags = extract_tags(product_link)
                     print(new_tags)
                     # ترکیب بدون تکرار و حفظ ترتیب
@@ -239,6 +249,9 @@ def create_tags(request):
                             merged.append(spec)
                             seen.add(spec)
                     item['tags'] = merged
+                    item['abdi_tagh'] = True
+                    count =count + 1
+
 
             # ارسال فایل به عنوان دانلود
             response = HttpResponse(
@@ -248,7 +261,7 @@ def create_tags(request):
             response['Content-Disposition'] = 'attachment; filename="with_features.json"'
             return response
     else:
-        form = Create_specificationsForm()
+        form = Create_tagsForm()
 
     return render(request, 'scrap_abdisite/create_tags.html', {'form': form})
 
