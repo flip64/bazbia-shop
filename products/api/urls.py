@@ -1,7 +1,7 @@
 from django.urls import path
 from . import category_api
 from django.urls import path
-from .views import ProductListAPIView
+from products.api.views import ProductListAPIView
 
 
     
