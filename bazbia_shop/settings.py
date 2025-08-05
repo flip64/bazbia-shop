@@ -62,7 +62,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
 
 
-    
+    'corsheaders',    
     'django.contrib.humanize',
     
     'corsheaders',
@@ -88,13 +88,17 @@ MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',  
     
     
+
+    'corsheaders.middleware.CorsMiddleware',  # این رو اول همه middleware ها بذار
+    'django.middleware.common.CommonMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
-    'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'django.middleware.common.CommonMiddleware',
+
 ]
 
 ROOT_URLCONF = 'bazbia_shop.urls'
