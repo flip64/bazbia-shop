@@ -1,15 +1,18 @@
 from django.urls import path
 from . import category_api
 from django.urls import path
-from products.api.views import ProductListAPIView
+from products.api.views import ProductListAPIView , ProductDetailAPIView , CategoryListAPIView
 
 
     
 urlpatterns = [
     path('categories/', category_api.list_categories, name='list_categories_api'),
     path('import-categories/', category_api.import_categories, name='import-categories'),
-    path('products_list/', ProductListAPIView.as_view(), name='product-list'),
+    path('products/', ProductListAPIView.as_view(), name='product-list'),
+    path('products/<slug:slug>/', ProductDetailAPIView.as_view(), name='product-detail'),
+    path('products/categories/', CategoryListAPIView.as_view(), name='category-list'),
 ]
+
 
 
 

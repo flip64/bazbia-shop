@@ -65,7 +65,6 @@ INSTALLED_APPS = [
     'corsheaders',    
     'django.contrib.humanize',
     
-    'corsheaders',
     
     # اپ های پروژه
     'core',
