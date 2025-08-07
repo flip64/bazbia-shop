@@ -211,3 +211,27 @@ class ProductVideo(models.Model):
 
     def __str__(self):
         return f"Video of {self.product.name}"
+
+
+# ==============================
+# مدل  محصولات ویژه (SpecialProduct)
+# ==============================
+
+
+class SpecialProduct(models.Model):
+    product = models.OneToOneField(Product, on_delete=models.CASCADE, related_name='special')
+    title = models.CharField(max_length=255, blank=True, null=True)  # عنوان خاص برای اسلایدر مثلاً
+    start_date = models.DateTimeField(blank=True, null=True)  # از چه تاریخی ویژه شده؟
+    end_date = models.DateTimeField(blank=True, null=True)  # تا چه تاریخی ویژه هست؟
+    is_active = models.BooleanField(default=True)  # فعال یا غیرفعال بودن نمایش
+
+    def __str__(self):
+        return f"ویژه: {self.product.name}"
+
+
+
+
+
+
+
+
