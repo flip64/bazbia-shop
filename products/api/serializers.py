@@ -40,3 +40,9 @@ class CategorySerializer(serializers.ModelSerializer):
 
 
 
+class SpecialProductSerializer(serializers.ModelSerializer):
+    product = ProductSerializer()  # nested serializer
+
+    class Meta:
+        model = SpecialProduct
+        fields = ['id', 'product', 'title', 'start_date', 'end_date', 'is_active']
