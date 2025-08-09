@@ -1,11 +1,11 @@
 from rest_framework import generics
 from products.models import Product
-from products.api.serializers import ProductSerializer
+from products.api.serializers import ProductSerializer,SpecialProductSerializer
 from products.api.pagination import CustomCategoryPagination
-from products.models import Category , Product
+from products.models import Category , Product , SpecialProduct
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
-from .serializers import CategorySerializer , ProductImageSerializer
+from products.api.serializers import CategorySerializer , ProductImageSerializer
 from rest_framework import generics
 
 
@@ -41,6 +41,14 @@ class CategoryListAPIView(generics.ListAPIView):
 
 
 
+class SpecialProductListAPIView(generics.ListAPIView):
+    serializer_class = SpecialProductSerializer
+    def get_queryset(self):
+        print(SpecialProduct.objects.filter(is_active = True).values())
+        return SpecialProduct.objects.filter(
+            is_active=True,)
+
+
 
 
 
@@ -53,3 +61,4 @@ def list_categories(request):
         "current_page": 1,
         "data": serializer.data
     })
+
