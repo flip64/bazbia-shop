@@ -17,7 +17,7 @@ class ProductListAPIView(generics.ListAPIView):
     serializer_class = ProductSerializer
 
     def get_queryset(self):
-        queryset = Product.objects.filter(is_active=True)
+        queryset = Product.objects.filter(is_active=True)[:30]
         category_slug = self.request.query_params.get('category')
         if category_slug:
             queryset = queryset.filter(category__slug=category_slug)

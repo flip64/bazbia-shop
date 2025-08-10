@@ -39,7 +39,6 @@ class ProductSerializer(serializers.ModelSerializer):
             return first_image.image.url
         return '/media/default-thumb.jpg'  # مسیر تصویر پیش‌فرض (اختیاری)
 
-
 class CategorySerializer(serializers.ModelSerializer):
     subcategories = serializers.SerializerMethodField()
 
@@ -53,10 +52,36 @@ class CategorySerializer(serializers.ModelSerializer):
     parent_id = serializers.IntegerField(source='parent.id', read_only=True)
 
 
-
 class SpecialProductSerializer(serializers.ModelSerializer):
-    product = ProductSerializer()  # nested serializer
+    name = serializers.CharField(source='product.name')
+    slug = serializers.SlugField(source='product.slug')
+    description = serializers.CharField(source='product.description')
+    base_price = serializers.DecimalField(source='product.base_price', max_digits=10, decimal_places=0)
+    category = serializers.StringRelatedField(source='product.category')
+    images = serializers.SerializerMethodField()
+    variants = serializers.SerializerMethodField()
+    created_at = serializers.DateTimeField(source='product.created_at')
+    thumb = serializers.SerializerMethodField()
 
     class Meta:
         model = SpecialProduct
-        fields = ['id', 'product', 'title', 'start_date', 'end_date', 'is_active']
+        fields = [
+            'id', 'name', 'slug', 'description', 'base_price',
+            'category', 'images', 'variants', 'thumb', 'created_at',
+            'start_date', 'end_date', 'is_active'
+        ]
+
+    def get_thumb(self, obj):
+        main_image = obj.product.images.filter(is_main=True).first()
+        if main_image:
+            return main_image.image.url
+        first_image = obj.product.images.first()
+        if first_image:
+            return first_image.image.url
+        return '/media/default-thumb.jpg'
+
+    def get_images(self, obj):
+        return [img.image.url for img in obj.product.images.all()]
+
+    def get_variants(self, obj):
+        return ProductVariantSerializer(obj.product.variants.all(), many=True).data
