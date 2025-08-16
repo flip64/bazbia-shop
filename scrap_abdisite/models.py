@@ -33,7 +33,7 @@ class WatchedURL(models.Model):
     )
 
     # لینک صفحه محصول در سایت تأمین‌کننده
-    url = models.URLField()
+    url = models.URLField(max_length=500)
 
     # اخرین قیمت مشاهده شده در لینک تأمین‌کننده 
     price = models.DecimalField(

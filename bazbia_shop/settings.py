@@ -128,12 +128,14 @@ TEMPLATES = [
 WSGI_APPLICATION = 'bazbia_shop.wsgi.application'
 
 
+
+
 # Database
 # https://docs.djangoproject.com/en/5.0/ref/settings/#databases
 
-# برای زمان که از POSTGRES استفاده می کنیم 
-if os.environ.get("USE_POSTGRES", "").lower() == "true":
-    # تنظیمات PostgreSQL
+db_engine = os.environ.get("DB_ENGINE", "").lower()
+
+if db_engine == "postgres":
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.postgresql',
@@ -144,14 +146,34 @@ if os.environ.get("USE_POSTGRES", "").lower() == "true":
             'PORT': os.environ.get("POSTGRES_PORT", "5432"),
         }
     }
-else:
-    # تنظیمات محلی SQLite
+
+elif db_engine == "mysql":
     DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'default': {
+            'ENGINE': 'django.db.backends.mysql',
+            'NAME': os.environ.get("MYSQL_DB", ""),
+            'USER': os.environ.get("MYSQL_USER", ""),
+            'PASSWORD': os.environ.get("MYSQL_PASSWORD", ""),
+            'HOST': os.environ.get("MYSQL_HOST", "localhost"),
+            'PORT': os.environ.get("MYSQL_PORT", "3306"),
+            'OPTIONS': {
+                'charset': 'utf8mb4',
+            },
+        }
     }
-}
+
+else:
+    # پیش‌فرض SQLite
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': BASE_DIR / 'db.sqlite3',
+        }
+    }
+
+
+
+
 
 
 CSRF_TRUSTED_ORIGINS = [

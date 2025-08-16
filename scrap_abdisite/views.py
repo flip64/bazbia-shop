@@ -190,7 +190,7 @@ def create_specifications(request):
             data = json.load(file)
             count = 1   
             for item in data:
-                if count > 50:
+                if count > 500:
                     break
                 if not item.get('abdi_specifications', False): 
                   product_link = item.get('product_link')
