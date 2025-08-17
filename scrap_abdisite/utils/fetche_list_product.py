@@ -4,6 +4,7 @@ import json
 import time
 import os
 from datetime import datetime
+from slugify import slugify  # pip install python-slugify
 
 products = []
 total_count = 0  # شمارنده کل محصولات
@@ -44,7 +45,6 @@ for cat in list_cat:
         print(f"✅ {len(items)} محصول در صفحه {page} یافت شد.")
 
         no_price_in_row = 0  # شمارنده محصولات بدون قیمت پشت سر هم
-        page_has_valid_product = False
 
         for item in items:
             name_tag = item.find("h2", class_="product-title")
@@ -55,6 +55,7 @@ for cat in list_cat:
 
             name = name_link_tag.text.strip()
             link = name_link_tag["href"] if name_link_tag.has_attr("href") else "لینک یافت نشد"
+            slug = slugify(name)
 
             price_tag = item.find("span", class_="woocommerce-Price-amount")
             if not price_tag:
@@ -62,7 +63,7 @@ for cat in list_cat:
                 print(f"⛔ محصول بدون قیمت: '{name}'  ❗ (رد شد) ← ({no_price_in_row} پشت سر هم)")
                 if no_price_in_row >= 3:
                     print("⚠️ سه محصول متوالی بدون قیمت → پایان این دسته.")
-                    break  # کل حلقه while را می‌شکند
+                    break
                 continue
             else:
                 no_price_in_row = 0  # ریست شمارنده اگر قیمت پیدا شد
@@ -83,19 +84,28 @@ for cat in list_cat:
             description = desc_tag.text.strip() if desc_tag else ""
 
             products.append({
+                "id": None,
                 "name": name,
-                "price": price,
-                "product_link": link,
-                "category": cat,
-                "image_links": [main_image] if main_image else [],
+                "slug": slug,
                 "description": description,
+                "checked_description": False,
+                "price": price,
+                "stock": None,
+                "category": cat,
+                "tags": [],
+                "checked_tags": False,
                 "specifications": [],
+                "checked_specs": False,
                 "features": [],
-                "tags": []
+                "images": [main_image] if main_image else [],
+                "checked_images": False,
+                "videos": [],
+                "product_link": link,
+                "variants": [],
+                "has_variants": False
             })
 
             total_count += 1
-            page_has_valid_product = True
             print(f"➕ '{name}' اضافه شد. مجموع محصولات: {total_count}")
 
         if no_price_in_row >= 3:
@@ -104,12 +114,9 @@ for cat in list_cat:
         page += 1
         time.sleep(1)
 
-
-
 # ساخت پوشه برای ذخیره فایل‌ها
 output_dir = "abdi_products_versions"
 os.makedirs(output_dir, exist_ok=True)
-
 
 # فرمت نام فایل با تاریخ و ساعت
 timestamp = datetime.now().strftime("%Y%m%d_%H%M")
