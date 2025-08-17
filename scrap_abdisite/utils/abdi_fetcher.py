@@ -218,3 +218,39 @@ def extract_tags(url):
     return tags
 
 
+
+
+
+def extract_product_images(url):
+    """
+    استخراج لینک تمام تصاویر محصول از URL مشخص
+    Args:
+        url (str): لینک صفحه محصول
+    Returns:
+        list: لیست لینک‌های تصاویر
+    """
+    headers = {"User-Agent": "Mozilla/5.0"}
+    try:
+        resp = requests.get(url, headers=headers, timeout=10)
+        resp.raise_for_status()
+    except requests.RequestException as e:
+        print(f"خطا در دریافت صفحه: {e}")
+        return []
+
+    soup = BeautifulSoup(resp.text, "html.parser")
+    image_links = []
+
+    # جستجوی تصاویر در گالری محصول
+    gallery_divs = soup.find_all("div", class_="woocommerce-product-gallery__image")
+    for div in gallery_divs:
+        img_tag = div.find("img")
+        if img_tag and img_tag.get("src"):
+            image_links.append(img_tag["src"])
+
+    # اگر چیزی پیدا نشد، می‌توانیم تصویر اصلی را هم بررسی کنیم
+    if not image_links:
+        main_img = soup.find("img", class_="wp-post-image")
+        if main_img and main_img.get("src"):
+            image_links.append(main_img["src"])
+
+    return image_links
