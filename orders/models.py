@@ -3,7 +3,7 @@ from django.db import models
 from django.db import models
 from django.conf import settings
 
-# ==============================
+# ================ضثف۱۲ثضفغاض۲  ۴۳۲ث==============
 # مدل سفارش (Order)
 # ==============================
 class Order(models.Model):
