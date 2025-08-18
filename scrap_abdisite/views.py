@@ -267,10 +267,6 @@ def create_tags(request):
 
 
 
-def fetch_details_products(request)
-return
-
-
 
 
 
