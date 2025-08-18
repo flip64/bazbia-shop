@@ -265,3 +265,7 @@ def create_tags(request):
 
     return render(request, 'scrap_abdisite/create_tags.html', {'form': form})
 
+
+
+def fetch_details_products(request)
+return
