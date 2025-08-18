@@ -14,6 +14,7 @@ urlpatterns = [
     path('create_specifications/', views.create_specifications , name= 'create_specifications'),
     path('create_tags/', views.create_tags , name= 'create_tags'),
     path('change_price_all/',views.change_price_all , name= 'change_price_all'),
+    path('fetch_details_products/',views.fetch_details_products , name= 'fetch_details_products'),
     
     
 
