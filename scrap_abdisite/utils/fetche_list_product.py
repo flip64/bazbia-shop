@@ -114,13 +114,16 @@ for cat in list_cat:
         page += 1
         time.sleep(1)
 
+
+
 # ساخت پوشه برای ذخیره فایل‌ها
-output_dir = "abdi_products_versions"
+output_dir = os.path.join(os.path.dirname(__file__), "../data/raw")
 os.makedirs(output_dir, exist_ok=True)
+
 
 # فرمت نام فایل با تاریخ و ساعت
 timestamp = datetime.now().strftime("%Y%m%d_%H%M")
-filename = f"bazbia_products_{timestamp}_{total_count}.json"
+filename = f"raw_{timestamp}_{total_count}.json"
 
 # مسیر کامل فایل
 file_path = os.path.join(output_dir, filename)
