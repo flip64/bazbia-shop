@@ -5,6 +5,9 @@ import json
 from datetime import datetime
 from scrap_abdisite.utils.abdi_fetcher import extract_specifications
 
+is_running = False
+
+
 INPUT_FOLDER = "abdi_products_versions"
 OUTPUT_FOLDER = "abdi_products_versions_edited"
 os.makedirs(OUTPUT_FOLDER, exist_ok=True)
