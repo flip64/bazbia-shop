@@ -9,50 +9,42 @@ from django.core.mail import send_mail
 
 
 
+
+
 logger = logging.getLogger(__name__)
 
+# کش ساده برای نگهداری soup ها
+_soup_cache = {}
+
+def get_soup(url):
+    """
+    دریافت یا بازگرداندن BeautifulSoup مربوط به یک URL.
+    - اگر قبلاً برای همین URL ساخته شده باشد، همان را برمی‌گرداند.
+    - در غیر اینصورت درخواست جدید می‌زند و کش می‌کند.
+    """
+    if url in _soup_cache:
+        soup = _soup_cache[url]
+        if getattr(soup, "source_url", None) == url:
+            return soup
+
+    headers = {"User-Agent": "Mozilla/5.0"}
+    resp = requests.get(url, headers=headers, timeout=10)
+    resp.raise_for_status()
+
+    soup = BeautifulSoup(resp.text, "html.parser")
+    soup.source_url = url
+    _soup_cache[url] = soup
+    return soup
 
 
-def fetch_product_details(url):
-    print(f"Fetching URL: {url}")
-    headers = {
-        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
-                      "(KHTML, like Gecko) Chrome/115.0 Safari/537.36"
-    }
-    try:
-        response = requests.get(url, headers=headers, timeout=10)
-        response.raise_for_status()
-    except requests.RequestException as e:
-        print(f"خطا در دریافت صفحه: {e}")
-        return None, None
-
-    soup = BeautifulSoup(response.text, "html.parser")
-
-    # استخراج نام محصول
-    name_tag = soup.find("h1", class_="product_title")
-    product_name = name_tag.text.strip() if name_tag else None
 
 
+def clean_price(price_str):
+    if not price_str:
+        return None
+    digits = re.sub(r"[^\d]", "", price_str)  # حذف غیرعددی‌ها
+    return int(digits) if digits else None
 
-    # جستجوی چندگانه برای کلاس‌های ممکن قیمت
-    if "ناموجود" in soup.text or "تمام شد" in soup.text:
-       product_price = "0"
-    else:   
-      price_tag = soup.find("span", class_="woocommerce-Price-amount amount")
-      if not price_tag:
-        price_tag = soup.find("span", class_="woocommerce-Price-amount")
-      product_price = price_tag.text.strip() if price_tag else None
- 
-
-    if not product_name and not product_price:
-        print("نام و قیمت محصول یافت نشد.")
-    elif not product_name:
-        print("نام محصول یافت نشد.")
-    elif not product_price:
-        print("قیمت محصول یافت نشد.")
-    
-
-    return product_name, product_price
 
 
 def send_price_alert(name , new_price, old_price):
@@ -115,6 +107,8 @@ def send_price_alert(name , new_price, old_price):
 
     return send_status
 
+
+
 def send_email_view(message):
     send_mail(
         ' تغییر قیمت  ',
@@ -127,64 +121,10 @@ def send_email_view(message):
     return ("ایمیل با موفقیت ارسال شد!")
 
 
-def check_price_changes():
-    """
-    بررسی تغییرات قیمت برای تمام URLهای کاربر (یا همه کاربران)
-    Args:
-        user: اگر مشخص شود فقط URLهای این کاربر بررسی می‌شود
-    Returns:
-        dict: آمار عملیات
-    """
-    # فیلتر URLها بر اساس کاربر
-    queryset = WatchedURL.objects.all()
-    stats = {
-        'total_checked': 0,
-        'price_changed': 0,
-        'new_products': 0,
-        'errors': 0
-    }
-
-    for watched_url in queryset:
-        try:
-            with transaction.atomic():
-                # دریافت اطلاعات محصول از سایت هدف
-                product_name ,current_price = fetch_product_details(watched_url.url)
-
-                stats['total_checked'] += 1
-
-                
-                # اگر قیمت تغییر کرده باشد
-                if watched_url.last_price != current_price:
-                    # ثبت تاریخچه جدید
-                    PriceHistory.objects.create(
-                        watched_url=watched_url,
-                        price=current_price
-                    )
-                    
-                    # آپدیت آخرین قیمت و زمان بررسی
-                    watched_url.last_price = current_price
-                    watched_url.last_checked = timezone.now()
-                    watched_url.save()
-                    
-                    stats['price_changed'] += 1
-                    
-                    # ارسال هشدار
-                    send_price_alert(watched_url, current_price)
-                    
-        except Exception as e:
-            logger.error(f"Error processing {watched_url.url}: {str(e)}")
-            stats['errors'] += 1
-
-    return stats
-
-
 
 def extract_specifications(url):
-    headers = {"User-Agent": "Mozilla/5.0"}
-    resp = requests.get(url, headers=headers)
-    resp.raise_for_status()
-
-    soup = BeautifulSoup(resp.text, "html.parser")
+    
+    soup = get_soup(url)
     feature_list = []
 
     # جستجو برای بخش "ویژگی های محصول"
@@ -201,11 +141,8 @@ def extract_specifications(url):
 
 
 def extract_tags(url):
-    headers = {"User-Agent": "Mozilla/5.0"}
-    resp = requests.get(url, headers=headers)
-    resp.raise_for_status()
-
-    soup = BeautifulSoup(resp.text, "html.parser")
+    
+    soup = get_soup(url)
     tags = []
 
     # تگ‌ها معمولا در بخش "برچسب: ..." هستند و دارای rel="tag" هستند
@@ -218,26 +155,9 @@ def extract_tags(url):
     return tags
 
 
-
-
-
 def extract_product_images(url):
-    """
-    استخراج لینک تمام تصاویر محصول از URL مشخص
-    Args:
-        url (str): لینک صفحه محصول
-    Returns:
-        list: لیست لینک‌های تصاویر
-    """
-    headers = {"User-Agent": "Mozilla/5.0"}
-    try:
-        resp = requests.get(url, headers=headers, timeout=10)
-        resp.raise_for_status()
-    except requests.RequestException as e:
-        print(f"خطا در دریافت صفحه: {e}")
-        return []
 
-    soup = BeautifulSoup(resp.text, "html.parser")
+    soup = get_soup(url)
     image_links = []
 
     # جستجوی تصاویر در گالری محصول
@@ -254,3 +174,85 @@ def extract_product_images(url):
             image_links.append(main_img["src"])
 
     return image_links
+
+
+def check_priceـproduct(url):
+    """
+    بررسی تغییر قیمت برای یک محصول خاص با استفاده از URL
+    Args:
+        url (str): آدرس محصول (WatchedURL.url)
+    Returns:
+        dict: نتیجه بررسی (new_product, price_changed, no_change یا error)
+    """
+    try:
+        watched_url = WatchedURL.objects.get(url=url)
+
+        product_name, current_price = fetch_product_details(watched_url.url)
+
+        result = {
+            "url": watched_url.url,
+            "name": product_name,
+            "old_price": watched_url.last_price,
+            "new_price": current_price,
+            "status": "no_change"
+        }
+
+        # اگر محصول تازه بود (last_price تهی است)
+        if watched_url.last_price is None:
+            watched_url.last_price = current_price
+            watched_url.last_checked = timezone.now()
+            watched_url.save()
+            result["status"] = "new_product"
+            return result
+
+        # اگر قیمت تغییر کرده باشد
+        if watched_url.last_price != current_price:
+            PriceHistory.objects.create(
+                watched_url=watched_url,
+                price=current_price
+            )
+            watched_url.last_price = current_price
+            watched_url.last_checked = timezone.now()
+            watched_url.save()
+
+            result["status"] = "price_changed"
+            send_price_alert(watched_url, current_price)
+
+        return result
+
+    except WatchedURL.DoesNotExist:
+        return {"error": f"WatchedURL with url={url} not found"}
+    except Exception as e:
+        logger.exception(f"Error checking price for url={url}")
+        return {"error": str(e)}
+
+
+
+
+def fetch_product_details(url):
+  
+    soup = get_soup(url)
+
+    # استخراج نام محصول
+    name_tag = soup.find("h1", class_="product_title")
+    product_name = name_tag.text.strip() if name_tag else None
+
+    # جستجوی چندگانه برای کلاس‌های ممکن قیمت
+    if "ناموجود" in soup.text or "تمام شد" in soup.text:
+        product_price = 0
+    else:
+        price_tag = soup.find("span", class_="woocommerce-Price-amount amount")
+        if not price_tag:
+            price_tag = soup.find("span", class_="woocommerce-Price-amount")
+
+        product_price = clean_price(price_tag.text) if price_tag else None
+
+    if not product_name and not product_price:
+        print("نام و قیمت محصول یافت نشد.")
+    elif not product_name:
+        print("نام محصول یافت نشد.")
+    elif not product_price:
+        print("قیمت محصول یافت نشد.")
+
+    return product_name, product_price
+
