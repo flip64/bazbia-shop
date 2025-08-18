@@ -1,7 +1,7 @@
 import os
 import json
 from datetime import datetime
-from scrap_abdisite.utlis.abdi_fetcher import extract_specifications
+from scrap_abdisite.utils.abdi_fetcher import extract_specifications
 # مسیرها
 INPUT_FOLDER = "abdi_products_versions"
 OUTPUT_FOLDER = "abdi_products_versions_edited"
