@@ -269,3 +269,17 @@ def create_tags(request):
 
 def fetch_details_products(request)
 return
+
+
+
+
+
+def fetch_details_products(request):
+    """
+    مرحله اول: فقط اسکلت اولیه
+    """
+    data = {
+        "status": "ok",
+        "message": "fetch_details_products is working!"
+    }
+    return JsonResponse(data)
