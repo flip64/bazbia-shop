@@ -267,15 +267,25 @@ def create_tags(request):
 
 
 
-
-
+from threading import Thread
+from scrap_abdisite.utils.scrap_abdi_site import process_latest_file, is_running
 
 def fetch_details_products(request):
-    """
-    مرحله اول: فقط اسکلت اولیه
-    """
-    data = {
-        "status": "ok",
-        "message": "fetch_details_products is working!"
-    }
-    return JsonResponse(data)
+    global is_running
+    if is_running:
+        return JsonResponse({"status": "running", "message": "اسکریپت در حال اجراست"})
+
+    def run():
+        global is_running
+        is_running = True
+        try:
+            process_latest_file()
+        finally:
+            is_running = False
+
+    Thread(target=run).start()
+    return JsonResponse({"status": "started", "message": "اسکریپت در پس‌زمینه شروع شد"})
+
+
+
+
