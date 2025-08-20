@@ -6,10 +6,14 @@ from datetime import datetime
 from scrap_abdisite.utils.abdi_fetcher import extract_specifications, extract_tags, extract_product_images
 from time import sleep
 
+
+
 is_running = False
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))  # utils/
-RAW_FOLDER = os.path.join(BASE_DIR, "../data/raw")
-EDITED_FOLDER = os.path.join(BASE_DIR, "../data/edited")
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))  # میشه scrap_abdisite/
+RAW_FOLDER = os.path.join(BASE_DIR, "data/raw")
+EDITED_FOLDER = os.path.join(BASE_DIR, "data/edited")
+
+
 
 
 def process_latest_file():
