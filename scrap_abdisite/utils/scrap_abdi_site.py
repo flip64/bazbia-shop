@@ -12,13 +12,13 @@ RAW_FOLDER = os.path.join(BASE_DIR, "../data/raw")
 EDITED_FOLDER = os.path.join(BASE_DIR, "../data/edited")
 
 def process_latest_file():
-result = merge_new_products()
-products = result['merged_products']
+ result = merge_new_products()
+ products = result['merged_products']
 
-processed = []  
-batch_size = 20  # هر چند محصول یکبار ذخیره کن  
+ processed = []  
+ batch_size = 20  # هر چند محصول یکبار ذخیره کن  
 
-for idx, product in enumerate(products, start=1):  
+ for idx, product in enumerate(products, start=1):  
    if "product_link" in product and product["product_link"]:  
       
      if not product.get("checked_specs", False):  
@@ -55,7 +55,7 @@ for idx, product in enumerate(products, start=1):
 
     # هر batch_size محصول یکبار ذخیره کن  
    if idx % batch_size == 0:  
-        save_partial(processed, suffix=f"part_{idx}")  
+        save_partial(processed, suffix=f"temp")  
         print(f"💾 ذخیره موقت بعد از {idx} محصول")  
 
    sleep(1)  
@@ -68,35 +68,35 @@ return {
 }
 
 def save_partial(products, suffix):
-timestamp = datetime.now().strftime("%Y%m%d_%H%M")
-filename = f"edited_{timestamp}_{suffix}.json"
-output_path = os.path.join(EDITED_FOLDER, filename)
-with open(output_path, "w", encoding="utf-8") as f:
-json.dump(products, f, ensure_ascii=False, indent=2)
+ timestamp = datetime.now().strftime("%Y%m%d_%H%M")
+ filename = f"edited_{timestamp}_{suffix}.json"
+ output_path = os.path.join(EDITED_FOLDER, filename)
+ with open(output_path, "w", encoding="utf-8") as f:
+ json.dump(products, f, ensure_ascii=False, indent=2)
 
 def save_final(products):
-timestamp = datetime.now().strftime("%Y%m%d_%H%M")
-total_count = len(products)
-filename = f"edited_{timestamp}_{total_count}.json"
-output_path = os.path.join(EDITED_FOLDER, filename)
-with open(output_path, "w", encoding="utf-8") as f:
-json.dump(products, f, ensure_ascii=False, indent=2)
+ timestamp = datetime.now().strftime("%Y%m%d_%H%M")
+ total_count = len(products)
+ filename = f"edited_{timestamp}_{total_count}.json"
+ output_path = os.path.join(EDITED_FOLDER, filename)
+ with open(output_path, "w", encoding="utf-8") as f:
+ json.dump(products, f, ensure_ascii=False, indent=2)
 
 def merge_new_products():
-# پیدا کردن آخرین فایل raw
-raw_files = [f for f in os.listdir(RAW_FOLDER) if f.startswith("raw_") and f.endswith(".json")]
-if not raw_files:
-raise FileNotFoundError("هیچ فایل خامی پیدا نشد.")
+ # پیدا کردن آخرین فایل raw
+ raw_files = [f for f in os.listdir(RAW_FOLDER) if f.startswith("raw_") and f.endswith(".json")]
+ if not raw_files:
+ raise FileNotFoundError("هیچ فایل خامی پیدا نشد.")
 
-raw_files.sort(reverse=True)  
-latest_raw_file = raw_files[0]  
-raw_path = os.path.join(RAW_FOLDER, latest_raw_file)  
+ raw_files.sort(reverse=True)  
+ latest_raw_file = raw_files[0]  
+ raw_path = os.path.join(RAW_FOLDER, latest_raw_file)  
 
-# پیدا کردن فایل ویرایش شده روز قبل  
-edited_files = [f for f in os.listdir(EDITED_FOLDER) if f.endswith(".json")]  
-if not edited_files:  
+ # پیدا کردن فایل ویرایش شده روز قبل  
+ edited_files = [f for f in os.listdir(EDITED_FOLDER) if f.endswith(".json")]  
+ if not edited_files:  
     previous_edited = None  
-else:  
+ else:  
     # مرتب سازی بر اساس تاریخ داخل نام فایل  
     def extract_datetime(f):  
         parts = f.split("_")  
@@ -112,28 +112,28 @@ else:
     edited_files.sort(key=extract_datetime, reverse=True)  
     previous_edited = edited_files[0]  
 
-# بارگذاری فایل‌ها  
-with open(raw_path, "r", encoding="utf-8") as f:  
+ # بارگذاری فایل‌ها  
+ with open(raw_path, "r", encoding="utf-8") as f:  
     raw_products = json.load(f)  
 
-if previous_edited:  
+ if previous_edited:  
     prev_path = os.path.join(EDITED_FOLDER, previous_edited)  
     with open(prev_path, "r", encoding="utf-8") as f:  
         prev_products = json.load(f)  
-else:  
+ else:  
     prev_products = []  
 
-# ساخت یک set از لینک ها برای تشخیص محصولات جدید  
-prev_slugs = {p["product_link"] for p in prev_products}  
-new_products = [p for p in raw_products if p["product_link"] not in prev_slugs]  
+ # ساخت یک set از لینک ها برای تشخیص محصولات جدید  
+ prev_slugs = {p["product_link"] for p in prev_products}  
+ new_products = [p for p in raw_products if p["product_link"] not in prev_slugs]  
 
-# اضافه کردن محصولات جدید به فایل روز قبل  
-merged_products = prev_products + new_products  
+ # اضافه کردن محصولات جدید به فایل روز قبل  
+ merged_products = prev_products + new_products  
 
-return {  
+ return {  
     "raw_file": latest_raw_file,  
     "previous_edited_file": previous_edited,  
     "new_products_count": len(new_products),  
     "merged_products": merged_products  
-}
+   }
 
