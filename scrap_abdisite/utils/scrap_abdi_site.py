@@ -42,15 +42,23 @@ def process_latest_file():
                 except Exception as e:
                     print(f"❌ خطا در استخراج تگ محصول {product.get('name')}: {e}")
 
-            if not product.get("checked_images", False):
-                try:
-                    new_images = extract_product_images(product["product_link"])
-                    # اضافه کردن تصاویر جدید بدون تکراری شدن
-                    product["images"].extend([img for img in new_images if img not in product["images"]])
-                    product["checked_images"] = True
-                except Exception as e:
-                    print(f"❌ خطا در استخراج تصاویر محصول {product.get('name')}: {e}")
 
+           if not product.get("checked_images", False):
+            try:
+              new_images = extract_product_images(product["product_link"])
+
+              # اگه images وجود نداشت، بسازش
+              product.setdefault("images", [])
+
+              # اضافه کردن تصاویر جدید بدون تکراری شدن
+              product["images"].extend([img for img in new_images if img not in product["images"]])
+
+              product["checked_images"] = True
+
+            except Exception as e:
+             print(f"❌ خطا در استخراج تصاویر محصول {product.get('name')}: {e}")
+
+        
         processed.append(product)
 
         # هر batch_size محصول یکبار ذخیره کن
