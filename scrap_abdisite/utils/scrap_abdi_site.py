@@ -65,6 +65,7 @@ def process_latest_file():
 
 
 def save_partial(products, suffix):
+    clear_temp_files()
     timestamp = datetime.now().strftime("%Y%m%d_%H%M")
     filename = f"edited_{timestamp}_{suffix}.json"
     output_path = os.path.join(EDITED_FOLDER, filename)
@@ -135,3 +136,13 @@ def merge_new_products():
         "new_products_count": len(new_products),
         "merged_products": merged_products
     }
+
+
+def clear_temp_files():
+    """حذف تمام فایل‌های موقت (_temp) از پوشه EDITED_FOLDER"""
+    for f in os.listdir(EDITED_FOLDER):
+        if f.startswith("edited_") and "_temp" in f:
+            try:
+                os.remove(os.path.join(EDITED_FOLDER, f))
+            except Exception as e:
+                print(f"❌ خطا در حذف فایل موقت {f}: {e}")
