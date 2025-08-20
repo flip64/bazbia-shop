@@ -44,29 +44,29 @@ def process_latest_file():
 
 
             if not product.get("checked_images", False):
-             try:
-               new_images = extract_product_images(product["product_link"])
+              try:
+                new_images = extract_product_images(product["product_link"])
 
-               # اگه images وجود نداشت، بسازش
-               product.setdefault("images", [])
+                # اگه images وجود نداشت، بسازش
+                product.setdefault("images", [])
 
-               # اضافه کردن تصاویر جدید بدون تکراری شدن
-               product["images"].extend([img for img in new_images if img not in product["images"]])
+                # اضافه کردن تصاویر جدید بدون تکراری شدن
+                product["images"].extend([img for img in new_images if img not in product["images"]])
 
-               product["checked_images"] = True
+                product["checked_images"] = True
 
-             except Exception as e:
-             print(f"❌ خطا در استخراج تصاویر محصول {product.get('name')}: {e}")
+              except Exception as e:
+               print(f"❌ خطا در استخراج تصاویر محصول {product.get('name')}: {e}")
 
         
-        processed.append(product)
+         processed.append(product)
 
-        # هر batch_size محصول یکبار ذخیره کن
-        if idx % batch_size == 0:
+         # هر batch_size محصول یکبار ذخیره کن
+         if idx % batch_size == 0:
             save_partial(processed, suffix=f"temp")
             print(f"💾 ذخیره موقت بعد از {idx} محصول")
 
-        sleep(1)
+       ه  sleep(1)
 
     # در پایان: ذخیره فایل کامل
     save_final(processed)
