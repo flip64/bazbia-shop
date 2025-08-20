@@ -34,6 +34,7 @@ def get_soup(url):
     soup = BeautifulSoup(resp.text, "html.parser")
     soup.source_url = url
     _soup_cache[url] = soup
+    print('send request')
     return soup
 
 
