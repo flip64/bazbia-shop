@@ -51,11 +51,10 @@ def process_latest_file():
 
             # هر batch_size محصول یکبار ذخیره کن
             if idx % batch_size == 0:
-                save_partial(processed, suffix=f"temp")
+                save_partial(processed, suffix="temp")
                 print(f"💾 ذخیره موقت بعد از {idx} محصول")
 
             sleep(1)
-
 
     # در پایان: ذخیره فایل کامل
     save_final(processed)
