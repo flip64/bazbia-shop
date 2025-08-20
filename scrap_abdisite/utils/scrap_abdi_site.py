@@ -6,14 +6,10 @@ from datetime import datetime
 from scrap_abdisite.utils.abdi_fetcher import extract_specifications, extract_tags, extract_product_images
 from time import sleep
 
-
-
 is_running = False
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))  # میشه scrap_abdisite/
 RAW_FOLDER = os.path.join(BASE_DIR, "data/raw")
 EDITED_FOLDER = os.path.join(BASE_DIR, "data/edited")
-
-
 
 
 def process_latest_file():
@@ -42,31 +38,23 @@ def process_latest_file():
                 except Exception as e:
                     print(f"❌ خطا در استخراج تگ محصول {product.get('name')}: {e}")
 
-
             if not product.get("checked_images", False):
-              try:
-                new_images = extract_product_images(product["product_link"])
+                try:
+                    new_images = extract_product_images(product["product_link"])
+                    product.setdefault("images", [])
+                    product["images"].extend([img for img in new_images if img not in product["images"]])
+                    product["checked_images"] = True
+                except Exception as e:
+                    print(f"❌ خطا در استخراج تصاویر محصول {product.get('name')}: {e}")
 
-                # اگه images وجود نداشت، بسازش
-                product.setdefault("images", [])
+            processed.append(product)
 
-                # اضافه کردن تصاویر جدید بدون تکراری شدن
-                product["images"].extend([img for img in new_images if img not in product["images"]])
+            # هر batch_size محصول یکبار ذخیره کن
+            if idx % batch_size == 0:
+                save_partial(processed, suffix=f"temp")
+                print(f"💾 ذخیره موقت بعد از {idx} محصول")
 
-                product["checked_images"] = True
-
-              except Exception as e:
-               print(f"❌ خطا در استخراج تصاویر محصول {product.get('name')}: {e}")
-
-        
-         processed.append(product)
-
-         # هر batch_size محصول یکبار ذخیره کن
-         if idx % batch_size == 0:
-            save_partial(processed, suffix=f"temp")
-            print(f"💾 ذخیره موقت بعد از {idx} محصول")
-
-       ه  sleep(1)
+            sleep(1)
 
     # در پایان: ذخیره فایل کامل
     save_final(processed)
