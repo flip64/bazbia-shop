@@ -1256,6 +1256,226 @@
   },
   {
     "id": null,
+    "name": "قفل کابینت کودک 10 عددی",
+    "slug": "qfl-khbynt-khwdkh-10-ddy",
+    "description": "",
+    "checked_description": false,
+    "price": 115000,
+    "stock": null,
+    "category": "game-and-fun",
+    "tags": [
+      "بازی و سرگرمی"
+    ],
+    "checked_tags": true,
+    "specifications": [
+      "جنس: پلاستیک",
+      "تعداد: 10 عددی",
+      "سایر توضیحات: افزایش میزان امنیت کودکان امکان نصب سریع و آسان خارج کردن دسترسی کودکان از لوازم خطرساز قابل استفاده برای انواع درب کمد ، کابینت ، کشو ، یخچال و …"
+    ],
+    "checked_specs": true,
+    "features": [],
+    "images": [
+      "https://pakhshabdi.com/wp-content/uploads/2024/03/قفل-کابینت-کودک-10-عددی-1-300x300.png",
+      "https://pakhshabdi.com/wp-content/uploads/2024/03/قفل-کابینت-کودک-10-عددی-1.png",
+      "https://pakhshabdi.com/wp-content/uploads/2024/03/قفل-کابینت-کودک-10-عددی-2.png",
+      "https://pakhshabdi.com/wp-content/uploads/2024/03/قفل-کابینت-کودک-10-عددی-3.png",
+      "https://pakhshabdi.com/wp-content/uploads/2024/03/قفل-کابینت-کودک-10-عددی-4.png"
+    ],
+    "checked_images": true,
+    "videos": [],
+    "product_link": "https://pakhshabdi.com/product/%d9%82%d9%81%d9%84-%da%a9%d8%a7%d8%a8%db%8c%d9%86%d8%aa-%da%a9%d9%88%d8%af%da%a9-10-%d8%b9%d8%af%d8%af%db%8c/",
+    "variants": [],
+    "has_variants": false
+  },
+  {
+    "id": null,
+    "name": "نگهدارنده چسبی سردوش حمام نقره ای",
+    "slug": "nghdrndh-chsby-srdwsh-hmm-nqrh-y",
+    "description": "",
+    "checked_description": false,
+    "price": 45500,
+    "stock": null,
+    "category": "home-goods",
+    "tags": [
+      "ملزومات حمام"
+    ],
+    "checked_tags": true,
+    "specifications": [
+      "جنس: فلز",
+      "مدل: چسبی",
+      "توضیحات: دارای دو عدد قلاب برای آویزان کردن لیف و …"
+    ],
+    "checked_specs": true,
+    "features": [],
+    "images": [
+      "https://pakhshabdi.com/wp-content/uploads/2025/08/خرید-نگهدارنده-چسبی-سردوش-حمام-نقره-ای-1-300x300.png",
+      "https://pakhshabdi.com/wp-content/uploads/2025/08/خرید-نگهدارنده-چسبی-سردوش-حمام-نقره-ای-1-600x600.png"
+    ],
+    "checked_images": true,
+    "videos": [],
+    "product_link": "https://pakhshabdi.com/product/%d9%86%da%af%d9%87%d8%af%d8%a7%d8%b1%d9%86%d8%af%d9%87-%da%86%d8%b3%d8%a8%db%8c-%d8%b3%d8%b1%d8%af%d9%88%d8%b4-%d8%ad%d9%85%d8%a7%d9%85-%d9%86%d9%82%d8%b1%d9%87-%d8%a7%db%8c/",
+    "variants": [],
+    "has_variants": false
+  },
+  {
+    "id": null,
+    "name": "نگهدارنده چسبی سردوش حمام مشکی",
+    "slug": "nghdrndh-chsby-srdwsh-hmm-mshkhy",
+    "description": "",
+    "checked_description": false,
+    "price": 45500,
+    "stock": null,
+    "category": "home-goods",
+    "tags": [
+      "ملزومات حمام"
+    ],
+    "checked_tags": true,
+    "specifications": [
+      "جنس: پلاستیک",
+      "مدل: چسبی",
+      "مناسب برای: سردوش حمام"
+    ],
+    "checked_specs": true,
+    "features": [],
+    "images": [
+      "https://pakhshabdi.com/wp-content/uploads/2025/08/خرید-نگهدارنده-چسبی-سردوش-حمام-مشکی-300x300.jpg?v=1755696030",
+      "https://pakhshabdi.com/wp-content/uploads/2025/08/خرید-نگهدارنده-چسبی-سردوش-حمام-مشکی-600x600.jpg?v=1755696030"
+    ],
+    "checked_images": true,
+    "videos": [],
+    "product_link": "https://pakhshabdi.com/product/%d9%86%da%af%d9%87%d8%af%d8%a7%d8%b1%d9%86%d8%af%d9%87-%da%86%d8%b3%d8%a8%db%8c-%d8%b3%d8%b1%d8%af%d9%88%d8%b4-%d8%ad%d9%85%d8%a7%d9%85-%d9%85%d8%b4%da%a9%db%8c/",
+    "variants": [],
+    "has_variants": false
+  },
+  {
+    "id": null,
+    "name": "سرشیر تصفیه آب 3 فیلتر",
+    "slug": "srshyr-tsfyh-b-3-fyltr",
+    "description": "",
+    "checked_description": false,
+    "price": 69000,
+    "stock": null,
+    "category": "home-goods",
+    "tags": [
+      "ابزارآلات ساختمانی"
+    ],
+    "checked_tags": true,
+    "specifications": [
+      "جنس: ABS",
+      "فیلتر: 3عددی",
+      "مناسب برای: انواع شیرهای سینک و روشویی دارای پلاتور پیچی جداشونده"
+    ],
+    "checked_specs": true,
+    "features": [],
+    "images": [
+      "https://pakhshabdi.com/wp-content/uploads/2025/08/خرید-سرشیر-فیلتر-دار-300x300.jpg?v=1755687182",
+      "https://pakhshabdi.com/wp-content/uploads/2025/08/خرید-سرشیر-فیلتر-دار-600x600.jpg?v=1755687182",
+      "https://pakhshabdi.com/wp-content/uploads/2025/08/محصول-سرشیر-فیلتر-دار-600x600.jpg?v=1755687186"
+    ],
+    "checked_images": true,
+    "videos": [],
+    "product_link": "https://pakhshabdi.com/product/%d8%b3%d8%b1%d8%b4%db%8c%d8%b1-%d9%81%db%8c%d9%84%d8%aa%d8%b1-%d8%af%d8%a7%d8%b1/",
+    "variants": [],
+    "has_variants": false
+  },
+  {
+    "id": null,
+    "name": "دماسنج میله ای غذا",
+    "slug": "dmsnj-mylh-y-gdh",
+    "description": "",
+    "checked_description": false,
+    "price": 115000,
+    "stock": null,
+    "category": "home-goods",
+    "tags": [
+      "ابزار آشپزخانه"
+    ],
+    "checked_tags": true,
+    "specifications": [
+      "اندازه گیری دما: 50 C\n300 C",
+      "حالت صرفه جویی در مصرف برق: 10 دقیقه",
+      "جنس بدنه: پلاستیک ABS + پراب استیل"
+    ],
+    "checked_specs": true,
+    "features": [],
+    "images": [
+      "https://pakhshabdi.com/wp-content/uploads/2025/08/خرید-دماسنج-میله-ای-غذا-300x300.jpg?v=1755681305",
+      "https://pakhshabdi.com/wp-content/uploads/2025/08/خرید-دماسنج-میله-ای-غذا-600x600.jpg?v=1755681305",
+      "https://pakhshabdi.com/wp-content/uploads/2025/08/کالا-دماسنج-میله-ای-غذا-600x600.jpg?v=1755681300",
+      "https://pakhshabdi.com/wp-content/uploads/2025/08/محصول-دماسنج-میله-ای-غذا-600x600.jpg?v=1755681310"
+    ],
+    "checked_images": true,
+    "videos": [],
+    "product_link": "https://pakhshabdi.com/product/%d8%af%d9%85%d8%a7%d8%b3%d9%86%d8%ac-%d9%85%db%8c%d9%84%d9%87-%d8%a7%db%8c-%d8%ba%d8%b0%d8%a7/",
+    "variants": [],
+    "has_variants": false
+  },
+  {
+    "id": null,
+    "name": "شب خواب گل سنسوردار",
+    "slug": "shb-khwb-gl-snswrdr",
+    "description": "",
+    "checked_description": false,
+    "price": 55000,
+    "stock": null,
+    "category": "home-goods",
+    "tags": [
+      "اتاق خواب"
+    ],
+    "checked_tags": true,
+    "specifications": [
+      "جنس: پلاستیک",
+      "مدل: سنسوردار",
+      "طرح: فانتزی گلدان گل"
+    ],
+    "checked_specs": true,
+    "features": [],
+    "images": [
+      "https://pakhshabdi.com/wp-content/uploads/2025/08/خرید-شب-خواب-گل-سنسوردار-300x300.jpg?v=1755679432",
+      "https://pakhshabdi.com/wp-content/uploads/2025/08/خرید-شب-خواب-گل-سنسوردار-600x600.jpg?v=1755679432",
+      "https://pakhshabdi.com/wp-content/uploads/2025/08/کالا-شب-خواب-گل-سنسوردار-600x600.jpg?v=1755679427",
+      "https://pakhshabdi.com/wp-content/uploads/2025/08/محصول-شب-خواب-گل-سنسوردار-600x600.jpg?v=1755679438"
+    ],
+    "checked_images": true,
+    "videos": [],
+    "product_link": "https://pakhshabdi.com/product/%d8%b4%d8%a8-%d8%ae%d9%88%d8%a7%d8%a8-%da%af%d9%84-%d8%b3%d9%86%d8%b3%d9%88%d8%b1%d8%af%d8%a7%d8%b1/",
+    "variants": [],
+    "has_variants": false
+  },
+  {
+    "id": null,
+    "name": "پنکه رومیزی مدل مه پاش",
+    "slug": "pnkhh-rwmyzy-mdl-mh-psh",
+    "description": "",
+    "checked_description": false,
+    "price": 585000,
+    "stock": null,
+    "category": "home-goods",
+    "tags": [
+      "سرمایش و گرمایش"
+    ],
+    "checked_tags": true,
+    "specifications": [
+      "جنس: پلاستیک",
+      "ابعاد: 8*19*25.5 سانتی متر",
+      "اقلام همراه: کابل USB Type C اتصال به برق"
+    ],
+    "checked_specs": true,
+    "features": [],
+    "images": [
+      "https://pakhshabdi.com/wp-content/uploads/2025/07/پنکه-رومیزی-مدل-مه-پاش-300x300.jpg?v=1751883802",
+      "https://pakhshabdi.com/wp-content/uploads/2025/07/پنکه-رومیزی-مدل-مه-پاش-600x600.jpg?v=1751883802",
+      "https://pakhshabdi.com/wp-content/uploads/2025/07/خرید-پنکه-رومیزی-مدل-مه-پاش-600x600.jpg?v=1751883818",
+      "https://pakhshabdi.com/wp-content/uploads/2025/07/قیمت-پنکه-رومیزی-مدل-مه-پاش-600x600.jpg?v=1751883826"
+    ],
+    "checked_images": true,
+    "videos": [],
+    "product_link": "https://pakhshabdi.com/product/%d9%be%d9%86%da%a9%d9%87-%d8%b1%d9%88%d9%85%db%8c%d8%b2%db%8c-%d9%85%d8%af%d9%84-%d9%85%d9%87-%d9%be%d8%a7%d8%b4/",
+    "variants": [],
+    "has_variants": false
+  },
+  {
+    "id": null,
     "name": "سطل 4 گوش بافت",
     "slug": "stl-4-gwsh-bft",
     "description": "",
@@ -1526,6 +1746,36 @@
     "checked_images": true,
     "videos": [],
     "product_link": "https://pakhshabdi.com/product/%d9%86%d8%b8%d9%85-%d8%af%d9%87%d9%86%d8%af%d9%87-%da%a9%d9%81%d8%b4-%d9%85%d8%a7%d9%87%d8%a7%d9%86/",
+    "variants": [],
+    "has_variants": false
+  },
+  {
+    "id": null,
+    "name": "نگهدارنده تابلو قاب عکس تکی",
+    "slug": "nghdrndh-tblw-qb-khs-tkhy",
+    "description": "",
+    "checked_description": false,
+    "price": 8500,
+    "stock": null,
+    "category": "home-goods",
+    "tags": [
+      "لوکس و تزئینی"
+    ],
+    "checked_tags": true,
+    "specifications": [
+      "ابعاد: 6*6",
+      "سایر توضیحات: ضدآب دارای پیچ نگهدارنده ابزار و استند منعطف با چسبی بسیار قوی"
+    ],
+    "checked_specs": true,
+    "features": [],
+    "images": [
+      "https://pakhshabdi.com/wp-content/uploads/2025/05/قیمت-نگهدارنده-تابلو-قاب-عکس-تکی-300x300.jpg?v=1747552377",
+      "https://pakhshabdi.com/wp-content/uploads/2025/05/قیمت-نگهدارنده-تابلو-قاب-عکس-تکی-600x600.jpg?v=1747552377",
+      "https://pakhshabdi.com/wp-content/uploads/2025/05/نگهدارنده-تابلو-قاب-عکس-تکی-600x600.jpg?v=1747552372"
+    ],
+    "checked_images": true,
+    "videos": [],
+    "product_link": "https://pakhshabdi.com/product/%d9%86%da%af%d9%87%d8%af%d8%a7%d8%b1%d9%86%d8%af%d9%87-%d8%aa%d8%a7%d8%a8%d9%84%d9%88-%d9%82%d8%a7%d8%a8-%d8%b9%da%a9%d8%b3-%d8%aa%da%a9%db%8c/",
     "variants": [],
     "has_variants": false
   },
@@ -2082,36 +2332,6 @@
   },
   {
     "id": null,
-    "name": "خردکن دو عددی سوکانی مدل sk 06008",
-    "slug": "khrdkhn-dw-ddy-swkhny-mdl-sk-06008",
-    "description": "",
-    "checked_description": false,
-    "price": 1650000,
-    "stock": null,
-    "category": "home-goods",
-    "tags": [
-      "خردکن و غذاساز برقی"
-    ],
-    "checked_tags": true,
-    "specifications": [
-      "توان: 800 وات",
-      "تعداد سرعت: 2",
-      "حجم: 3 لیتر و 0.5 لیتر"
-    ],
-    "checked_specs": true,
-    "features": [],
-    "images": [
-      "https://pakhshabdi.com/wp-content/uploads/2025/05/خرد-کن-2عددی-سوکانی-مدل-SK-06008-300x300.jpg?v=1746534498",
-      "https://pakhshabdi.com/wp-content/uploads/2025/05/خرد-کن-2عددی-سوکانی-مدل-SK-06008-600x600.jpg?v=1746534498"
-    ],
-    "checked_images": true,
-    "videos": [],
-    "product_link": "https://pakhshabdi.com/product/%d8%ae%d8%b1%d8%af%da%a9%d9%86-%d8%af%d9%88-%d8%b9%d8%af%d8%af%db%8c-%d8%b3%d9%88%da%a9%d8%a7%d9%86%db%8c-%d9%85%d8%af%d9%84-sk-06008/",
-    "variants": [],
-    "has_variants": false
-  },
-  {
-    "id": null,
     "name": "همزن برقی سوکانی مدل SK 133",
     "slug": "hmzn-brqy-swkhny-mdl-sk-133",
     "description": "",
@@ -2198,6 +2418,38 @@
     "checked_images": true,
     "videos": [],
     "product_link": "https://pakhshabdi.com/product/%d9%82%db%8c%da%86%db%8c-%d9%82%d9%86%d8%af/",
+    "variants": [],
+    "has_variants": false
+  },
+  {
+    "id": null,
+    "name": "شلنگ جادویی ۷ متری",
+    "slug": "shlng-jdwyy-7-mtry",
+    "description": "",
+    "checked_description": false,
+    "price": 210000,
+    "stock": null,
+    "category": "home-goods",
+    "tags": [
+      "ابزارآلات ساختمانی"
+    ],
+    "checked_tags": true,
+    "specifications": [
+      "مناسب برای: شستشوی حیاط، پنجره، خودرو، آبیاری باغچه و …",
+      "توضیحات: طول 3 متری و قابل افزایش تا طول 7 متر"
+    ],
+    "checked_specs": true,
+    "features": [],
+    "images": [
+      "https://pakhshabdi.com/wp-content/uploads/2025/05/شلنگ-جادویی-۷-متری-300x300.jpg?v=1746086345",
+      "https://pakhshabdi.com/wp-content/uploads/2025/05/شلنگ-جادویی-۷-متری-600x600.jpg?v=1746086345",
+      "https://pakhshabdi.com/wp-content/uploads/2025/05/شلنگ-جادویی-۷-متر-600x600.jpg?v=1746086362",
+      "https://pakhshabdi.com/wp-content/uploads/2025/05/قیمت-شلنگ-جادویی-۷-متری-600x600.jpg?v=1746086350",
+      "https://pakhshabdi.com/wp-content/uploads/2025/05/خرید-شلنگ-جادویی-۷-متری-600x600.jpg?v=1746086357"
+    ],
+    "checked_images": true,
+    "videos": [],
+    "product_link": "https://pakhshabdi.com/product/%d8%b4%d9%84%d9%86%da%af-%d8%ac%d8%a7%d8%af%d9%88%db%8c%db%8c-%db%b7-%d9%85%d8%aa%d8%b1%db%8c/",
     "variants": [],
     "has_variants": false
   },
@@ -3541,7 +3793,7 @@
     "slug": "dstkhsh-skhjy",
     "description": "",
     "checked_description": false,
-    "price": 61000,
+    "price": 50000,
     "stock": null,
     "category": "home-goods",
     "tags": [
@@ -3663,38 +3915,6 @@
     "checked_images": true,
     "videos": [],
     "product_link": "https://pakhshabdi.com/product/%d8%ac%d8%a7-%da%a9%d8%b1%d9%87-%d8%a7%db%8c-%da%a9%d9%81-%da%86%d9%88%d8%a8%db%8c-216159/",
-    "variants": [],
-    "has_variants": false
-  },
-  {
-    "id": null,
-    "name": "هسته شکن",
-    "slug": "hsth-shkhn",
-    "description": "",
-    "checked_description": false,
-    "price": 315000,
-    "stock": null,
-    "category": "home-goods",
-    "tags": [
-      "ابزار آشپزخانه"
-    ],
-    "checked_tags": true,
-    "specifications": [
-      "جنس: فلز ضد زنگ ، با کف ام دی اف",
-      "ابعاد: 20×20×9 سانتی متر خود دستگاه\n24×7.5×2 سانتی متر ابعاد کف دستگاه",
-      "نکته مهم در شکستن گردو و بادام: اگر میخواهید مغزهای گردو سالم باشد حتما قبل کار با دستگاه گردو و بادام ها را سه تا چهار ساعت درون آب خیس کنید که البته این امر کاملا سلیقه ایست"
-    ],
-    "checked_specs": true,
-    "features": [],
-    "images": [
-      "https://pakhshabdi.com/wp-content/uploads/2025/01/خرید-هسته-شکن-300x300.jpg?v=1737457576",
-      "https://pakhshabdi.com/wp-content/uploads/2025/01/خرید-هسته-شکن-600x600.jpg?v=1737457576",
-      "https://pakhshabdi.com/wp-content/uploads/2025/01/قیمت-هسته-شکن-600x600.jpg?v=1737457581",
-      "https://pakhshabdi.com/wp-content/uploads/2025/01/هسته-شکن-600x600.jpg?v=1737457571"
-    ],
-    "checked_images": true,
-    "videos": [],
-    "product_link": "https://pakhshabdi.com/product/%d9%87%d8%b3%d8%aa%d9%87-%d8%b4%da%a9%d9%86/",
     "variants": [],
     "has_variants": false
   },
@@ -3909,6 +4129,38 @@
     "checked_images": true,
     "videos": [],
     "product_link": "https://pakhshabdi.com/product/%d9%86%d9%88%d8%a7%d8%b1-%da%86%d8%b3%d8%a8-%d8%b2%d8%b1%d9%88%d8%b1%d9%82%db%8c-%d8%b6%d8%af-%d8%a2%d8%a8-1-5-%d9%85%d8%aa%d8%b1%db%8c/",
+    "variants": [],
+    "has_variants": false
+  },
+  {
+    "id": null,
+    "name": "محافظ اتو نسوز رویال هوم",
+    "slug": "mhfz-tw-nswz-rwyl-hwm",
+    "description": "",
+    "checked_description": false,
+    "price": 48000,
+    "stock": null,
+    "category": "home-goods",
+    "tags": [
+      "اتو و لوازم اتو"
+    ],
+    "checked_tags": true,
+    "specifications": [
+      "جنس: پلاستیک نسوز",
+      "ابعاد: 22.5×15.5 سانتی متر",
+      "سایر توضیحات: جهت محافظت از کفی اتو\nمانع برق افتادن روی پارچه\nدارای یک فنر نگه دارنده\nجنس نسوز\nمحافظت از اتو در مقابل خط و خش\nمناسب برای تمامی اتوها …"
+    ],
+    "checked_specs": true,
+    "features": [],
+    "images": [
+      "https://pakhshabdi.com/wp-content/uploads/2024/12/خرید-محافظ-اتو-نسوز-رویال-هوم-300x300.jpg?v=1733905303",
+      "https://pakhshabdi.com/wp-content/uploads/2024/12/خرید-محافظ-اتو-نسوز-رویال-هوم-600x600.jpg?v=1733905303",
+      "https://pakhshabdi.com/wp-content/uploads/2024/12/قیمت-محافظ-اتو-نسوز-رویال-هوم-600x600.jpg?v=1733905308",
+      "https://pakhshabdi.com/wp-content/uploads/2024/12/محافظ-اتو-نسوز-رویال-هوم-600x600.jpg?v=1733905299"
+    ],
+    "checked_images": true,
+    "videos": [],
+    "product_link": "https://pakhshabdi.com/product/%d9%85%d8%ad%d8%a7%d9%81%d8%b8-%d8%a7%d8%aa%d9%88-%d9%86%d8%b3%d9%88%d8%b2-%d8%b1%d9%88%db%8c%d8%a7%d9%84-%d9%87%d9%88%d9%85/",
     "variants": [],
     "has_variants": false
   },
@@ -4252,7 +4504,7 @@
     "slug": "khwr-khlyd-sylykhwny",
     "description": "",
     "checked_description": false,
-    "price": 15000,
+    "price": 12500,
     "stock": null,
     "category": "home-goods",
     "tags": [
@@ -4310,6 +4562,37 @@
   },
   {
     "id": null,
+    "name": "اسکاچ توری 5 عددی دو لایه سایز 25×25",
+    "slug": "skhch-twry-5-ddy-dw-lyh-syz-25x25",
+    "description": "",
+    "checked_description": false,
+    "price": 89900,
+    "stock": null,
+    "category": "home-goods",
+    "tags": [
+      "ابزار نظافت"
+    ],
+    "checked_tags": true,
+    "specifications": [
+      "ابعاد: 25×25 سانتی متر",
+      "تعداد در بسته: 10 عدد یک لایه",
+      "مناسب برای: قابل استفاده برای شست و شوی ظروف،سطوح و …"
+    ],
+    "checked_specs": true,
+    "features": [],
+    "images": [
+      "https://pakhshabdi.com/wp-content/uploads/2024/11/اسکاچ-توری-10عددی-تک-لایه-سایز-25x25-1-300x300.jpg?v=1733996247",
+      "https://pakhshabdi.com/wp-content/uploads/2024/11/اسکاچ-توری-10عددی-تک-لایه-سایز-25x25-1-600x600.jpg?v=1733996247",
+      "https://pakhshabdi.com/wp-content/uploads/2024/11/خرید-اسکاچ-توری-10عددی-تک-لایه-سایز-25x25-1-600x600.jpg?v=1733996252"
+    ],
+    "checked_images": true,
+    "videos": [],
+    "product_link": "https://pakhshabdi.com/product/%d8%a7%d8%b3%da%a9%d8%a7%da%86-%d8%aa%d9%88%d8%b1%db%8c-10-%d8%b9%d8%af%d8%af%db%8c-%d8%b3%d8%a7%db%8c%d8%b2-25x25/",
+    "variants": [],
+    "has_variants": false
+  },
+  {
+    "id": null,
     "name": "طی چرخشی خشکن دار طوسی",
     "slug": "ty-chrkhshy-khshkhn-dr-twsy",
     "description": "",
@@ -4336,38 +4619,6 @@
     "checked_images": true,
     "videos": [],
     "product_link": "https://pakhshabdi.com/product/%d8%b7%db%8c-%da%86%d8%b1%d8%ae%d8%b4%db%8c-%d8%ae%d8%b4%da%a9%d9%86-%d8%af%d8%a7%d8%b1/",
-    "variants": [],
-    "has_variants": false
-  },
-  {
-    "id": null,
-    "name": "فویل قالبی اجاق گاز مربع 5 عددی",
-    "slug": "fwyl-qlby-jq-gz-mrb-5-ddy",
-    "description": "",
-    "checked_description": false,
-    "price": 85000,
-    "stock": null,
-    "category": "home-goods",
-    "tags": [
-      "نظم دهنده آشپزخانه"
-    ],
-    "checked_tags": true,
-    "specifications": [
-      "جنس: آلومینیوم نسوز",
-      "ابعاد: ۲۲.۵×۲۲.۵ سانتی متر",
-      "تعداد در بسته: 5 عددی"
-    ],
-    "checked_specs": true,
-    "features": [],
-    "images": [
-      "https://pakhshabdi.com/wp-content/uploads/2024/11/قیمت-فویل-قالبی-اجاق-گاز-مربع-10-عددی-300x300.jpg?v=1730876724",
-      "https://pakhshabdi.com/wp-content/uploads/2024/11/قیمت-فویل-قالبی-اجاق-گاز-مربع-10-عددی-600x600.jpg?v=1730876724",
-      "https://pakhshabdi.com/wp-content/uploads/2024/11/خرید-فویل-قالبی-اجاق-گاز-مربع-10-عددی-600x600.jpg?v=1730876718",
-      "https://pakhshabdi.com/wp-content/uploads/2024/11/فویل-قالبی-اجاق-گاز-مربع-10-عددی-600x600.jpg?v=1730876712"
-    ],
-    "checked_images": true,
-    "videos": [],
-    "product_link": "https://pakhshabdi.com/product/%d9%81%d9%88%db%8c%d9%84-%d9%82%d8%a7%d9%84%d8%a8%db%8c-%d8%a7%d8%ac%d8%a7%d9%82-%da%af%d8%a7%d8%b2-%d9%85%d8%b1%d8%a8%d8%b9-10-%d8%b9%d8%af%d8%af%db%8c/",
     "variants": [],
     "has_variants": false
   },
@@ -4844,38 +5095,6 @@
     "checked_images": true,
     "videos": [],
     "product_link": "https://pakhshabdi.com/product/%da%af%d9%88%d8%b4%d8%aa-%da%a9%d9%88%d8%a8-%d8%a8%d8%b1%d9%82%db%8c/",
-    "variants": [],
-    "has_variants": false
-  },
-  {
-    "id": null,
-    "name": "چراغ دیواری طرح چوب",
-    "slug": "chrg-dywry-trh-chwb",
-    "description": "",
-    "checked_description": false,
-    "price": 299000,
-    "stock": null,
-    "category": "home-goods",
-    "tags": [
-      "لوکس و تزئینی"
-    ],
-    "checked_tags": true,
-    "specifications": [
-      "جنس: پلاستیک",
-      "ابعاد: ارتفاع 18 سانتی متر",
-      "اقلام همراه: کابل شارژ ، دفترچه راهنما"
-    ],
-    "checked_specs": true,
-    "features": [],
-    "images": [
-      "https://pakhshabdi.com/wp-content/uploads/2024/09/قیمت-چراغ-دیواری-طرح-چوب-300x300.jpg?v=1727094982",
-      "https://pakhshabdi.com/wp-content/uploads/2024/09/قیمت-چراغ-دیواری-طرح-چوب-600x600.jpg?v=1727094982",
-      "https://pakhshabdi.com/wp-content/uploads/2024/09/خرید-چراغ-دیواری-طرح-چوب-600x600.jpg?v=1727094963",
-      "https://pakhshabdi.com/wp-content/uploads/2024/09/چراغ-دیواری-طرح-چوب-600x600.jpg?v=1727094957"
-    ],
-    "checked_images": true,
-    "videos": [],
-    "product_link": "https://pakhshabdi.com/product/%da%86%d8%b1%d8%a7%d8%ba-%d8%af%db%8c%d9%88%d8%a7%d8%b1%db%8c-%d8%b7%d8%b1%d8%ad-%da%86%d9%88%d8%a8/",
     "variants": [],
     "has_variants": false
   },
@@ -5473,6 +5692,70 @@
   },
   {
     "id": null,
+    "name": "کیسه رخت چرک",
+    "slug": "khysh-rkht-chrkh",
+    "description": "",
+    "checked_description": false,
+    "price": 60000,
+    "stock": null,
+    "category": "home-goods",
+    "tags": [
+      "کمد و نظم دهنده"
+    ],
+    "checked_tags": true,
+    "specifications": [
+      "جنس: پارچه اسپان باند",
+      "مناسب برای: برای نظم دادن به کمد\nقسمت بالایی دارای میله",
+      "ابعاد: 33×44×47 سانتی متر"
+    ],
+    "checked_specs": true,
+    "features": [],
+    "images": [
+      "https://pakhshabdi.com/wp-content/uploads/2024/06/کیسه-رخت-چرک-300x300.jpg?v=1719041761",
+      "https://pakhshabdi.com/wp-content/uploads/2024/06/کیسه-رخت-چرک-600x600.jpg?v=1719041761",
+      "https://pakhshabdi.com/wp-content/uploads/2024/06/قیمت-کیسه-رخت-چرک-600x600.jpg?v=1719041766",
+      "https://pakhshabdi.com/wp-content/uploads/2024/06/خرید-کیسه-رخت-چرک-600x600.jpg?v=1719041757"
+    ],
+    "checked_images": true,
+    "videos": [],
+    "product_link": "https://pakhshabdi.com/product/%da%a9%db%8c%d8%b3%d9%87-%d8%b1%d8%ae%d8%aa-%da%86%d8%b1%da%a9/",
+    "variants": [],
+    "has_variants": false
+  },
+  {
+    "id": null,
+    "name": "آویز عصایی شلوار استیل",
+    "slug": "wyz-syy-shlwr-styl",
+    "description": "",
+    "checked_description": false,
+    "price": 100000,
+    "stock": null,
+    "category": "home-goods",
+    "tags": [
+      "کمد و نظم دهنده"
+    ],
+    "checked_tags": true,
+    "specifications": [
+      "جنس: فلز آبکاری شده",
+      "ارتفاع میله: 30 سانتی متر",
+      "مناسب برای: نظم دهی به کمد و لباس ها"
+    ],
+    "checked_specs": true,
+    "features": [],
+    "images": [
+      "https://pakhshabdi.com/wp-content/uploads/2024/06/آویز-عصایی-شلوار-استیل-300x300.jpg?v=1719041040",
+      "https://pakhshabdi.com/wp-content/uploads/2024/06/آویز-عصایی-شلوار-استیل-600x600.jpg?v=1719041040",
+      "https://pakhshabdi.com/wp-content/uploads/2024/06/قیمت-آویز-عصایی-شلوار-استیل-600x600.jpg?v=1719041044",
+      "https://pakhshabdi.com/wp-content/uploads/2024/06/خرید-آویز-عصایی-شلوار-استیل-600x600.jpg?v=1719041036"
+    ],
+    "checked_images": true,
+    "videos": [],
+    "product_link": "https://pakhshabdi.com/product/%d8%a2%d9%88%db%8c%d8%b2-%d8%b9%d8%b5%d8%a7%db%8c%db%8c-%d8%b4%d9%84%d9%88%d8%a7%d8%b1-%d8%a7%d8%b3%d8%aa%db%8c%d9%84/",
+    "variants": [],
+    "has_variants": false
+  },
+  {
+    "id": null,
     "name": "تقسیم کننده یخچال",
     "slug": "tqsym-khnndh-ykhchl",
     "description": "",
@@ -5687,36 +5970,6 @@
     "checked_images": true,
     "videos": [],
     "product_link": "https://pakhshabdi.com/product/%d9%be%d9%88%d8%b4%d8%b4-%d8%af%d9%87%d9%86%d8%af%d9%87-%d8%af%d9%88%d8%b1-%d8%b4%db%8c%d8%b1/",
-    "variants": [],
-    "has_variants": false
-  },
-  {
-    "id": null,
-    "name": "نظم دهنده کشو خوش مدل 16 خانه",
-    "slug": "nzm-dhndh-khshw-khwsh-mdl-16-khnh",
-    "description": "",
-    "checked_description": false,
-    "price": 25000,
-    "stock": null,
-    "category": "home-goods",
-    "tags": [
-      "کمد و نظم دهنده"
-    ],
-    "checked_tags": true,
-    "specifications": [
-      "جنس: پارچه اسپان",
-      "ابعاد: 8×3×30 سانتیم تر"
-    ],
-    "checked_specs": true,
-    "features": [],
-    "images": [
-      "https://pakhshabdi.com/wp-content/uploads/2024/05/نظم-دهنده-کشو-خوش-مدل-16-خانه-300x300.jpg?v=1716455323",
-      "https://pakhshabdi.com/wp-content/uploads/2024/05/نظم-دهنده-کشو-خوش-مدل-16-خانه-600x600.jpg?v=1716455323",
-      "https://pakhshabdi.com/wp-content/uploads/2024/05/قیمت-نظم-دهنده-کشو-خوش-مدل-16-خانه-600x600.jpg?v=1716455319"
-    ],
-    "checked_images": true,
-    "videos": [],
-    "product_link": "https://pakhshabdi.com/product/%d9%86%d8%b8%d9%85-%d8%af%d9%87%d9%86%d8%af%d9%87-%da%a9%d8%b4%d9%88-%d8%ae%d9%88%d8%b4-%d9%85%d8%af%d9%84-16-%d8%ae%d8%a7%d9%86%d9%87/",
     "variants": [],
     "has_variants": false
   },
@@ -6060,62 +6313,32 @@
   },
   {
     "id": null,
-    "name": "قالب يخ كف سيليكونی",
-    "slug": "qlb-ykh-kf-sylykwny",
+    "name": "باكس لباس 2 خانه قابل تنظيم",
+    "slug": "bks-lbs-2-khnh-qbl-tnzym",
     "description": "",
     "checked_description": false,
-    "price": 68000,
+    "price": 78000,
     "stock": null,
     "category": "home-goods",
     "tags": [
-      "سایر ظروف آشپزخانه"
+      "کمد و نظم دهنده"
     ],
     "checked_tags": true,
     "specifications": [
-      "جنس: پلاستیک و سیلیکون",
-      "ابعاد: 9×13 سانتی متر"
+      "جنس: پارچه اسپان باند + کارتن",
+      "ابعاد: 20×40×50 سانتی متر",
+      "سایر توضیحات: نطم دادن به انواع البسه"
     ],
     "checked_specs": true,
     "features": [],
     "images": [
-      "https://pakhshabdi.com/wp-content/uploads/2024/04/قالب-يخ-كف-سيليكونی-300x300.jpg?v=1713597472",
-      "https://pakhshabdi.com/wp-content/uploads/2024/04/قالب-يخ-كف-سيليكونی-600x600.jpg?v=1713597472",
-      "https://pakhshabdi.com/wp-content/uploads/2024/04/قیمت-قالب-يخ-كف-سيليكونی-600x600.jpg?v=1713597476",
-      "https://pakhshabdi.com/wp-content/uploads/2024/04/خرید-قالب-يخ-كف-سيليكونی-600x600.jpg?v=1713597806"
+      "https://pakhshabdi.com/wp-content/uploads/2024/04/باكس-لباس-2-خانه-قابل-تنظيم-1-300x300.jpg?v=1746258068",
+      "https://pakhshabdi.com/wp-content/uploads/2024/04/باكس-لباس-2-خانه-قابل-تنظيم-1-600x600.jpg?v=1746258068",
+      "https://pakhshabdi.com/wp-content/uploads/2024/04/قیمت-باكس-لباس-2-خانه-قابل-تنظيم-600x600.jpg?v=1713596669"
     ],
     "checked_images": true,
     "videos": [],
-    "product_link": "https://pakhshabdi.com/product/%d9%82%d8%a7%d9%84%d8%a8-%d9%8a%d8%ae-%d9%83%d9%81-%d8%b3%d9%8a%d9%84%d9%8a%d9%83%d9%88%d9%86%db%8c/",
-    "variants": [],
-    "has_variants": false
-  },
-  {
-    "id": null,
-    "name": "درپوش ادویه پاش",
-    "slug": "drpwsh-dwyh-psh",
-    "description": "",
-    "checked_description": false,
-    "price": 2500,
-    "stock": null,
-    "category": "home-goods",
-    "tags": [
-      "سایر ظروف آشپزخانه"
-    ],
-    "checked_tags": true,
-    "specifications": [
-      "جنس: پلاستیک",
-      "قطر: 1×3.3 سانتی متر"
-    ],
-    "checked_specs": true,
-    "features": [],
-    "images": [
-      "https://pakhshabdi.com/wp-content/uploads/2024/04/درپوش-ادویه-پاش-300x300.jpg?v=1713011727",
-      "https://pakhshabdi.com/wp-content/uploads/2024/04/درپوش-ادویه-پاش-600x600.jpg?v=1713011727",
-      "https://pakhshabdi.com/wp-content/uploads/2024/04/قیمت-درپوش-ادویه-پاش-600x600.jpg?v=1713011732"
-    ],
-    "checked_images": true,
-    "videos": [],
-    "product_link": "https://pakhshabdi.com/product/%d8%af%d8%b1%d9%be%d9%88%d8%b4-%d8%a7%d8%af%d9%88%db%8c%d9%87-%d9%be%d8%a7%d8%b4/",
+    "product_link": "https://pakhshabdi.com/product/%d8%a8%d8%a7%d9%83%d8%b3-%d9%84%d8%a8%d8%a7%d8%b3-2-%d8%ae%d8%a7%d9%86%d9%87-%d9%82%d8%a7%d8%a8%d9%84-%d8%aa%d9%86%d8%b8%d9%8a%d9%85/",
     "variants": [],
     "has_variants": false
   },
@@ -6712,33 +6935,6 @@
   },
   {
     "id": null,
-    "name": "گردگیر چند حالته 2.5 متری",
-    "slug": "grdgyr-chnd-hlth-2-5-mtry",
-    "description": "",
-    "checked_description": false,
-    "price": 145000,
-    "stock": null,
-    "category": "home-goods",
-    "tags": [
-      "ابزار نظافت"
-    ],
-    "checked_tags": true,
-    "specifications": [],
-    "checked_specs": true,
-    "features": [],
-    "images": [
-      "https://pakhshabdi.com/wp-content/uploads/2024/03/خرید-گردگیر-چند-حالته-2.5-متری-300x300.jpg",
-      "https://pakhshabdi.com/wp-content/uploads/2024/03/خرید-گردگیر-چند-حالته-2.5-متری-600x600.jpg",
-      "https://pakhshabdi.com/wp-content/uploads/2024/03/قیمت-گردگیر-چند-حالته-2.5-متری-600x600.jpg"
-    ],
-    "checked_images": true,
-    "videos": [],
-    "product_link": "https://pakhshabdi.com/product/%da%af%d8%b1%d8%af%da%af%db%8c%d8%b1-%da%86%d9%86%d8%af-%d8%ad%d8%a7%d9%84%d8%aa%d9%87-2-5-%d9%85%d8%aa%d8%b1%db%8c/",
-    "variants": [],
-    "has_variants": false
-  },
-  {
-    "id": null,
     "name": "قوری زعفران پیرکسی آترین",
     "slug": "qwry-z-frn-pyrkhsy-tryn",
     "description": "",
@@ -6950,6 +7146,38 @@
     "checked_images": true,
     "videos": [],
     "product_link": "https://pakhshabdi.com/product/%d8%b2%db%8c%d8%aa%d9%88%d9%86-%d8%ae%d9%88%d8%b1%db%8c-6-%d8%b9%d8%af%d8%af%db%8c-%d8%af%d8%b3%d8%aa%d9%87-%da%86%d9%88%d8%a8%db%8c/",
+    "variants": [],
+    "has_variants": false
+  },
+  {
+    "id": null,
+    "name": "برس ماری منعطف",
+    "slug": "brs-mry-mn-tf",
+    "description": "",
+    "checked_description": false,
+    "price": 58000,
+    "stock": null,
+    "category": "home-goods",
+    "tags": [
+      "ابزار نظافت"
+    ],
+    "checked_tags": true,
+    "specifications": [
+      "جنس بدنه: پلاستیک",
+      "ابعاد: 2.5×26 سانتی متر",
+      "مناسب برای: تمیز کردن شیرهای حمام، درهای کشویی، گوشه ها، شیرآلات، تمام سطوح کاشی، ریل درب دوش، زهکشی سینک، قاب پنجره های باریک ، شیر گاز و فر"
+    ],
+    "checked_specs": true,
+    "features": [],
+    "images": [
+      "https://pakhshabdi.com/wp-content/uploads/2024/03/خرید-برس-ماری-منعطف-300x300.jpg",
+      "https://pakhshabdi.com/wp-content/uploads/2024/03/خرید-برس-ماری-منعطف.jpg",
+      "https://pakhshabdi.com/wp-content/uploads/2024/03/قیمت-برس-ماری-منعطف.jpg",
+      "https://pakhshabdi.com/wp-content/uploads/2024/03/برس-ماری-منعطف.jpg"
+    ],
+    "checked_images": true,
+    "videos": [],
+    "product_link": "https://pakhshabdi.com/product/%d8%a8%d8%b1%d8%b3-%d9%85%d8%a7%d8%b1%db%8c-%d9%85%d9%86%d8%b9%d8%b7%d9%81/",
     "variants": [],
     "has_variants": false
   },
@@ -7369,6 +7597,35 @@
   },
   {
     "id": null,
+    "name": "چربی زدا نانو وایت اسپری دار",
+    "slug": "chrby-zd-nnw-wyt-spry-dr",
+    "description": "",
+    "checked_description": false,
+    "price": 48000,
+    "stock": null,
+    "category": "home-goods",
+    "tags": [
+      "ابزار نظافت"
+    ],
+    "checked_tags": true,
+    "specifications": [
+      "سایر توضیحات: بدون نیاز به استفاده از دست تاثیر گذاری بسیار بالا تمیز کنندگی عالی و بالا چربی بر فوق العاده فاقد ترکیبات مضرر بدون آسیب به سطح مناسب برای گاز و سطوح فلز سرعت تمیز کنندگی بالا استفاده آسان"
+    ],
+    "checked_specs": true,
+    "features": [],
+    "images": [
+      "https://pakhshabdi.com/wp-content/uploads/2024/03/چربی-زدا-نانو-وایت-اسپری-دار-300x300.jpg",
+      "https://pakhshabdi.com/wp-content/uploads/2024/03/چربی-زدا-نانو-وایت-اسپری-دار.jpg",
+      "https://pakhshabdi.com/wp-content/uploads/2024/03/قیمت-چربی-زدا-نانو-وایت-اسپری-دار.jpg"
+    ],
+    "checked_images": true,
+    "videos": [],
+    "product_link": "https://pakhshabdi.com/product/%da%86%d8%b1%d8%a8%db%8c-%d8%b2%d8%af%d8%a7-%d9%86%d8%a7%d9%86%d9%88-%d9%88%d8%a7%db%8c%d8%aa-%d8%a7%d8%b3%d9%be%d8%b1%db%8c-%d8%af%d8%a7%d8%b1/",
+    "variants": [],
+    "has_variants": false
+  },
+  {
+    "id": null,
     "name": "برس شست و شوی مخزن دار",
     "slug": "brs-shst-w-shwy-mkhzn-dr",
     "description": "",
@@ -7458,6 +7715,37 @@
     "checked_images": true,
     "videos": [],
     "product_link": "https://pakhshabdi.com/product/%d8%ac%d8%a7-%d8%a7%d8%b3%da%a9%d8%a7%da%86%db%8c-%d8%af%d9%88%d8%b1-%d8%b4%db%8c%d8%b1-%d8%a2%d8%a8-%d8%a7%d8%b3%d8%aa%db%8c%d9%84/",
+    "variants": [],
+    "has_variants": false
+  },
+  {
+    "id": null,
+    "name": "بقچه لباس زیپ دار خوش طرح بارکد",
+    "slug": "bqchh-lbs-zyp-dr-khwsh-trh-brkhd",
+    "description": "",
+    "checked_description": false,
+    "price": 34000,
+    "stock": null,
+    "category": "home-goods",
+    "tags": [
+      "کمد و نظم دهنده"
+    ],
+    "checked_tags": true,
+    "specifications": [
+      "جنس: پارچه",
+      "ابعاد: 29×45×51 سانتی متر",
+      "سایر توضیحات: مجهز به درب زیپ دار قابلیت مشاهده محتویات داخل بقچه بدون نیاز به باز کردن و تخلیه محتویات آن مجهز به دستگیره در دو طرف محفظه جهت حمل و جابه جایی آسان قابلیت تاشدن و نگهداری در کمترین فضای ممکن در صورت عدم نیاز امکان نگهداری لباس ، پارچه ، رخت خواب های کوچک و … به صورت منظم قابلیت استفاده داخل کمد ، اتاق و …"
+    ],
+    "checked_specs": true,
+    "features": [],
+    "images": [
+      "https://pakhshabdi.com/wp-content/uploads/2024/03/بقچه-لباس-زیپ-دار-خوش-طرح-بارکد-300x300.jpg",
+      "https://pakhshabdi.com/wp-content/uploads/2024/03/بقچه-لباس-زیپ-دار-خوش-طرح-بارکد.jpg",
+      "https://pakhshabdi.com/wp-content/uploads/2024/03/قیمت-بقچه-لباس-زیپ-دار-خوش-طرح-بارکد.jpg"
+    ],
+    "checked_images": true,
+    "videos": [],
+    "product_link": "https://pakhshabdi.com/product/%d8%a8%d9%82%da%86%d9%87-%d9%84%d8%a8%d8%a7%d8%b3-%d8%b2%db%8c%d9%be-%d8%af%d8%a7%d8%b1-%d8%ae%d9%88%d8%b4-%d8%b7%d8%b1%d8%ad-%d8%a8%d8%a7%d8%b1%da%a9%d8%af/",
     "variants": [],
     "has_variants": false
   },
@@ -7583,6 +7871,38 @@
     "checked_images": true,
     "videos": [],
     "product_link": "https://pakhshabdi.com/product/%d9%86%d8%b8%d9%85-%d8%af%d9%87%d9%86%d8%af%d9%87-%da%a9%d9%81%d8%b4-sunday/",
+    "variants": [],
+    "has_variants": false
+  },
+  {
+    "id": null,
+    "name": "مقسم لباس 6 خانه پارچه ای خوش",
+    "slug": "mqsm-lbs-6-khnh-prchh-y-khwsh",
+    "description": "",
+    "checked_description": false,
+    "price": 52000,
+    "stock": null,
+    "category": "home-goods",
+    "tags": [
+      "کمد و نظم دهنده"
+    ],
+    "checked_tags": true,
+    "specifications": [
+      "جنس: پارچه اسپان باند",
+      "ابعاد: 20×26×43 سانتی متر",
+      "سایر توضیحات: مناسب برای انواع لباس مناسب برای نظم دهی کمد و کشو"
+    ],
+    "checked_specs": true,
+    "features": [],
+    "images": [
+      "https://pakhshabdi.com/wp-content/uploads/2024/03/مقسم-لباس-6-خانه-پارچه-ای-300x300.jpg",
+      "https://pakhshabdi.com/wp-content/uploads/2024/03/مقسم-لباس-6-خانه-پارچه-ای.jpg",
+      "https://pakhshabdi.com/wp-content/uploads/2024/03/خرید-مقسم-لباس-6-خانه-پارچه-ای.jpg",
+      "https://pakhshabdi.com/wp-content/uploads/2024/03/قیمت-مقسم-لباس-6-خانه-پارچه-ای.jpg"
+    ],
+    "checked_images": true,
+    "videos": [],
+    "product_link": "https://pakhshabdi.com/product/%d9%85%d9%82%d8%b3%d9%85-%d9%84%d8%a8%d8%a7%d8%b3-6-%d8%ae%d8%a7%d9%86%d9%87-%d9%be%d8%a7%d8%b1%da%86%d9%87-%d8%a7%db%8c-%d8%ae%d9%88%d8%b4/",
     "variants": [],
     "has_variants": false
   },
@@ -8029,6 +8349,38 @@
     "checked_images": true,
     "videos": [],
     "product_link": "https://pakhshabdi.com/product/%d8%a8%d8%b1%d8%b4-%d8%b2%d9%86-%d8%af%d8%a7%d9%84%d8%a8%d8%b1%db%8c-%db%8c%d9%88%d9%86%db%8c%da%a9-%d9%85%d8%af%d9%84-%d8%af%d8%b3%d8%aa%d9%87-%d8%af%d8%a7%d8%b1/",
+    "variants": [],
+    "has_variants": false
+  },
+  {
+    "id": null,
+    "name": "آویز کیف داخل کمد 4 طبقه مدل خوش",
+    "slug": "wyz-khyf-dkhl-khmd-4-tbqh-mdl-khwsh",
+    "description": "",
+    "checked_description": false,
+    "price": 49000,
+    "stock": null,
+    "category": "home-goods",
+    "tags": [
+      "کمد و نظم دهنده"
+    ],
+    "checked_tags": true,
+    "specifications": [
+      "جنس: پارچه اسپان باند و پلاستیک",
+      "ابعاد: 36×115 سانتی متر",
+      "سایر توضیحات: دارای آویز چوب لباسی کاهش فضای مورد نیاز برای نگهداری از کیف ها مانع از خراب شدن و یا از بین رفتن فرم اولیه سهولت در دسترسی و استفاده از کیف ها امکان آویزان کردن داخل کمد ، روی دیوار ، پشت درب و …"
+    ],
+    "checked_specs": true,
+    "features": [],
+    "images": [
+      "https://pakhshabdi.com/wp-content/uploads/2024/03/آویز-کیف-داخل-کمد-4-طبقه-مدل-خوش-1-300x300.jpg",
+      "https://pakhshabdi.com/wp-content/uploads/2024/03/آویز-کیف-داخل-کمد-4-طبقه-مدل-خوش-1.jpg",
+      "https://pakhshabdi.com/wp-content/uploads/2024/03/خرید-آویز-کیف-داخل-کمد-4-طبقه-مدل-خوش-1.jpg",
+      "https://pakhshabdi.com/wp-content/uploads/2024/03/قیمت-آویز-کیف-داخل-کمد-4-طبقه-مدل-خوش-1.jpg"
+    ],
+    "checked_images": true,
+    "videos": [],
+    "product_link": "https://pakhshabdi.com/product/%d8%a2%d9%88%db%8c%d8%b2-%da%a9%db%8c%d9%81-%d8%af%d8%a7%d8%ae%d9%84-%da%a9%d9%85%d8%af-4-%d8%b7%d8%a8%d9%82%d9%87-%d9%85%d8%af%d9%84-%d8%ae%d9%88%d8%b4/",
     "variants": [],
     "has_variants": false
   },
@@ -8518,6 +8870,39 @@
   },
   {
     "id": null,
+    "name": "نمگیر استند فلزی vip",
+    "slug": "nmgyr-stnd-flzy-vip",
+    "description": "",
+    "checked_description": false,
+    "price": 135000,
+    "stock": null,
+    "category": "home-goods",
+    "tags": [
+      "حوله، دستمال و پیش بند آشپزخانه"
+    ],
+    "checked_tags": true,
+    "specifications": [
+      "جنس: فلز و پارچه",
+      "ابعاد: 3×17×39 سانتی متر"
+    ],
+    "checked_specs": true,
+    "features": [],
+    "images": [
+      "https://pakhshabdi.com/wp-content/uploads/2024/03/خرید-نمگیر-استند-فلزی-300x300.jpg",
+      "https://pakhshabdi.com/wp-content/uploads/2024/03/خرید-نمگیر-استند-فلزی.jpg",
+      "https://pakhshabdi.com/wp-content/uploads/2024/03/نمگیر-استنددار-فلزی-vip.jpg",
+      "https://pakhshabdi.com/wp-content/uploads/2024/03/قیمت-نمگیر-استند-فلزی.jpg",
+      "https://pakhshabdi.com/wp-content/uploads/2024/03/نمگیر-استند-فلزی.jpg",
+      "https://pakhshabdi.com/wp-content/uploads/2024/03/نمگیر-استند-فلزی-vip.jpg"
+    ],
+    "checked_images": true,
+    "videos": [],
+    "product_link": "https://pakhshabdi.com/product/%d9%86%d9%85%da%af%db%8c%d8%b1-%d8%a7%d8%b3%d8%aa%d9%86%d8%af-%d9%81%d9%84%d8%b2%db%8c-vip/",
+    "variants": [],
+    "has_variants": false
+  },
+  {
+    "id": null,
     "name": "جا مایع دستشویی تایلندی بازن",
     "slug": "j-my-dstshwyy-tylndy-bzn",
     "description": "",
@@ -8608,6 +8993,38 @@
     "checked_images": true,
     "videos": [],
     "product_link": "https://pakhshabdi.com/product/%d9%84%db%8c%d9%88%d8%a7%d9%86-%d9%81%d8%b1%d9%86%da%86-%d9%be%d8%b1%d8%b3-600-%d9%85%db%8c%d9%84-%d8%aa%db%8c%d8%a7%d9%86/",
+    "variants": [],
+    "has_variants": false
+  },
+  {
+    "id": null,
+    "name": "لیوان فرنچ پرس 350 میل تیان",
+    "slug": "lywn-frnch-prs-350-myl-tyn",
+    "description": "",
+    "checked_description": false,
+    "price": 65000,
+    "stock": null,
+    "category": "home-goods",
+    "tags": [
+      "لوازم تهیه نوشیدنی"
+    ],
+    "checked_tags": true,
+    "specifications": [
+      "جنس: پیرکس",
+      "ظرفیت: 350 میل",
+      "ابعاد: 6×16 سانتی متر"
+    ],
+    "checked_specs": true,
+    "features": [],
+    "images": [
+      "https://pakhshabdi.com/wp-content/uploads/2024/03/لیوان-فرنچ-پرس-350-میل-تیان-لوکس-1-300x300.jpg",
+      "https://pakhshabdi.com/wp-content/uploads/2024/03/لیوان-فرنچ-پرس-350-میل-تیان-لوکس-1.jpg",
+      "https://pakhshabdi.com/wp-content/uploads/2024/03/دمنوش-ساز-فرنچ-پرس-350-میل-تیان.jpg",
+      "https://pakhshabdi.com/wp-content/uploads/2024/03/لیوان-فرنچ-پرس-350-میل-تیان-2.jpg"
+    ],
+    "checked_images": true,
+    "videos": [],
+    "product_link": "https://pakhshabdi.com/product/%d9%84%db%8c%d9%88%d8%a7%d9%86-%d9%81%d8%b1%d9%86%da%86-%d9%be%d8%b1%d8%b3-350-%d9%85%db%8c%d9%84-%d8%aa%db%8c%d8%a7%d9%86/",
     "variants": [],
     "has_variants": false
   },
@@ -8803,41 +9220,6 @@
     "checked_images": true,
     "videos": [],
     "product_link": "https://pakhshabdi.com/product/%d8%b3%d8%a8%d8%af-%d8%aa%d9%81%d8%a7%d9%84%d9%87-%da%af%db%8c%d8%b1-%d8%b3%db%8c%d9%84%db%8c%da%a9%d9%88%d9%86%db%8c/",
-    "variants": [],
-    "has_variants": false
-  },
-  {
-    "id": null,
-    "name": "سبد لباس تاشو دیواری",
-    "slug": "sbd-lbs-tshw-dywry",
-    "description": "",
-    "checked_description": false,
-    "price": 77000,
-    "stock": null,
-    "category": "home-goods",
-    "tags": [
-      "ابزار نظافت"
-    ],
-    "checked_tags": true,
-    "specifications": [
-      "جنس: پلاستیک",
-      "ابعاد: ابعاد در حالت باز : 46 × 27 × 16 سانتی متر ابعاد در حالت بسته : 46 × 27 × 2.5 سانتی متر",
-      "سایر توضیحات: دارای سوراخ آویز برای نصب بر روی دیوار ، دارای دستگیره برای حمل و جابه جایی آسان قابلیت تاشدن و اشغال کمترین فضای ممکن در صورت عدم نیاز، قابلیت استفاده برای قرار دادن لباس چرک و لوازم مختلف متناسب با ابعاد مناسب جهت نصب و استفاده بر روی ماشین لباسشویی ، دیوار اتاق ، آشپزخانه و …"
-    ],
-    "checked_specs": true,
-    "features": [],
-    "images": [
-      "https://pakhshabdi.com/wp-content/uploads/2024/03/سبد-لباس-تاشو-دیواری-2-300x300.jpg",
-      "https://pakhshabdi.com/wp-content/uploads/2024/03/سبد-لباس-تاشو-دیواری-2.jpg",
-      "https://pakhshabdi.com/wp-content/uploads/2024/03/سبد-لباس-تاشو-دیواری-5.jpg",
-      "https://pakhshabdi.com/wp-content/uploads/2024/03/سبد-لباس-تاشو-دیواری-1.jpg",
-      "https://pakhshabdi.com/wp-content/uploads/2024/03/سبد-لباس-تاشو-دیواری-6.jpg",
-      "https://pakhshabdi.com/wp-content/uploads/2024/03/سبد-لباس-تاشو-دیواری-4.jpg",
-      "https://pakhshabdi.com/wp-content/uploads/2024/03/سبد-لباس-تاشو-دیواری-3.jpg"
-    ],
-    "checked_images": true,
-    "videos": [],
-    "product_link": "https://pakhshabdi.com/product/%d8%b3%d8%a8%d8%af-%d9%84%d8%a8%d8%a7%d8%b3-%d8%aa%d8%a7%d8%b4%d9%88-%d8%af%db%8c%d9%88%d8%a7%d8%b1%db%8c/",
     "variants": [],
     "has_variants": false
   },
@@ -9461,6 +9843,37 @@
   },
   {
     "id": null,
+    "name": "چربی زدا سطوح نانو پاک",
+    "slug": "chrby-zd-stwh-nnw-pkh",
+    "description": "",
+    "checked_description": false,
+    "price": 25000,
+    "stock": null,
+    "category": "home-goods",
+    "tags": [
+      "ابزار نظافت"
+    ],
+    "checked_tags": true,
+    "specifications": [
+      "حجم: 300 میل",
+      "سایر توضیحات: چربی زدای گاز تمیز کنندگی براق کنندگی لکه زدایی پاک کننده قوی سخت ترین چربی ها از سطوح آشپزخانه و چربی های صنعتی",
+      "نحوه استفاده: حتما از دستکش استفاده کنید با دیگر محصولات پاک کننده مخلوط نکنید دور از دسترس کودکان نگهداری شود در دمای مناسب نگهداری شود دور از تابش خورشید و یخ زدگی باشد"
+    ],
+    "checked_specs": true,
+    "features": [],
+    "images": [
+      "https://pakhshabdi.com/wp-content/uploads/2024/03/چربی-زدا-سطوح-نانو-پاک-2-300x300.jpg",
+      "https://pakhshabdi.com/wp-content/uploads/2024/03/چربی-زدا-سطوح-نانو-پاک-2.jpg",
+      "https://pakhshabdi.com/wp-content/uploads/2024/03/چربی-زدا-سطوح-نانو-پاک-1.jpg"
+    ],
+    "checked_images": true,
+    "videos": [],
+    "product_link": "https://pakhshabdi.com/product/%da%86%d8%b1%d8%a8%db%8c-%d8%b2%d8%af%d8%a7-%d8%b3%d8%b7%d9%88%d8%ad-%d9%86%d8%a7%d9%86%d9%88-%d9%be%d8%a7%da%a9/",
+    "variants": [],
+    "has_variants": false
+  },
+  {
+    "id": null,
     "name": "رنده سیر کشویی",
     "slug": "rndh-syr-khshwyy",
     "description": "",
@@ -9489,6 +9902,40 @@
     "checked_images": true,
     "videos": [],
     "product_link": "https://pakhshabdi.com/product/%d8%b1%d9%86%d8%af%d9%87-%d8%b3%db%8c%d8%b1-%da%a9%d8%b4%d9%88%db%8c%db%8c/",
+    "variants": [],
+    "has_variants": false
+  },
+  {
+    "id": null,
+    "name": "کاور اتو خوش",
+    "slug": "khwr-tw-khwsh",
+    "description": "",
+    "checked_description": false,
+    "price": 35000,
+    "stock": null,
+    "category": "home-goods",
+    "tags": [
+      "اتو و لوازم اتو"
+    ],
+    "checked_tags": true,
+    "specifications": [
+      "جنس: پارچه",
+      "ابعاد: ۳۰×۱۹×۱۸ سانتی‌متر",
+      "رنگ: قرمز، صورتی، قهوه ای، آبی * ارسال رنگ بر اساس موجودی انبار"
+    ],
+    "checked_specs": true,
+    "features": [],
+    "images": [
+      "https://pakhshabdi.com/wp-content/uploads/2024/03/کاور-اتو-ساده-300x300.jpg?v=1731499779",
+      "https://pakhshabdi.com/wp-content/uploads/2024/03/کاور-اتو-ساده-600x600.jpg?v=1731499779",
+      "https://pakhshabdi.com/wp-content/uploads/2024/03/کاور-اتو-خوش.jpg",
+      "https://pakhshabdi.com/wp-content/uploads/2024/03/کاور-اتو-کالامان-1.jpg",
+      "https://pakhshabdi.com/wp-content/uploads/2024/03/کاور-اتو-کالامان-2.jpg",
+      "https://pakhshabdi.com/wp-content/uploads/2024/03/کاور-اتو-کالامان-3.jpg"
+    ],
+    "checked_images": true,
+    "videos": [],
+    "product_link": "https://pakhshabdi.com/product/%da%a9%d8%a7%d9%88%d8%b1-%d8%a7%d8%aa%d9%88-%d8%ae%d9%88%d8%b4/",
     "variants": [],
     "has_variants": false
   },
@@ -9591,40 +10038,6 @@
   },
   {
     "id": null,
-    "name": "کاور پلاستیکی غذا 100 عددی",
-    "slug": "khwr-plstykhy-gdh-100-ddy",
-    "description": "",
-    "checked_description": false,
-    "price": 69500,
-    "stock": null,
-    "category": "home-goods",
-    "tags": [
-      "ابزار آشپزخانه"
-    ],
-    "checked_tags": true,
-    "specifications": [
-      "جنس: پلاستیک نایلونی",
-      "مناسب برای: نگهداری بهتر مواد غذایی و جلوگیری از نشستن آلودگی مواد غذایی درون ظروف",
-      "سایر توضیحات: یک کاور که این بار برای پوشش ظروف حاوی مواد غذایی طراحی شده، بنابراین می توان از آن به عنوان یک ابزار ساده و کارآمد آشپزخانه یاد کرد. درپوش ظرف غذا همانند یک نایلون می باشد که لبه دهانه آن به صورت کشسانی طراحی شده، بنابراین به سادگی می تواند باز شود تا سطح رویین ظرف را دربر گرفته و سپس در زیر ظرف جمع شود، بدین ترتیب به سادگی و بدون کمترین زحمتی ظرف به صورت کامل پوشش داده خواهد شد تا محتویات داخل آن در برابر گرد و غبار و سایر آلودگی های محیطی در امان بماند. درپوش پلاستیکی ظروف در بسته بندی 100 عددی ارائه می شود که از آن برای پوشش ظروف مختلف در آشپزخانه می توان استفاده نمود. علاوه بر این حمل و جابه جایی آسان آن، محصول را به گزینه ای مناسب جهت استفاده در مسافرت ، پیک نیک و … تبدیل نموده تا در صورت نیاز به سادگی قابل دسترس و استفاده باشد. علاوه بر پوشش مواد غذایی داخل ظروف ، از این کالا می توان به عنوان کاور بهداشتی سر برای پوشش موی سر در محیط های مختلف بهداشتی نیز در صورت لزوم بهره برد. داخل کشوی کابینت ، خودرو ، جیب لباس ، سبد پیک نیک و یا هر جای دیگری که نیاز داشته باشید، کاور پلاستیکی به همراه شما خواهد بود تا به سادگی بتوانید استفاده کنید ."
-    ],
-    "checked_specs": true,
-    "features": [],
-    "images": [
-      "https://pakhshabdi.com/wp-content/uploads/2024/03/کاور-پلاستیکی-غذا-100-عددی-2-300x300.jpg",
-      "https://pakhshabdi.com/wp-content/uploads/2024/03/کاور-پلاستیکی-غذا-100-عددی-2.jpg",
-      "https://pakhshabdi.com/wp-content/uploads/2024/03/کاور-پلاستیکی-غذا-100-عددی-1.jpg",
-      "https://pakhshabdi.com/wp-content/uploads/2024/03/کاور-پلاستیکی-غذا-100-عددی-3.jpg",
-      "https://pakhshabdi.com/wp-content/uploads/2024/03/کاور-پلاستیکی-غذا-100-عددی-4.jpg",
-      "https://pakhshabdi.com/wp-content/uploads/2024/03/کاور-پلاستیکی-غذا-100-عددی-5.jpg"
-    ],
-    "checked_images": true,
-    "videos": [],
-    "product_link": "https://pakhshabdi.com/product/%da%a9%d8%a7%d9%88%d8%b1-%d9%be%d9%84%d8%a7%d8%b3%d8%aa%db%8c%da%a9%db%8c-%d8%ba%d8%b0%d8%a7-100-%d8%b9%d8%af%d8%af%db%8c/",
-    "variants": [],
-    "has_variants": false
-  },
-  {
-    "id": null,
     "name": "چنگال اسلایسر سوزنی",
     "slug": "chngl-slysr-swzny",
     "description": "",
@@ -9654,6 +10067,40 @@
     "checked_images": true,
     "videos": [],
     "product_link": "https://pakhshabdi.com/product/%da%86%d9%86%da%af%d8%a7%d9%84-%d8%a7%d8%b3%d9%84%d8%a7%db%8c%d8%b3%d8%b1-%d8%b3%d9%88%d8%b2%d9%86%db%8c/",
+    "variants": [],
+    "has_variants": false
+  },
+  {
+    "id": null,
+    "name": "ذرت دون کن خانگی Corn Stripper",
+    "slug": "dhrt-dwn-khn-khngy-corn-stripper",
+    "description": "",
+    "checked_description": false,
+    "price": 89700,
+    "stock": null,
+    "category": "home-goods",
+    "tags": [
+      "ابزار آشپزخانه"
+    ],
+    "checked_tags": true,
+    "specifications": [
+      "جنس بدنه: پلاستیک",
+      "جنس تیغه: فلز",
+      "ابعاد: 6.2×6.8×11.8 سانتی متر"
+    ],
+    "checked_specs": true,
+    "features": [],
+    "images": [
+      "https://pakhshabdi.com/wp-content/uploads/2024/03/ذرت-دون-کن-Corn-Stripper-2-300x300.jpg",
+      "https://pakhshabdi.com/wp-content/uploads/2024/03/ذرت-دون-کن-Corn-Stripper-2.jpg",
+      "https://pakhshabdi.com/wp-content/uploads/2024/03/ذرت-دون-کن-Corn-Stripper-5.jpg",
+      "https://pakhshabdi.com/wp-content/uploads/2024/03/ذرت-دون-کن-Corn-Stripper-1.jpg",
+      "https://pakhshabdi.com/wp-content/uploads/2024/03/ذرت-دون-کن-Corn-Stripper-4.jpg",
+      "https://pakhshabdi.com/wp-content/uploads/2024/03/ذرت-دون-کن-Corn-Stripper-3.jpg"
+    ],
+    "checked_images": true,
+    "videos": [],
+    "product_link": "https://pakhshabdi.com/product/%d8%b0%d8%b1%d8%aa-%d8%af%d9%88%d9%86-%da%a9%d9%86-%d8%ae%d8%a7%d9%86%da%af%db%8c-corn-stripper/",
     "variants": [],
     "has_variants": false
   },
@@ -10990,6 +11437,37 @@
   },
   {
     "id": null,
+    "name": "راف فلزی یک طبقه درجه یک",
+    "slug": "rf-flzy-ykh-tbqh-drjh-ykh",
+    "description": "",
+    "checked_description": false,
+    "price": 37500,
+    "stock": null,
+    "category": "home-goods",
+    "tags": [
+      "نظم دهنده آشپزخانه"
+    ],
+    "checked_tags": true,
+    "specifications": [
+      "نوع رنگ: کوره ای و ثابت",
+      "ابعاد: 14×26×32 سانتی متر",
+      "مقاوم در برابر: زنگ زدگی، پوسیدگی و تغییر رنگ"
+    ],
+    "checked_specs": true,
+    "features": [],
+    "images": [
+      "https://pakhshabdi.com/wp-content/uploads/2024/03/راف-فلزی-یک-طبقه-1-300x300.jpg",
+      "https://pakhshabdi.com/wp-content/uploads/2024/03/راف-فلزی-یک-طبقه-1.jpg",
+      "https://pakhshabdi.com/wp-content/uploads/2024/03/راف-فلزی-یک-طبقه-2.jpg"
+    ],
+    "checked_images": true,
+    "videos": [],
+    "product_link": "https://pakhshabdi.com/product/%d8%b1%d8%a7%d9%81-%d9%81%d9%84%d8%b2%db%8c-%db%8c%da%a9-%d8%b7%d8%a8%d9%82%d9%87-%d8%af%d8%b1%d8%ac%d9%87-%db%8c%da%a9-%d8%b6%d8%ae%db%8c%d9%85/",
+    "variants": [],
+    "has_variants": false
+  },
+  {
+    "id": null,
     "name": "آسان ریز نوشابه",
     "slug": "sn-ryz-nwshbh",
     "description": "",
@@ -11017,6 +11495,40 @@
     "checked_images": true,
     "videos": [],
     "product_link": "https://pakhshabdi.com/product/%d8%a2%d8%b3%d8%a7%d9%86-%d8%b1%db%8c%d8%b2-%d9%86%d9%88%d8%b4%d8%a7%d8%a8%d9%87-%d9%88-%d8%a2%d8%a8/",
+    "variants": [],
+    "has_variants": false
+  },
+  {
+    "id": null,
+    "name": "رنده 4 تیغه چرخشی تکتا",
+    "slug": "rndh-4-tygh-chrkhshy-tkht",
+    "description": "",
+    "checked_description": false,
+    "price": 310000,
+    "stock": null,
+    "category": "home-goods",
+    "tags": [
+      "ابزار آشپزخانه"
+    ],
+    "checked_tags": true,
+    "specifications": [
+      "جنس بدنه و دسته: پلاستیک",
+      "جنس تیغه: استیل ضد زنگ",
+      "تعداد تیغه: 4 عدد"
+    ],
+    "checked_specs": true,
+    "features": [],
+    "images": [
+      "https://pakhshabdi.com/wp-content/uploads/2024/03/خرد-کن-4-رنده-رومیزی-1-300x300.jpg",
+      "https://pakhshabdi.com/wp-content/uploads/2024/03/خرد-کن-4-رنده-رومیزی-1-600x450.jpg",
+      "https://pakhshabdi.com/wp-content/uploads/2024/03/رنده-چهار-کاره-چرخشی-تکتا-2.jpg",
+      "https://pakhshabdi.com/wp-content/uploads/2024/03/رنده-چهار-کاره-چرخشی-تکتا-3.jpg",
+      "https://pakhshabdi.com/wp-content/uploads/2024/03/رنده-چهار-کاره-چرخشی-تکتا-4.jpg",
+      "https://pakhshabdi.com/wp-content/uploads/2024/03/رنده-چهار-کاره-چرخشی-تکتا-1.jpg"
+    ],
+    "checked_images": true,
+    "videos": [],
+    "product_link": "https://pakhshabdi.com/product/%d8%b1%d9%86%d8%af%d9%87-4-%d8%aa%db%8c%d8%ba%d9%87-%da%86%d8%b1%d8%ae%d8%b4%db%8c-%d8%a8%d8%b1%d9%86%d8%af-%d8%aa%da%a9%d8%aa%d8%a7/",
     "variants": [],
     "has_variants": false
   },
@@ -11207,36 +11719,6 @@
     "checked_images": true,
     "videos": [],
     "product_link": "https://pakhshabdi.com/product/%d9%82%d8%a7%d9%84%d8%a8-%d9%be%db%8c%d8%b1%d8%a7%d8%b4%da%a9%db%8c/",
-    "variants": [],
-    "has_variants": false
-  },
-  {
-    "id": null,
-    "name": "ظرف پیاز",
-    "slug": "zrf-pyz",
-    "description": "",
-    "checked_description": false,
-    "price": 15500,
-    "stock": null,
-    "category": "home-goods",
-    "tags": [
-      "سایر ظروف آشپزخانه"
-    ],
-    "checked_tags": true,
-    "specifications": [
-      "جنس: پلاستیک",
-      "ابعاد: 8×9×10 سانتی متر",
-      "سایر توضیحات: طراحی مدرن و فانتزی ابزاری کارآمد برای آشپزخانه مناسب جهت تازه مانده پیاز و سیر جلوگیری از انتشار بوی بد پیاز در یخچال مناسب برای نگهداری پیاز و سیر درون یخچال جلوگیری از آلوده شدن پیاز پوست کنده و برش خورده"
-    ],
-    "checked_specs": true,
-    "features": [],
-    "images": [
-      "https://pakhshabdi.com/wp-content/uploads/2024/03/dish-onion-700-2-300x300.jpg",
-      "https://pakhshabdi.com/wp-content/uploads/2024/03/dish-onion-700-2-600x390.jpg"
-    ],
-    "checked_images": true,
-    "videos": [],
-    "product_link": "https://pakhshabdi.com/product/%d8%b8%d8%b1%d9%81-%d9%be%db%8c%d8%a7%d8%b2/",
     "variants": [],
     "has_variants": false
   },
@@ -11499,6 +11981,38 @@
     "checked_images": true,
     "videos": [],
     "product_link": "https://pakhshabdi.com/product/%d8%a8%d8%a7%da%a9%d8%b3-%d9%86%d8%ae-%d9%88-%d8%b3%d9%88%d8%b2%d9%86-%d9%88-%d8%ac%d9%88%d8%a7%d9%87%d8%b1%d8%a7%d8%aa-%d9%81%d8%a7%d9%86%d8%aa%d8%b2%db%8c-%d8%b7%d8%b1%d8%ad-%d8%af%da%a9%d9%85%d9%87/",
+    "variants": [],
+    "has_variants": false
+  },
+  {
+    "id": null,
+    "name": "نگهدارنده رو تختی 2 عددی",
+    "slug": "nghdrndh-rw-tkhty-2-ddy",
+    "description": "",
+    "checked_description": false,
+    "price": 83000,
+    "stock": null,
+    "category": "home-goods",
+    "tags": [
+      "اتاق خواب"
+    ],
+    "checked_tags": true,
+    "specifications": [
+      "جنس: کش بسیار محکم و گیره های استیل قوی",
+      "ابعاد: طول کلی 140 سانتی متر با قابلت تنظیم ارتفاع برای کوچکتر کردن و حالت کشی برای فواصل بیشتر",
+      "سایر توضیحات: مناسب برای همه سایز های تخت"
+    ],
+    "checked_specs": true,
+    "features": [],
+    "images": [
+      "https://pakhshabdi.com/wp-content/uploads/2024/03/گیره-نگهدارنده-رو-تختی-2-عددی-2-300x300.jpg",
+      "https://pakhshabdi.com/wp-content/uploads/2024/03/گیره-نگهدارنده-رو-تختی-2-عددی-2.jpg",
+      "https://pakhshabdi.com/wp-content/uploads/2024/03/گیره-نگهدارنده-رو-تختی-2-عددی-1.jpg",
+      "https://pakhshabdi.com/wp-content/uploads/2024/03/3567_1596438024-600x598.jpg"
+    ],
+    "checked_images": true,
+    "videos": [],
+    "product_link": "https://pakhshabdi.com/product/%d9%86%da%af%d9%87%d8%af%d8%a7%d8%b1%d9%86%d8%af%d9%87-%d8%b1%d9%88-%d8%aa%d8%ae%d8%aa%db%8c-2-%d8%b9%d8%af%d8%af%db%8c/",
     "variants": [],
     "has_variants": false
   },
@@ -12060,6 +12574,72 @@
   },
   {
     "id": null,
+    "name": "دستگاه پلمپ حرارتی کیسه کوچک",
+    "slug": "dstgh-plmp-hrrty-khysh-khwchkh",
+    "description": "",
+    "checked_description": false,
+    "price": 55000,
+    "stock": null,
+    "category": "home-goods",
+    "tags": [
+      "ابزار آشپزخانه"
+    ],
+    "checked_tags": true,
+    "specifications": [
+      "جنس: پلاستیک",
+      "ابعاد: 3.9×5×10",
+      "منبع تغذیه: ۲ عدد باطری آلکالاین"
+    ],
+    "checked_specs": true,
+    "features": [],
+    "images": [
+      "https://pakhshabdi.com/wp-content/uploads/2024/03/دستگاه-پلمپ-حرارتی-2-300x300.jpg",
+      "https://pakhshabdi.com/wp-content/uploads/2024/03/دستگاه-پلمپ-حرارتی-2.jpg",
+      "https://pakhshabdi.com/wp-content/uploads/2024/03/دستگاه-پلمپ-حرارتی-1.jpg",
+      "https://pakhshabdi.com/wp-content/uploads/2024/03/دستگاه-پلمپ-حرارتی-3.jpg",
+      "https://pakhshabdi.com/wp-content/uploads/2024/03/دستگاه-پلمپ-حرارتی-4.jpg",
+      "https://pakhshabdi.com/wp-content/uploads/2024/03/دستگاه-پلمپ-حرارتی-5.jpg",
+      "https://pakhshabdi.com/wp-content/uploads/2024/03/photo_2019-11-27_08-59-34.jpg"
+    ],
+    "checked_images": true,
+    "videos": [],
+    "product_link": "https://pakhshabdi.com/product/%d8%af%d8%b3%d8%aa%da%af%d8%a7%d9%87-%d9%be%d9%84%d9%85%d9%be-%d8%ad%d8%b1%d8%a7%d8%b1%d8%aa%db%8c-%da%a9%db%8c%d8%b3%d9%87-%da%a9%d9%88%da%86%da%a9/",
+    "variants": [],
+    "has_variants": false
+  },
+  {
+    "id": null,
+    "name": "راف فلزی دو طبقه درجه یک",
+    "slug": "rf-flzy-dw-tbqh-drjh-ykh",
+    "description": "",
+    "checked_description": false,
+    "price": 50500,
+    "stock": null,
+    "category": "home-goods",
+    "tags": [
+      "نظم دهنده آشپزخانه"
+    ],
+    "checked_tags": true,
+    "specifications": [
+      "نوع رنگ: کوره ای و ثابت",
+      "ابعاد: 18×24×34 سانتی متر",
+      "فاصله بین طبقات: 9 سانتی متر"
+    ],
+    "checked_specs": true,
+    "features": [],
+    "images": [
+      "https://pakhshabdi.com/wp-content/uploads/2024/03/راف-فلزی-دو-طبقه-درجه-1-300x300.jpg",
+      "https://pakhshabdi.com/wp-content/uploads/2024/03/راف-فلزی-دو-طبقه-درجه-1.jpg",
+      "https://pakhshabdi.com/wp-content/uploads/2024/03/قیمت-راف-فلزی-دو-طبقه-درجه-1.jpg"
+    ],
+    "checked_images": true,
+    "videos": [],
+    "product_link": "https://pakhshabdi.com/product/%d8%b1%d8%a7%d9%81-%d9%81%d9%84%d8%b2%db%8c-%d8%af%d9%88-%d8%b7%d8%a8%d9%82%d9%87-%d8%af%d8%b1%d8%ac%d9%87-%db%8c%da%a9/",
+    "variants": [],
+    "has_variants": false
+  },
+  {
+    "id": null,
     "name": "تخم مرغ پز برقی طرح مرغ مدل کاکلی",
     "slug": "tkhm-mrg-pz-brqy-trh-mrg-mdl-khkhly",
     "description": "",
@@ -12514,7 +13094,7 @@
     "slug": "mhfz-bsth-shdn-drb-pwy",
     "description": "",
     "checked_description": false,
-    "price": 31000,
+    "price": 35000,
     "stock": null,
     "category": "home-goods",
     "tags": [
@@ -12736,7 +13316,7 @@
     "slug": "bkhs-lbs-w-hwlh-zyr-tkhty-khwsh",
     "description": "",
     "checked_description": false,
-    "price": 30000,
+    "price": 31000,
     "stock": null,
     "category": "home-goods",
     "tags": [
@@ -12838,7 +13418,7 @@
     "slug": "syr-lh-khn-gltkhy",
     "description": "",
     "checked_description": false,
-    "price": 52000,
+    "price": 58000,
     "stock": null,
     "category": "home-goods",
     "tags": [
@@ -13024,6 +13604,40 @@
     "checked_images": true,
     "videos": [],
     "product_link": "https://pakhshabdi.com/product/%d8%aa%d8%b1%d8%a7%d8%b2%d9%88-%d8%a2%d8%b4%d9%be%d8%b2%d8%ae%d8%a7%d9%86%d9%87-%d8%af%db%8c%d8%ac%db%8c%d8%aa%d8%a7%d9%84-sf400/",
+    "variants": [],
+    "has_variants": false
+  },
+  {
+    "id": null,
+    "name": "کیسه پخت سیب زمینی تنوری",
+    "slug": "khysh-pkht-syb-zmyny-tnwry",
+    "description": "",
+    "checked_description": false,
+    "price": 49500,
+    "stock": null,
+    "category": "home-goods",
+    "tags": [
+      "لوازم پخت و پز"
+    ],
+    "checked_tags": true,
+    "specifications": [
+      "جنس بیرونی: پلی استر",
+      "ابعاد: 20.3×25.4 سانتی متر",
+      "سایر توضیحات: پخت سیب زمینی کامل فقط در 5 دقیقه مناسب براب پخت انواع سیب زمینی ، سیب زمینی شیرین و … قابلیت پخت تا 4 عدد سیب زمینی در یک زمان شستشوی راحت و آسان با قابلیت استفاده مجدد قابلیت استفاده برای درست کردن ذرت و نان ذرت طعم سیب زمینی در این روش بسیار متفاوت با آب پز بوده و روشی بسیار سالم می باشد محصولی بسیار کاربردی به منظور پخت سریع سیب زمینی در ماکروویو بدون نیاز به آب"
+    ],
+    "checked_specs": true,
+    "features": [],
+    "images": [
+      "https://pakhshabdi.com/wp-content/uploads/2024/03/کیسه-پخت-سیب-زمینی-تنوری-2-300x300.png",
+      "https://pakhshabdi.com/wp-content/uploads/2024/03/کیسه-پخت-سیب-زمینی-تنوری-2.png",
+      "https://pakhshabdi.com/wp-content/uploads/2024/03/کیسه-پخت-سیب-زمینی-تنوری-4.png",
+      "https://pakhshabdi.com/wp-content/uploads/2024/03/کیسه-پخت-سیب-زمینی-تنوری-1.png",
+      "https://pakhshabdi.com/wp-content/uploads/2024/03/کیسه-پخت-سیب-زمینی-تنوری-3.png",
+      "https://pakhshabdi.com/wp-content/uploads/2024/03/کیسه-پخت-سیب-زمینی-تنوری.png"
+    ],
+    "checked_images": true,
+    "videos": [],
+    "product_link": "https://pakhshabdi.com/product/%da%a9%db%8c%d8%b3%d9%87-%d9%be%d8%ae%d8%aa-%d8%b3%db%8c%d8%a8-%d8%b2%d9%85%db%8c%d9%86%db%8c-%d8%aa%d9%86%d9%88%d8%b1%db%8c/",
     "variants": [],
     "has_variants": false
   },
@@ -14505,37 +15119,6 @@
   },
   {
     "id": null,
-    "name": "استند گوش پاک کن استوانه ای درجه یک 7022",
-    "slug": "stnd-gwsh-pkh-khn-stwnh-y-drjh-ykh-7022",
-    "description": "",
-    "checked_description": false,
-    "price": 45000,
-    "stock": null,
-    "category": "beauty-and-health",
-    "tags": [
-      "تجهیزات آرایشی"
-    ],
-    "checked_tags": true,
-    "specifications": [
-      "جنس: آکرولیک",
-      "ابعاد: 6.5×9 سانتی متر",
-      "مناسب برای: گوش پاک کن و پد آرایشی"
-    ],
-    "checked_specs": true,
-    "features": [],
-    "images": [
-      "https://pakhshabdi.com/wp-content/uploads/2024/03/استند-گوش-پاک-کن-استوانه-درجه-یک-7022-2-300x300.jpg",
-      "https://pakhshabdi.com/wp-content/uploads/2024/03/استند-گوش-پاک-کن-استوانه-درجه-یک-7022-2-600x600.jpg",
-      "https://pakhshabdi.com/wp-content/uploads/2024/03/استند-گوش-پاک-کن-استوانه-درجه-یک-7022-1.jpg"
-    ],
-    "checked_images": true,
-    "videos": [],
-    "product_link": "https://pakhshabdi.com/product/%d8%a7%d8%b3%d8%aa%d9%86%d8%af-%da%af%d9%88%d8%b4-%d9%be%d8%a7%da%a9-%da%a9%d9%86-%d8%a7%d8%b3%d8%aa%d9%88%d8%a7%d9%86%d9%87-%d8%a7%db%8c-%d8%af%d8%b1%d8%ac%d9%87-%db%8c%da%a9-7022/",
-    "variants": [],
-    "has_variants": false
-  },
-  {
-    "id": null,
     "name": "استند لاک و رژ آکرولیک درجه یک 7021",
     "slug": "stnd-lkh-w-rj-khrwlykh-drjh-ykh-7021",
     "description": "",
@@ -14823,6 +15406,70 @@
   },
   {
     "id": null,
+    "name": "هولدر موبایل دریچه کولر",
+    "slug": "hwldr-mwbyl-drychh-khwlr",
+    "description": "",
+    "checked_description": false,
+    "price": 43000,
+    "stock": null,
+    "category": "digital-goods",
+    "tags": [
+      "پایه نگهدارنده گوشی و تبلت"
+    ],
+    "checked_tags": true,
+    "specifications": [
+      "جنس بدنه: ساخته‌شده از پلاستیک ABS مقاوم و سیلیکون برای دوام بیشتر",
+      "طراحی جمع و جور: سبک و کم‌حجم، مناسب برای استفاده روزمره"
+    ],
+    "checked_specs": true,
+    "features": [],
+    "images": [
+      "https://pakhshabdi.com/wp-content/uploads/2025/08/خرید-هولدر-موبایل-دریچه-کولر-300x300.jpg?v=1755685623",
+      "https://pakhshabdi.com/wp-content/uploads/2025/08/خرید-هولدر-موبایل-دریچه-کولر-600x600.jpg?v=1755685623",
+      "https://pakhshabdi.com/wp-content/uploads/2025/08/کالا-هولدر-موبایل-دریچه-کولر-600x600.jpg?v=1755685618",
+      "https://pakhshabdi.com/wp-content/uploads/2025/08/قیمت-هولدر-موبایل-دریچه-کولر-600x600.jpg?v=1755685605",
+      "https://pakhshabdi.com/wp-content/uploads/2025/08/محصول-هولدر-موبایل-دریچه-کولر-600x600.jpg?v=1755685590"
+    ],
+    "checked_images": true,
+    "videos": [],
+    "product_link": "https://pakhshabdi.com/product/%d9%87%d9%88%d9%84%d8%af%d8%b1-%d9%85%d9%88%d8%a8%d8%a7%db%8c%d9%84-%d8%af%d8%b1%db%8c%da%86%d9%87-%da%a9%d9%88%d9%84%d8%b1/",
+    "variants": [],
+    "has_variants": false
+  },
+  {
+    "id": null,
+    "name": "اسپیکر مینی ایکس",
+    "slug": "spykhr-myny-ykhs",
+    "description": "",
+    "checked_description": false,
+    "price": 186000,
+    "stock": null,
+    "category": "digital-goods",
+    "tags": [
+      "اسپیکر"
+    ],
+    "checked_tags": true,
+    "specifications": [
+      "نام محصول: سیستم صوتی بلوتوث",
+      "مدل محصول: X1",
+      "استانداردهای اجرا: GB 4943.1 – 2022"
+    ],
+    "checked_specs": true,
+    "features": [],
+    "images": [
+      "https://pakhshabdi.com/wp-content/uploads/2025/08/خرید-اسپیکر-مینی-ایکس-300x300.jpg?v=1755605899",
+      "https://pakhshabdi.com/wp-content/uploads/2025/08/خرید-اسپیکر-مینی-ایکس-600x600.jpg?v=1755605899",
+      "https://pakhshabdi.com/wp-content/uploads/2025/08/محصول-اسپیکر-مینی-ایکس-600x600.jpg?v=1755605887",
+      "https://pakhshabdi.com/wp-content/uploads/2025/08/تولید-اسپیکر-مینی-ایکس-600x600.jpg?v=1755605893"
+    ],
+    "checked_images": true,
+    "videos": [],
+    "product_link": "https://pakhshabdi.com/product/%d8%a7%d8%b3%d9%be%db%8c%da%a9%d8%b1-%d9%85%db%8c%d9%86%db%8c-%d8%a7%db%8c%da%a9%d8%b3/",
+    "variants": [],
+    "has_variants": false
+  },
+  {
+    "id": null,
     "name": "لامپ دیسکویی رومیزی",
     "slug": "lmp-dyskhwyy-rwmyzy",
     "description": "",
@@ -14974,6 +15621,37 @@
     "checked_images": true,
     "videos": [],
     "product_link": "https://pakhshabdi.com/product/%d9%87%d9%88%d9%84%d8%af%d8%b1-%d9%85%d9%88%d8%a8%d8%a7%db%8c%d9%84-%d8%af%db%8c%d9%88%d8%a7%d8%b1%db%8c-%d8%af%d9%88%d9%82%d9%84%d9%88-%d9%84%db%8c%d9%86%d9%88/",
+    "variants": [],
+    "has_variants": false
+  },
+  {
+    "id": null,
+    "name": "اسپیکر بلوتوثی مدل 1360",
+    "slug": "spykhr-blwtwthy-mdl-1360",
+    "description": "",
+    "checked_description": false,
+    "price": 199000,
+    "stock": null,
+    "category": "digital-goods",
+    "tags": [
+      "اسپیکر"
+    ],
+    "checked_tags": true,
+    "specifications": [
+      "نوع اتصال: بلوتوث",
+      "نسخه ی بلوتوث: 5",
+      "درگاه ارتباط: usb"
+    ],
+    "checked_specs": true,
+    "features": [],
+    "images": [
+      "https://pakhshabdi.com/wp-content/uploads/2025/04/خرید-اسپیکر-بلوتوثی-مدل-1360-300x300.jpg?v=1744451744",
+      "https://pakhshabdi.com/wp-content/uploads/2025/04/خرید-اسپیکر-بلوتوثی-مدل-1360-600x600.jpg?v=1744451744",
+      "https://pakhshabdi.com/wp-content/uploads/2025/04/قیمت-اسپیکر-بلوتوثی-مدل-1360-600x600.jpg?v=1744451740"
+    ],
+    "checked_images": true,
+    "videos": [],
+    "product_link": "https://pakhshabdi.com/product/%d8%a7%d8%b3%d9%be%db%8c%da%a9%d8%b1-%d8%a8%d9%84%d9%88%d8%aa%d9%88%d8%ab%db%8c-%d9%85%d8%af%d9%84-1360/",
     "variants": [],
     "has_variants": false
   },
@@ -15757,6 +16435,41 @@
   },
   {
     "id": null,
+    "name": "نگهدارنده فیش برق 4 عددی",
+    "slug": "nghdrndh-fysh-brq-4-ddy",
+    "description": "",
+    "checked_description": false,
+    "price": 14500,
+    "stock": null,
+    "category": "digital-goods",
+    "tags": [
+      "سایر کالای دیجیتال"
+    ],
+    "checked_tags": true,
+    "specifications": [
+      "جنس: پلاستیک",
+      "تعداد در بسته: 4 عدد",
+      "سایر توضیحات: مناسب برای چسباندن به سرامیک و کاشی مناسب برای قراردادن مسواک ، لیوان ، حوله، پارچه،لیف، ژیلت، سیم شارژر، بطری های دسته دار و…"
+    ],
+    "checked_specs": true,
+    "features": [],
+    "images": [
+      "https://pakhshabdi.com/wp-content/uploads/2024/03/نگهدارنده-فیش-برق-4-عددی-1-300x300.jpg",
+      "https://pakhshabdi.com/wp-content/uploads/2024/03/نگهدارنده-فیش-برق-4-عددی-1.jpg",
+      "https://pakhshabdi.com/wp-content/uploads/2024/03/نگهدارنده-فیش-برق-4-عددی-2.jpg",
+      "https://pakhshabdi.com/wp-content/uploads/2024/03/نگهدارنده-فیش-برق-4-عددی-3.jpg",
+      "https://pakhshabdi.com/wp-content/uploads/2024/03/نگهدارنده-فیش-برق-4-عددی-4.jpg",
+      "https://pakhshabdi.com/wp-content/uploads/2024/03/نگهدارنده-فیش-برق-4-عددی-5.jpg",
+      "https://pakhshabdi.com/wp-content/uploads/2024/03/استند-4-عددی-فیش-برق.jpg"
+    ],
+    "checked_images": true,
+    "videos": [],
+    "product_link": "https://pakhshabdi.com/product/%d9%86%da%af%d9%87%d8%af%d8%a7%d8%b1%d9%86%d8%af%d9%87-%d9%81%db%8c%d8%b4-%d8%a8%d8%b1%d9%82-4-%d8%b9%d8%af%d8%af%db%8c/",
+    "variants": [],
+    "has_variants": false
+  },
+  {
+    "id": null,
     "name": "هولدر گوشی چسبونکی VIP",
     "slug": "hwldr-gwshy-chsbwnkhy-vip",
     "description": "",
@@ -15848,6 +16561,100 @@
     "checked_images": true,
     "videos": [],
     "product_link": "https://pakhshabdi.com/product/%d9%84%db%8c%d8%b2%d8%b1-%d8%b3%d8%a8%d8%b2-%d8%ad%d8%b1%d8%a7%d8%b1%d8%aa%db%8c-%d8%a8%d8%b1%d8%af-12-%da%a9%db%8c%d9%84%d9%88%d9%85%d8%aa%d8%b1/",
+    "variants": [],
+    "has_variants": false
+  },
+  {
+    "id": null,
+    "name": "قلم خشگیر خودرو",
+    "slug": "qlm-khshgyr-khwdrw",
+    "description": "",
+    "checked_description": false,
+    "price": 58500,
+    "stock": null,
+    "category": "car-accessories",
+    "tags": [
+      "نظافت و نگهداری خودرو"
+    ],
+    "checked_tags": true,
+    "specifications": [
+      "زمینه کاربرد محصول: قلم خش گیر",
+      "قابلیت: پوشش و چسبندگی بالا",
+      "مقاوم: دربرابر اشعه ماورا بنفش\n\nدر برابر ساییدگی و خوردگی"
+    ],
+    "checked_specs": true,
+    "features": [],
+    "images": [
+      "https://pakhshabdi.com/wp-content/uploads/2025/08/خرید-قلم-خشگیر-خودرو-300x300.jpg?v=1755677789",
+      "https://pakhshabdi.com/wp-content/uploads/2025/08/خرید-قلم-خشگیر-خودرو-600x600.jpg?v=1755677789",
+      "https://pakhshabdi.com/wp-content/uploads/2025/08/کالا-قلم-خشگیر-خودرو-600x600.jpg?v=1755677785"
+    ],
+    "checked_images": true,
+    "videos": [],
+    "product_link": "https://pakhshabdi.com/product/%d9%82%d9%84%d9%85-%d8%ae%d8%b4%da%af%db%8c%d8%b1-%d8%ae%d9%88%d8%af%d8%b1%d9%88/",
+    "variants": [],
+    "has_variants": false
+  },
+  {
+    "id": null,
+    "name": "واکس نانو خودرو",
+    "slug": "wkhs-nnw-khwdrw",
+    "description": "",
+    "checked_description": false,
+    "price": 84500,
+    "stock": null,
+    "category": "car-accessories",
+    "tags": [
+      "نظافت و نگهداری خودرو"
+    ],
+    "checked_tags": true,
+    "specifications": [
+      "قابل استفاده برای: قطعات پلاستیکی مانند داشبورد، قاب در ، درب ، پنل ها ، پدال ها و….",
+      "ماندگاری: 3 سال",
+      "خالص: 30 میلی متر"
+    ],
+    "checked_specs": true,
+    "features": [],
+    "images": [
+      "https://pakhshabdi.com/wp-content/uploads/2025/08/خرید-واکس-نانو-خودرو-300x300.jpg?v=1755676954",
+      "https://pakhshabdi.com/wp-content/uploads/2025/08/خرید-واکس-نانو-خودرو-600x600.jpg?v=1755676954",
+      "https://pakhshabdi.com/wp-content/uploads/2025/08/محصول-واکس-نانو-خودرو-600x600.jpg?v=1755676959"
+    ],
+    "checked_images": true,
+    "videos": [],
+    "product_link": "https://pakhshabdi.com/product/%d9%88%d8%a7%da%a9%d8%b3-%d9%86%d8%a7%d9%86%d9%88-%d8%ae%d9%88%d8%af%d8%b1%d9%88/",
+    "variants": [],
+    "has_variants": false
+  },
+  {
+    "id": null,
+    "name": "پکیج پنجرگیری 10 عددی",
+    "slug": "pkhyj-pnjrgyry-10-ddy",
+    "description": "",
+    "checked_description": false,
+    "price": 72000,
+    "stock": null,
+    "category": "car-accessories",
+    "tags": [
+      "ابزار خودرو"
+    ],
+    "checked_tags": true,
+    "specifications": [
+      "ساخت: چین",
+      "طول پیچ: 1.5 سانت",
+      "ست: 10 عددی"
+    ],
+    "checked_specs": true,
+    "features": [],
+    "images": [
+      "https://pakhshabdi.com/wp-content/uploads/2025/08/خرید-پکیج-پنجرگیری-10-عددی-300x300.jpg?v=1755607988",
+      "https://pakhshabdi.com/wp-content/uploads/2025/08/خرید-پکیج-پنجرگیری-10-عددی-600x600.jpg?v=1755607988",
+      "https://pakhshabdi.com/wp-content/uploads/2025/08/محصول-پکیج-پنجرگیری-10-عددی-600x600.jpg?v=1755607993",
+      "https://pakhshabdi.com/wp-content/uploads/2025/08/کالا-پکیج-پنجرگیری-10-عددی-600x600.jpg?v=1755607999"
+    ],
+    "checked_images": true,
+    "videos": [],
+    "product_link": "https://pakhshabdi.com/product/%d9%be%da%a9%db%8c%d8%ac-%d9%be%d9%86%d8%ac%d8%b1%da%af%db%8c%d8%b1%db%8c-10-%d8%b9%d8%af%d8%af%db%8c/",
     "variants": [],
     "has_variants": false
   },
@@ -16652,6 +17459,37 @@
   },
   {
     "id": null,
+    "name": "جارو شارژی ماشین دو کاره مدل AS228",
+    "slug": "jrw-shrjy-mshyn-dw-khrh-mdl-as228",
+    "description": "",
+    "checked_description": false,
+    "price": 199000,
+    "stock": null,
+    "category": "car-accessories",
+    "tags": [
+      "نظافت و نگهداری خودرو"
+    ],
+    "checked_tags": true,
+    "specifications": [
+      "ولتاژ: 7.4 ولت",
+      "قدرت: 60 وات",
+      "کاربرد: تمیز کردن ماشین، کناره مبل و صندلی ، قفسه ها و …"
+    ],
+    "checked_specs": true,
+    "features": [],
+    "images": [
+      "https://pakhshabdi.com/wp-content/uploads/2024/03/جارو-شارژی-ماشین-دو-کاره-مدل-AS228-300x300.jpg",
+      "https://pakhshabdi.com/wp-content/uploads/2024/03/جارو-شارژی-ماشین-دو-کاره-مدل-AS228.jpg",
+      "https://pakhshabdi.com/wp-content/uploads/2024/03/قیمت-جارو-شارژی-ماشین-دو-کاره-مدل-AS228.jpg"
+    ],
+    "checked_images": true,
+    "videos": [],
+    "product_link": "https://pakhshabdi.com/product/%d8%ac%d8%a7%d8%b1%d9%88-%d8%b4%d8%a7%d8%b1%da%98%db%8c-%d9%85%d8%a7%d8%b4%db%8c%d9%86-%d8%af%d9%88-%da%a9%d8%a7%d8%b1%d9%87-%d9%85%d8%af%d9%84-as228/",
+    "variants": [],
+    "has_variants": false
+  },
+  {
+    "id": null,
     "name": "سرشلنگی کارواش مدل بلک کینگ",
     "slug": "srshlngy-khrwsh-mdl-blkh-khyng",
     "description": "",
@@ -16913,6 +17751,38 @@
     "checked_images": true,
     "videos": [],
     "product_link": "https://pakhshabdi.com/product/%d8%b3%d8%b7%d9%84-%d8%b2%d8%a8%d8%a7%d9%84%d9%87-%d8%af%d8%a7%d8%ae%d9%84-%d8%ae%d9%88%d8%af%d8%b1%d9%88-%d9%84%db%8c%d9%88%d8%a7%d9%86%db%8c-%d8%a2%db%8c%d9%84%db%8c%d9%86/",
+    "variants": [],
+    "has_variants": false
+  },
+  {
+    "id": null,
+    "name": "ارگانایزر مسافرتی 6 عددی",
+    "slug": "rgnyzr-msfrty-6-ddy",
+    "description": "",
+    "checked_description": false,
+    "price": 222000,
+    "stock": null,
+    "category": "sports-and-travel",
+    "tags": [
+      "تجهیزات سفر"
+    ],
+    "checked_tags": true,
+    "specifications": [
+      "جنس: پارچه ای",
+      "مناسب برای: لوازم شخصی",
+      "تعداد ساک: 6 عدد در سایزهای مختلف"
+    ],
+    "checked_specs": true,
+    "features": [],
+    "images": [
+      "https://pakhshabdi.com/wp-content/uploads/2025/08/خرید-ارگانایزر-مسافرتی-6-عددی-300x300.png",
+      "https://pakhshabdi.com/wp-content/uploads/2025/08/خرید-ارگانایزر-مسافرتی-6-عددی-600x600.png",
+      "https://pakhshabdi.com/wp-content/uploads/2025/08/کالا-ارگانایزر-مسافرتی-6-عددی.png",
+      "https://pakhshabdi.com/wp-content/uploads/2025/08/محصول-ارگانایزر-مسافرتی-6-عددی.png"
+    ],
+    "checked_images": true,
+    "videos": [],
+    "product_link": "https://pakhshabdi.com/product/%d8%a7%d8%b1%da%af%d8%a7%d9%86%d8%a7%db%8c%d8%b2%d8%b1-%d9%85%d8%b3%d8%a7%d9%81%d8%b1%d8%aa%db%8c-6-%d8%b9%d8%af%d8%af%db%8c/",
     "variants": [],
     "has_variants": false
   },
@@ -18144,6 +19014,37 @@
   },
   {
     "id": null,
+    "name": "ضربه گیر گوشه میز 8 عددی",
+    "slug": "drbh-gyr-gwshh-myz-8-ddy",
+    "description": "",
+    "checked_description": false,
+    "price": 99000,
+    "stock": null,
+    "category": "baby-and-infant",
+    "tags": [
+      "کودک و نوزاد"
+    ],
+    "checked_tags": true,
+    "specifications": [
+      "جنس: پلاستیک",
+      "ابعاد: 2×4.3 سانتی متر",
+      "سایر توضیحات: طراحی نوین و کاملاً کاربردی تولید شده از جنس پلاستیک مقاوم ، با کیفیت و شفاف ارائه شده در بسته بندی 4 عددی مانع از آسیب دیدگی در برخورد با لبه میز دارای دو لایه محافظ سبک و کم حجم بدون ایجاد تغییر محسوس در ظاهر میزها همراه با چست دوطرف شفاف جهت ثابت کردن ضربه گیر قابل استفاده برای انواع لبه های میز با خم زاویه 90 درجه مناسب جهت استفاده در منزل ، محل کار ، مهدکودک ها و …"
+    ],
+    "checked_specs": true,
+    "features": [],
+    "images": [
+      "https://pakhshabdi.com/wp-content/uploads/2024/03/خرید-ضربه-گیر-گوشه-میز-300x300.jpg?v=1727938324",
+      "https://pakhshabdi.com/wp-content/uploads/2024/03/خرید-ضربه-گیر-گوشه-میز-600x600.jpg?v=1727938324",
+      "https://pakhshabdi.com/wp-content/uploads/2024/03/قیمت-ضربه-گیر-گوشه-میز-600x600.jpg?v=1727938319"
+    ],
+    "checked_images": true,
+    "videos": [],
+    "product_link": "https://pakhshabdi.com/product/%d8%b6%d8%b1%d8%a8%d9%87-%da%af%db%8c%d8%b1-%da%af%d9%88%d8%b4%d9%87-%d9%85%db%8c%d8%b2/",
+    "variants": [],
+    "has_variants": false
+  },
+  {
+    "id": null,
     "name": "نگهدارنده عینک پشت گوش سیلیکونی",
     "slug": "nghdrndh-ynkh-psht-gwsh-sylykhwny",
     "description": "",
@@ -18207,6 +19108,38 @@
   },
   {
     "id": null,
+    "name": "کاور کفش مسافرتی طرح دار میامی",
+    "slug": "khwr-khfsh-msfrty-trh-dr-mymy",
+    "description": "",
+    "checked_description": false,
+    "price": 19500,
+    "stock": null,
+    "category": "fashion-and-clothing",
+    "tags": [
+      "مد و پوشاک"
+    ],
+    "checked_tags": true,
+    "specifications": [
+      "جنس: اسپان باند",
+      "ابعاد: 22×30 سانتی متر",
+      "مناسب برای: برای نظم دهی به کفش"
+    ],
+    "checked_specs": true,
+    "features": [],
+    "images": [
+      "https://pakhshabdi.com/wp-content/uploads/2024/03/کاور-کفش-طرح-دار-میامی-300x300.jpg",
+      "https://pakhshabdi.com/wp-content/uploads/2024/03/کاور-کفش-طرح-دار-میامی.jpg",
+      "https://pakhshabdi.com/wp-content/uploads/2024/03/خرید-کاور-کفش-طرح-دار-میامی.jpg",
+      "https://pakhshabdi.com/wp-content/uploads/2024/03/قیمت-کاور-کفش-طرح-دار-میامی.jpg"
+    ],
+    "checked_images": true,
+    "videos": [],
+    "product_link": "https://pakhshabdi.com/product/%da%a9%d8%a7%d9%88%d8%b1-%da%a9%d9%81%d8%b4-%d9%85%d8%b3%d8%a7%d9%81%d8%b1%d8%aa%db%8c-%d8%b7%d8%b1%d8%ad-%d8%af%d8%a7%d8%b1-%d9%85%db%8c%d8%a7%d9%85%db%8c/",
+    "variants": [],
+    "has_variants": false
+  },
+  {
+    "id": null,
     "name": "سوتین ژله ای",
     "slug": "swtyn-jlh-y",
     "description": "",
@@ -18233,6 +19166,41 @@
     "checked_images": true,
     "videos": [],
     "product_link": "https://pakhshabdi.com/product/%d8%b3%d9%88%d8%aa%db%8c%d9%86-%da%98%d9%84%d9%87-%d8%a7%db%8c/",
+    "variants": [],
+    "has_variants": false
+  },
+  {
+    "id": null,
+    "name": "کیف لوازم شخصی مسافرتی",
+    "slug": "khyf-lwzm-shkhsy-msfrty",
+    "description": "",
+    "checked_description": false,
+    "price": 40000,
+    "stock": null,
+    "category": "fashion-and-clothing",
+    "tags": [
+      "مد و پوشاک"
+    ],
+    "checked_tags": true,
+    "specifications": [
+      "جنس: پارچه",
+      "ابعاد: ۱۰×۲۴×۱۹.۵ سانتی‌ متر",
+      "نحوه بسته شدن: زیپ"
+    ],
+    "checked_specs": true,
+    "features": [],
+    "images": [
+      "https://pakhshabdi.com/wp-content/uploads/2024/03/کیف-لوازم-شخصی-مسافرتی-4-300x300.jpg",
+      "https://pakhshabdi.com/wp-content/uploads/2024/03/کیف-لوازم-شخصی-مسافرتی-4.jpg",
+      "https://pakhshabdi.com/wp-content/uploads/2024/03/کیف-لوازم-شخصی-مسافرتی-2-1.jpg",
+      "https://pakhshabdi.com/wp-content/uploads/2024/03/کیف-لوازم-شخصی-مسافرتی-1-1.jpg",
+      "https://pakhshabdi.com/wp-content/uploads/2024/03/کیف-لوازم-شخصی-مسافرتی-3.jpg",
+      "https://pakhshabdi.com/wp-content/uploads/2024/03/کیف-لوازم-شخصی-مسافرتی-2.jpg",
+      "https://pakhshabdi.com/wp-content/uploads/2024/03/کیف-لوازم-شخصی-مسافرتی-1.jpg"
+    ],
+    "checked_images": true,
+    "videos": [],
+    "product_link": "https://pakhshabdi.com/product/%da%a9%db%8c%d9%81-%d9%84%d9%88%d8%a7%d8%b2%d9%85-%d8%b4%d8%ae%d8%b5%db%8c-%d9%85%d8%b3%d8%a7%d9%81%d8%b1%d8%aa%db%8c/",
     "variants": [],
     "has_variants": false
   },

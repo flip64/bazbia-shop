@@ -5,11 +5,25 @@ import json
 from datetime import datetime
 from scrap_abdisite.utils.abdi_fetcher import extract_specifications, extract_tags, extract_product_images
 from time import sleep
+import logging
 
 is_running = False
+
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))  # میشه scrap_abdisite/
 RAW_FOLDER = os.path.join(BASE_DIR, "data/raw")
 EDITED_FOLDER = os.path.join(BASE_DIR, "data/edited")
+os.makedirs(EDITED_FOLDER, exist_ok=True)
+
+# تنظیمات لاگ
+LOG_FILE = os.path.join(EDITED_FOLDER, "scrap_log.txt")
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s [%(levelname)s] %(message)s",
+    handlers=[
+        logging.FileHandler(LOG_FILE, encoding="utf-8"),
+        logging.StreamHandler()
+    ]
+)
 
 
 def process_latest_file():
@@ -27,16 +41,18 @@ def process_latest_file():
                     new_specs = extract_specifications(product["product_link"])
                     product["specifications"].extend(new_specs)
                     product["checked_specs"] = True
+                    logging.info(f"✅ مشخصات محصول '{product.get('name')}' استخراج شد.")
                 except Exception as e:
-                    print(f"❌ خطا در استخراج مشخصات محصول {product.get('name')}: {e}")
+                    logging.error(f"❌ خطا در استخراج مشخصات محصول {product.get('name')}: {e}")
 
             if not product.get("checked_tags", False):
                 try:
                     new_tags = extract_tags(product["product_link"])
                     product["tags"].extend([t for t in new_tags if t not in product["tags"]])
                     product["checked_tags"] = True
+                    logging.info(f"✅ تگ‌های محصول '{product.get('name')}' استخراج شد.")
                 except Exception as e:
-                    print(f"❌ خطا در استخراج تگ محصول {product.get('name')}: {e}")
+                    logging.error(f"❌ خطا در استخراج تگ محصول {product.get('name')}: {e}")
 
             if not product.get("checked_images", False):
                 try:
@@ -44,20 +60,22 @@ def process_latest_file():
                     product.setdefault("images", [])
                     product["images"].extend([img for img in new_images if img not in product["images"]])
                     product["checked_images"] = True
+                    logging.info(f"✅ تصاویر محصول '{product.get('name')}' استخراج شد.")
                 except Exception as e:
-                    print(f"❌ خطا در استخراج تصاویر محصول {product.get('name')}: {e}")
+                    logging.error(f"❌ خطا در استخراج تصاویر محصول {product.get('name')}: {e}")
 
             processed.append(product)
 
             # هر batch_size محصول یکبار ذخیره کن
             if idx % batch_size == 0:
                 save_partial(processed, suffix="temp")
-                print(f"💾 ذخیره موقت بعد از {idx} محصول")
+                logging.info(f"💾 ذخیره موقت بعد از {idx} محصول")
 
             sleep(1)
 
     # در پایان: ذخیره فایل کامل
-    save_final(processed)
+    result_savefile = save_final(processed)
+    clear_temp_files()
     return {
         "edited_file": "FINAL",
         "products_count": len(processed)
@@ -74,12 +92,19 @@ def save_partial(products, suffix):
 
 
 def save_final(products):
-    timestamp = datetime.now().strftime("%Y%m%d_%H%M")
-    total_count = len(products)
-    filename = f"edited_{timestamp}_{total_count}.json"
-    output_path = os.path.join(EDITED_FOLDER, filename)
-    with open(output_path, "w", encoding="utf-8") as f:
-        json.dump(products, f, ensure_ascii=False, indent=2)
+    try:
+        os.makedirs(EDITED_FOLDER, exist_ok=True)  # مطمئن شو پوشه وجود داره
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M")
+        total_count = len(products)
+        filename = f"edited_{timestamp}_{total_count}.json"
+        output_path = os.path.join(EDITED_FOLDER, filename)
+        with open(output_path, "w", encoding="utf-8") as f:
+            json.dump(products, f, ensure_ascii=False, indent=2)
+        logging.info(f"💾 فایل نهایی ذخیره شد: {filename}")
+        return True
+    except Exception as e:
+        logging.error(f"❌ خطا در ذخیره فایل نهایی: {e}")
+        return False
 
 
 def merge_new_products():
@@ -130,6 +155,9 @@ def merge_new_products():
     # اضافه کردن محصولات جدید به فایل روز قبل
     merged_products = prev_products + new_products
 
+    logging.info(f"🆕 تعداد محصولات جدید: {len(new_products)}")
+    logging.info(f"📦 مجموع محصولات پس از ادغام: {len(merged_products)}")
+
     return {
         "raw_file": latest_raw_file,
         "previous_edited_file": previous_edited,
@@ -144,5 +172,6 @@ def clear_temp_files():
         if f.startswith("edited_") and "_temp" in f:
             try:
                 os.remove(os.path.join(EDITED_FOLDER, f))
+                logging.info(f"🗑️ حذف فایل موقت: {f}")
             except Exception as e:
-                print(f"❌ خطا در حذف فایل موقت {f}: {e}")
+                logging.error(f"❌ خطا در حذف فایل موقت {f}: {e}")
