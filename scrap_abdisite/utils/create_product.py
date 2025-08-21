@@ -125,6 +125,7 @@ def generate_unique_slug(name):
 
 
 def download_and_attach_images(product: Product, image_urls: list, main_index: int = 0):
+    print("be inja residim")
     for idx, url in enumerate(image_urls):
         if not url:
             continue
