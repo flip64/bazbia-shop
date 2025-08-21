@@ -108,7 +108,7 @@ def import_products_from_json(user):
         )
 
         # تصاویر
-        image_urls = item.get('image_links', [])
+        image_urls = item.get('images', [])
         print("566666",image_urls)
         if image_urls:
             print(f" - Downloading {len(image_urls)} images...")
