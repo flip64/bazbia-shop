@@ -132,6 +132,8 @@ env/
 bin/
 lib64
 pyvenv.cfg
+# نادیده گرفتن کل فولدر data
+scrap_abdisite/data/
 
 
 
