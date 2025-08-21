@@ -109,6 +109,7 @@ def import_products_from_json(user):
 
         # تصاویر
         image_urls = item.get('image_links', [])
+        print("566666",image_urls)
         if image_urls:
             print(f" - Downloading {len(image_urls)} images...")
             download_and_attach_images(product, image_urls, main_index=0)
