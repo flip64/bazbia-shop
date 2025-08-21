@@ -164,10 +164,17 @@ class ProductImage(models.Model):
         related_name='images'
     )
 
-    # خود تصویر
+    # خود تصویر (دانلود شده)
     image = models.ImageField(
         upload_to='product_images/',
-        help_text='مسیر ذخیره تصویر در media'
+        help_text='مسیر ذخیره تصویر در media',
+        blank=True, null=True
+    )
+
+    # لینک تصویر از تأمین‌کننده
+    source_url = models.URLField(
+        blank=True, null=True, unique=True,
+        help_text='لینک تصویر اصلی از تأمین‌کننده (اختیاری)'
     )
 
     # متن جایگزین (برای SEO و کاربران نابینا)
@@ -183,8 +190,7 @@ class ProductImage(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return f"Image of {self.product.name}"
-
+        return f"Image of {self.product.name} - {self.source_url or 'No URL'}"
 
 # ==============================
 # مدل ویدئوهای محصول (ProductVideo)
