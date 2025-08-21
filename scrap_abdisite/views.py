@@ -168,7 +168,7 @@ def create_product(request):
      if user.is_authenticated:
       import_products_from_json(user)
 
-  return Httpresponse("complete successfully")
+  return HttpResponse("complete successfully")
 
 
 
