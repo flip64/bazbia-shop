@@ -164,18 +164,12 @@ def change_price_all(request):
 @login_required
 def create_product(request):
   
-  if request.method == 'POST':
-   form = Create_productForm(request.POST, request.FILES)
-   if form.is_valid():
-     file = form.cleaned_data['file']
      user = request.user  # یا هر کاربر دلخواه
      if user.is_authenticated:
-      import_products_from_json(file, user) 
-     return render(request, 'upload_success.html')  # یا هر صفحه‌ی دلخواه
-  else : 
-    form = Create_productForm()
+      import_products_from_json(user)
 
-  return render(request, 'scrap_abdisite/create_product.html', {'form': form})
+  return Httpresponse("complete successfully")
+
 
 
 
