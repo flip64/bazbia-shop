@@ -254,3 +254,5 @@ def fetch_details_products(request):
 
     Thread(target=run).start()
     return JsonResponse({"status": "started", "message": "اسکریپت در پس‌زمینه شروع شد"})
+
+

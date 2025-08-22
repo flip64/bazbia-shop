@@ -1,12 +1,13 @@
-from rest_framework import generics
-from products.models import Product
-from products.api.serializers import ProductSerializer,SpecialProductSerializer
-from products.api.pagination import CustomCategoryPagination
-from products.models import Category , Product , SpecialProduct
-from rest_framework.decorators import api_view
-from rest_framework.response import Response
-from products.api.serializers import CategorySerializer , ProductImageSerializer
-from rest_framework import generics
+from rest_framework            import  generics
+from products.models           import  Product
+from products.api.serializers  import  ProductSerializer,SpecialProductSerializer
+from products.api.pagination   import  CustomCategoryPagination
+from products.models           import  Category , Product , SpecialProduct
+from rest_framework.decorators import  api_view
+from rest_framework.response   import  Response
+from products.api.serializers  import  CategorySerializer , ProductImageSerializer
+from products.api.serializers  import  NewProductSerializer
+from rest_framework.views      import  APIView
 
 
 
@@ -34,7 +35,6 @@ class ProductDetailAPIView(generics.RetrieveAPIView):
 
 
 
-
 class CategoryListAPIView(generics.ListAPIView):
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
@@ -44,12 +44,15 @@ class CategoryListAPIView(generics.ListAPIView):
 class SpecialProductListAPIView(generics.ListAPIView):
     serializer_class = SpecialProductSerializer
     def get_queryset(self):
-        print(SpecialProduct.objects.filter(is_active = True).values())
-        return SpecialProduct.objects.filter(
-            is_active=True,)
+        return SpecialProduct.objects.filter(is_active=True)
 
 
 
+class NewProductsAPIView(APIView):
+    def get(self, request):
+       new_products = Product.objects.order_by('-created_at')[:30]
+       serializer = NewProductSerializer(new_products, many=True, context={'request': request})
+       return Response(serializer.data)
 
 
 
