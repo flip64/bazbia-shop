@@ -4,11 +4,15 @@ import json
 import time
 import os
 from datetime import datetime, timedelta
-from slugify import slugify  # pip install python-slugify
+from django.utils.text import slugify
 import re
 
-products = []
-total_count = 0  # شمارنده کل محصولات
+# مسیر app اصلی
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))  # میشه scrap_abdisite/
+OUTPUT_DIR = os.path.join(BASE_DIR, "data", "raw")
+os.makedirs(OUTPUT_DIR, exist_ok=True)
+
+headers = {"User-Agent": "Mozilla/5.0"}
 
 list_cat = [
     "game-and-fun", "home-goods", "beauty-and-health",
@@ -16,38 +20,40 @@ list_cat = [
     "baby-and-infant", "fashion-and-clothing"
 ]
 
-headers = {"User-Agent": "Mozilla/5.0"}
-
-# مسیر ذخیره فایل‌ها
-# مسیر app اصلی
-BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))  # میشه scrap_abdisite/
-
-
-
-OUTPUT_DIR = os.path.join(BASE_DIR, "data", "raw")
-os.makedirs(OUTPUT_DIR, exist_ok=True)
-
-
-# پیدا کردن آخرین فایل و بررسی زمان
-def is_need_scrap():
+# پیدا کردن آخرین فایل
+def get_last_file():
     files = [f for f in os.listdir(OUTPUT_DIR) if f.startswith("raw_") and f.endswith(".json")]
     if not files:
+        return None
+    files.sort(key=lambda f: os.path.getmtime(os.path.join(OUTPUT_DIR, f)), reverse=True)
+    return os.path.join(OUTPUT_DIR, files[0])
+
+def is_need_scrap():
+    last_file = get_last_file()
+    if not last_file:
         return True  # هیچ فایلی نیست → باید اسکرپ کنیم
 
-    # مرتب‌سازی بر اساس تاریخ تغییر
-    files.sort(key=lambda f: os.path.getmtime(os.path.join(OUTPUT_DIR, f)), reverse=True)
-    last_file = files[0]
-    last_path = os.path.join(OUTPUT_DIR, last_file)
-    last_time = datetime.fromtimestamp(os.path.getmtime(last_path))
-
+    last_time = datetime.fromtimestamp(os.path.getmtime(last_file))
     if datetime.now() - last_time > timedelta(hours=12):
-        return True  # بیشتر از ۱۲ ساعت گذشته → اسکرپ لازم است
+        return True
     else:
-        print(f"⏳ آخرین گزارش ({last_file}) کمتر از ۱۲ ساعت پیش ذخیره شده. نیازی به اسکرپ نیست.")
+        print(f"⏳ آخرین گزارش ({os.path.basename(last_file)}) کمتر از ۱۲ ساعت پیش ذخیره شده. نیازی به اسکرپ نیست.")
         return False
 
+def fetche_productsـlist():
+    """اسکرپ محصولات پخش عبدی یا خواندن آخرین فایل ذخیره‌شده"""
+    products = []
+    total_count = 0
 
-if is_need_scrap():
+    if not is_need_scrap():
+        last_file = get_last_file()
+        if last_file:
+            with open(last_file, "r", encoding="utf-8") as f:
+                products = json.load(f)
+            return products, last_file
+        else:
+            return [], None
+
     for cat in list_cat:
         page = 1
         while True:
@@ -74,14 +80,12 @@ if is_need_scrap():
                 break
 
             print(f"✅ {len(items)} محصول در صفحه {page} یافت شد.")
-
-            no_price_in_row = 0  # شمارنده محصولات بدون قیمت پشت سر هم
+            no_price_in_row = 0
 
             for item in items:
                 name_tag = item.find("h2", class_="product-title")
                 name_link_tag = name_tag.find("a") if name_tag else None
                 if not name_link_tag:
-                    print("❗ نام محصول یافت نشد → رد شد.")
                     continue
 
                 name = name_link_tag.text.strip()
@@ -91,20 +95,17 @@ if is_need_scrap():
                 price_tag = item.find("span", class_="woocommerce-Price-amount")
                 if not price_tag:
                     no_price_in_row += 1
-                    print(f"⛔ محصول بدون قیمت: '{name}' ❗ (رد شد) ← ({no_price_in_row} پشت سر هم)")
                     if no_price_in_row >= 3:
-                        print("⚠️ سه محصول متوالی بدون قیمت → پایان این دسته.")
                         break
                     continue
                 else:
-                    no_price_in_row = 0  # ریست شمارنده اگر قیمت پیدا شد
+                    no_price_in_row = 0
 
                 price_text = price_tag.text.strip()
                 price_clean = re.sub(r"\D", "", price_text)
                 try:
                     price = int(price_clean)
                 except:
-                    print(f"❗ خطا در تبدیل قیمت برای '{name}' → رد شد.")
                     continue
 
                 img_div = item.find("div", class_="img-con")
@@ -145,7 +146,7 @@ if is_need_scrap():
                 print(f"➕ '{name}' اضافه شد. مجموع محصولات: {total_count}")
 
             if no_price_in_row >= 3:
-                break  # اگر سه محصول پشت سر هم بدون قیمت بودند، دسته بعدی را شروع کن
+                break
 
             page += 1
             time.sleep(1)
@@ -160,3 +161,4 @@ if is_need_scrap():
 
     print("=" * 60)
     print(f"✅ فایل «{file_path}» با {total_count} محصول ذخیره شد.")
+    return products, file_path

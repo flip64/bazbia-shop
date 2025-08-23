@@ -3,11 +3,11 @@ from django.http import JsonResponse, HttpResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth.decorators import login_required
 from django.utils import timezone
-
+from scrap_abdisite.utils.scrap_abdi_site import process_latest_file, is_running
 from scrap_abdisite.models import WatchedURL, PriceHistory
-from scrap_abdisite.forms import WatchedURLForm, Create_productForm, Create_specificationsForm, Create_tagsForm
+from scrap_abdisite.forms import WatchedURLForm
 from scrap_abdisite.utils.abdi_fetcher import fetch_product_details, send_price_alert
-from scrap_abdisite.utils.abdi_fetcher import extract_specifications, extract_tags
+from scrap_abdisite.utils.fetche_product_list import fetche_productsـlist
 from scrap_abdisite.utils.create_product import import_products_from_json
 
 from suppliers.models import Supplier
@@ -75,25 +75,6 @@ def watched_urls_view(request):
     })
 
 
-@csrf_exempt
-def check_price(request):
-    print(">>> check_price called")
-    if request.method == 'POST':
-        data = json.loads(request.body)
-        url = data.get('url')
-        name, new_price = fetch_product_details(url)
-        new_price = clean_price_text(new_price)
-        try:
-            watched = WatchedURL.objects.get(url=url)
-            if watched.last_price != new_price:
-                watched.last_price = new_price
-                watched.save()
-                return JsonResponse({'changed': True})
-            return JsonResponse({'changed': False})
-        except WatchedURL.DoesNotExist:
-            return JsonResponse({'error': 'URL not found'}, status=404)
-    return JsonResponse({'error': 'Invalid method'}, status=405)
-
 
 @login_required
 def delet(request, id):
@@ -158,86 +139,16 @@ def change_price_all(request):
 def create_product(request):
     user = request.user
     if user.is_authenticated:
+        fetche_productsـlist()
+        process_latest_file()   
         import_products_from_json(user)
+        
     return HttpResponse("Import completed successfully.")
-
-
-@login_required
-def create_specifications(request):
-    if request.method == 'POST':
-        form = Create_specificationsForm(request.POST, request.FILES)
-        if form.is_valid():
-            file = form.cleaned_data['file']
-            data = json.load(file)
-            count = 1
-            for item in data:
-                if count > 500:
-                    break
-                if not item.get('abdi_specifications', False):
-                    product_link = item.get('product_link')
-                    old_spec = item.get('specifications', [])
-                    if product_link:
-                        new_spec = extract_specifications(product_link)
-                        merged = []
-                        seen = set()
-                        for spec in old_spec + new_spec:
-                            if spec not in seen:
-                                merged.append(spec)
-                                seen.add(spec)
-                        item['specifications'] = merged
-                        item['abdi_specifications'] = True
-                        count += 1
-            response = HttpResponse(
-                json.dumps(data, ensure_ascii=False, indent=2),
-                content_type='application/json; charset=utf-8'
-            )
-            response['Content-Disposition'] = 'attachment; filename="with_features.json"'
-            return response
-    else:
-        form = Create_specificationsForm()
-    return render(request, 'scrap_abdisite/create_specifications.html', {'form': form})
-
-
-@login_required
-def create_tags(request):
-    if request.method == 'POST':
-        form = Create_tagsForm(request.POST, request.FILES)
-        if form.is_valid():
-            file = form.cleaned_data['file']
-            data = json.load(file)
-            count = 1
-            for item in data:
-                if count > 50:
-                    break
-                if not item.get('abdi_tags', False):
-                    product_link = item.get('product_link')
-                    old_tags = item.get('tags', [])
-                    if product_link:
-                        new_tags = extract_tags(product_link)
-                        merged = []
-                        seen = set()
-                        for tag in old_tags + new_tags:
-                            if tag not in seen:
-                                merged.append(tag)
-                                seen.add(tag)
-                        item['tags'] = merged
-                        item['abdi_tags'] = True
-                        count += 1
-            response = HttpResponse(
-                json.dumps(data, ensure_ascii=False, indent=2),
-                content_type='application/json; charset=utf-8'
-            )
-            response['Content-Disposition'] = 'attachment; filename="with_features.json"'
-            return response
-    else:
-        form = Create_tagsForm()
-    return render(request, 'scrap_abdisite/create_tags.html', {'form': form})
 
 
 # ===============================
 # 🔹 Background Script Runner
 # ===============================
-from scrap_abdisite.utils.scrap_abdi_site import process_latest_file, is_running
 
 def fetch_details_products(request):
     global is_running

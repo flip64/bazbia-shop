@@ -6,13 +6,10 @@ app_name = 'scrap_abdisite'
 urlpatterns = [
 
     path('', views.watched_urls_view, name='watched_urls'),
-    path('check_price/', views.check_price, name='check_price'),
     path('watched_urls/', views.watched_urls_view, name='watched_urls'),
     path('delet/<int:id>/', views.delet, name='delet'),
     path('checkall/', views.check_price_all,name='check_price_all'),
     path('create_product/', views.create_product , name= 'create_product'),
-    path('create_specifications/', views.create_specifications , name= 'create_specifications'),
-    path('create_tags/', views.create_tags , name= 'create_tags'),
     path('change_price_all/',views.change_price_all , name= 'change_price_all'),
     path('fetch_details_products/',views.fetch_details_products , name= 'fetch_details_products'),
     

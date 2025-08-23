@@ -3971,3 +3971,267 @@ django.core.exceptions.ImproperlyConfigured: Field name `images` is not valid fo
 2025-08-22 13:32:31,477 [WARNING] Not Found: /api/products//products/product/-371/
 2025-08-22 13:37:32,429 [WARNING] Not Found: /api/products//products/product/-371/
 2025-08-22 13:37:39,207 [WARNING] Not Found: /api/products//products/product/400-1/
+2025-08-22 13:49:28,580 [INFO] /home/flip/project/bazbia/bazbia-shop/scrap_abdisite/urls.py changed, reloading.
+2025-08-22 13:49:36,609 [INFO] /home/flip/project/bazbia/bazbia-shop/scrap_abdisite/urls.py changed, reloading.
+2025-08-22 13:50:12,805 [INFO] /home/flip/project/bazbia/bazbia-shop/scrap_abdisite/forms.py changed, reloading.
+2025-08-22 13:51:22,057 [WARNING] Not Found: /watched_urls/
+2025-08-22 13:55:03,755 [INFO] /home/flip/project/bazbia/bazbia-shop/scrap_abdisite/views.py changed, reloading.
+2025-08-22 13:55:36,097 [INFO] /home/flip/project/bazbia/bazbia-shop/scrap_abdisite/views.py changed, reloading.
+2025-08-22 13:55:44,428 [INFO] /home/flip/project/bazbia/bazbia-shop/scrap_abdisite/views.py changed, reloading.
+2025-08-22 13:55:47,663 [INFO] /home/flip/project/bazbia/bazbia-shop/scrap_abdisite/views.py changed, reloading.
+2025-08-22 13:56:23,505 [INFO] /home/flip/project/bazbia/bazbia-shop/scrap_abdisite/views.py changed, reloading.
+2025-08-22 13:57:03,649 [WARNING] Not Found: /scrap_abdisite/checkprice
+2025-08-22 13:57:14,727 [WARNING] Not Found: /scrap_abdisite/chekprice
+2025-08-22 13:57:32,024 [WARNING] Method Not Allowed: /scrap_abdisite/check_price/
+2025-08-22 13:58:05,251 [INFO] /home/flip/project/bazbia/bazbia-shop/scrap_abdisite/views.py changed, reloading.
+2025-08-22 13:59:32,536 [INFO] /home/flip/project/bazbia/bazbia-shop/scrap_abdisite/views.py changed, reloading.
+2025-08-22 13:59:36,419 [INFO] /home/flip/project/bazbia/bazbia-shop/scrap_abdisite/views.py changed, reloading.
+2025-08-22 13:59:43,395 [INFO] /home/flip/project/bazbia/bazbia-shop/scrap_abdisite/urls.py changed, reloading.
+2025-08-22 13:59:50,616 [WARNING] Not Found: /scrap_abdisite/check_price/
+2025-08-22 14:01:08,592 [WARNING] Not Found: /scrap_abdisite/changeall/
+2025-08-22 14:01:25,513 [WARNING] Not Found: /scrap_abdisite/chackall/
+2025-08-22 14:01:42,324 [ERROR] Internal Server Error: /scrap_abdisite/checkall/
+Traceback (most recent call last):
+  File "/home/flip/.local/lib/python3.10/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+  File "/home/flip/.local/lib/python3.10/site-packages/django/core/handlers/base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "/home/flip/.local/lib/python3.10/site-packages/django/contrib/auth/decorators.py", line 59, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+  File "/home/flip/project/bazbia/bazbia-shop/scrap_abdisite/views.py", line 90, in check_price_all
+    name, price = fetch_product_details(watching.url)
+  File "/home/flip/project/bazbia/bazbia-shop/scrap_abdisite/utils/abdi_fetcher.py", line 249, in fetch_product_details
+    product_price = clean_price(price_tag.text) if price_tag else None
+  File "/home/flip/project/bazbia/bazbia-shop/scrap_abdisite/utils/abdi_fetcher.py", line 46, in clean_price
+    digits = re.sub(r"[^\d]", "", price_str)  # حذف غیرعددی‌ها
+NameError: name 're' is not defined
+2025-08-22 14:07:10,044 [INFO] /home/flip/project/bazbia/bazbia-shop/scrap_abdisite/views.py changed, reloading.
+2025-08-22 14:07:13,133 [INFO] /home/flip/project/bazbia/bazbia-shop/scrap_abdisite/views.py changed, reloading.
+2025-08-22 14:23:30,339 [WARNING] Not Found: /api/products//products/product/-437/
+2025-08-22 14:24:42,133 [WARNING] Not Found: /api/products//products/product/-437/
+2025-08-22 14:37:19,936 [INFO] /home/flip/project/bazbia/bazbia-shop/scrap_abdisite/views.py changed, reloading.
+2025-08-22 14:38:07,091 [INFO] /home/flip/project/bazbia/bazbia-shop/scrap_abdisite/views.py changed, reloading.
+2025-08-22 14:38:26,699 [INFO] /home/flip/project/bazbia/bazbia-shop/scrap_abdisite/views.py changed, reloading.
+2025-08-22 14:38:40,144 [INFO] /home/flip/project/bazbia/bazbia-shop/scrap_abdisite/views.py changed, reloading.
+2025-08-22 14:38:44,627 [INFO] /home/flip/project/bazbia/bazbia-shop/scrap_abdisite/views.py changed, reloading.
+2025-08-22 14:38:48,010 [INFO] /home/flip/project/bazbia/bazbia-shop/scrap_abdisite/views.py changed, reloading.
+2025-08-22 14:39:03,400 [INFO] /home/flip/project/bazbia/bazbia-shop/scrap_abdisite/views.py changed, reloading.
+2025-08-22 19:35:47,663 [INFO] /home/flip/project/bazbia/bazbia-shop/scrap_abdisite/views.py changed, reloading.
+2025-08-22 19:36:58,860 [INFO] /home/flip/project/bazbia/bazbia-shop/scrap_abdisite/views.py changed, reloading.
+2025-08-22 19:37:13,569 [INFO] /home/flip/project/bazbia/bazbia-shop/scrap_abdisite/views.py changed, reloading.
+2025-08-22 19:37:15,826 [INFO] /home/flip/project/bazbia/bazbia-shop/scrap_abdisite/views.py changed, reloading.
+2025-08-22 19:38:46,260 [INFO] /home/flip/project/bazbia/bazbia-shop/scrap_abdisite/views.py changed, reloading.
+2025-08-22 19:39:39,486 [INFO] /home/flip/project/bazbia/bazbia-shop/scrap_abdisite/utils/create_product.py changed, reloading.
+2025-08-22 19:40:04,801 [INFO] /home/flip/project/bazbia/bazbia-shop/scrap_abdisite/utils/create_product.py changed, reloading.
+2025-08-22 19:40:51,446 [INFO] /home/flip/project/bazbia/bazbia-shop/scrap_abdisite/utils/create_product.py changed, reloading.
+2025-08-22 19:40:59,610 [INFO] /home/flip/project/bazbia/bazbia-shop/scrap_abdisite/utils/create_product.py changed, reloading.
+2025-08-22 19:41:01,943 [INFO] /home/flip/project/bazbia/bazbia-shop/scrap_abdisite/utils/create_product.py changed, reloading.
+2025-08-22 19:41:09,134 [INFO] /home/flip/project/bazbia/bazbia-shop/scrap_abdisite/utils/create_product.py changed, reloading.
+2025-08-22 19:42:24,045 [INFO] /home/flip/project/bazbia/bazbia-shop/scrap_abdisite/views.py changed, reloading.
+2025-08-22 19:42:34,335 [INFO] /home/flip/project/bazbia/bazbia-shop/scrap_abdisite/views.py changed, reloading.
+2025-08-22 19:42:37,526 [INFO] /home/flip/project/bazbia/bazbia-shop/scrap_abdisite/views.py changed, reloading.
+2025-08-22 19:42:39,928 [INFO] /home/flip/project/bazbia/bazbia-shop/scrap_abdisite/views.py changed, reloading.
+2025-08-22 19:42:43,268 [INFO] /home/flip/project/bazbia/bazbia-shop/scrap_abdisite/views.py changed, reloading.
+2025-08-22 19:42:55,265 [INFO] /home/flip/project/bazbia/bazbia-shop/scrap_abdisite/views.py changed, reloading.
+2025-08-22 19:42:59,503 [INFO] /home/flip/project/bazbia/bazbia-shop/scrap_abdisite/views.py changed, reloading.
+2025-08-22 19:43:13,498 [INFO] /home/flip/project/bazbia/bazbia-shop/scrap_abdisite/views.py changed, reloading.
+2025-08-22 19:43:33,983 [INFO] /home/flip/project/bazbia/bazbia-shop/scrap_abdisite/views.py changed, reloading.
+2025-08-22 19:49:54,018 [INFO] 🆕 تعداد محصولات جدید: 2
+2025-08-22 19:49:54,019 [INFO] 📦 مجموع محصولات پس از ادغام: 614
+2025-08-22 19:50:13,105 [INFO] 🗑️ حذف فایل موقت: edited_20250821_1604_temp.json
+2025-08-22 19:50:13,110 [INFO] 💾 ذخیره موقت بعد از 20 محصول
+2025-08-22 19:50:33,132 [INFO] 🗑️ حذف فایل موقت: edited_20250822_1950_temp.json
+2025-08-22 19:50:33,139 [INFO] 💾 ذخیره موقت بعد از 40 محصول
+2025-08-22 19:50:53,163 [INFO] 🗑️ حذف فایل موقت: edited_20250822_1950_temp.json
+2025-08-22 19:50:53,178 [INFO] 💾 ذخیره موقت بعد از 60 محصول
+2025-08-22 19:51:13,200 [INFO] 🗑️ حذف فایل موقت: edited_20250822_1950_temp.json
+2025-08-22 19:51:13,213 [INFO] 💾 ذخیره موقت بعد از 80 محصول
+2025-08-22 19:51:33,236 [INFO] 🗑️ حذف فایل موقت: edited_20250822_1951_temp.json
+2025-08-22 19:51:33,252 [INFO] 💾 ذخیره موقت بعد از 100 محصول
+2025-08-22 19:51:53,276 [INFO] 🗑️ حذف فایل موقت: edited_20250822_1951_temp.json
+2025-08-22 19:51:53,298 [INFO] 💾 ذخیره موقت بعد از 120 محصول
+2025-08-22 19:52:13,320 [INFO] 🗑️ حذف فایل موقت: edited_20250822_1951_temp.json
+2025-08-22 19:52:13,389 [INFO] 💾 ذخیره موقت بعد از 140 محصول
+2025-08-22 19:52:33,411 [INFO] 🗑️ حذف فایل موقت: edited_20250822_1952_temp.json
+2025-08-22 19:52:33,424 [INFO] 💾 ذخیره موقت بعد از 160 محصول
+2025-08-22 19:52:53,445 [INFO] 🗑️ حذف فایل موقت: edited_20250822_1952_temp.json
+2025-08-22 19:52:53,455 [INFO] 💾 ذخیره موقت بعد از 180 محصول
+2025-08-22 19:53:13,475 [INFO] 🗑️ حذف فایل موقت: edited_20250822_1952_temp.json
+2025-08-22 19:53:13,521 [INFO] 💾 ذخیره موقت بعد از 200 محصول
+2025-08-22 19:53:33,541 [INFO] 🗑️ حذف فایل موقت: edited_20250822_1953_temp.json
+2025-08-22 19:53:33,557 [INFO] 💾 ذخیره موقت بعد از 220 محصول
+2025-08-22 19:53:53,579 [INFO] 🗑️ حذف فایل موقت: edited_20250822_1953_temp.json
+2025-08-22 19:53:53,610 [INFO] 💾 ذخیره موقت بعد از 240 محصول
+2025-08-22 19:54:13,631 [INFO] 🗑️ حذف فایل موقت: edited_20250822_1953_temp.json
+2025-08-22 19:54:13,654 [INFO] 💾 ذخیره موقت بعد از 260 محصول
+2025-08-22 19:54:33,676 [INFO] 🗑️ حذف فایل موقت: edited_20250822_1954_temp.json
+2025-08-22 19:54:33,711 [INFO] 💾 ذخیره موقت بعد از 280 محصول
+2025-08-22 19:54:53,732 [INFO] 🗑️ حذف فایل موقت: edited_20250822_1954_temp.json
+2025-08-22 19:54:53,772 [INFO] 💾 ذخیره موقت بعد از 300 محصول
+2025-08-22 19:55:13,794 [INFO] 🗑️ حذف فایل موقت: edited_20250822_1954_temp.json
+2025-08-22 19:55:13,820 [INFO] 💾 ذخیره موقت بعد از 320 محصول
+2025-08-22 19:55:33,842 [INFO] 🗑️ حذف فایل موقت: edited_20250822_1955_temp.json
+2025-08-22 19:55:33,872 [INFO] 💾 ذخیره موقت بعد از 340 محصول
+2025-08-22 19:55:53,894 [INFO] 🗑️ حذف فایل موقت: edited_20250822_1955_temp.json
+2025-08-22 19:55:53,926 [INFO] 💾 ذخیره موقت بعد از 360 محصول
+2025-08-22 19:56:13,953 [INFO] 🗑️ حذف فایل موقت: edited_20250822_1955_temp.json
+2025-08-22 19:56:13,998 [INFO] 💾 ذخیره موقت بعد از 380 محصول
+2025-08-22 19:56:34,021 [INFO] 🗑️ حذف فایل موقت: edited_20250822_1956_temp.json
+2025-08-22 19:56:34,064 [INFO] 💾 ذخیره موقت بعد از 400 محصول
+2025-08-22 19:56:54,087 [INFO] 🗑️ حذف فایل موقت: edited_20250822_1956_temp.json
+2025-08-22 19:56:54,124 [INFO] 💾 ذخیره موقت بعد از 420 محصول
+2025-08-22 19:57:14,147 [INFO] 🗑️ حذف فایل موقت: edited_20250822_1956_temp.json
+2025-08-22 19:57:14,189 [INFO] 💾 ذخیره موقت بعد از 440 محصول
+2025-08-22 19:57:34,211 [INFO] 🗑️ حذف فایل موقت: edited_20250822_1957_temp.json
+2025-08-22 19:57:34,265 [INFO] 💾 ذخیره موقت بعد از 460 محصول
+2025-08-22 19:57:54,287 [INFO] 🗑️ حذف فایل موقت: edited_20250822_1957_temp.json
+2025-08-22 19:57:54,348 [INFO] 💾 ذخیره موقت بعد از 480 محصول
+2025-08-22 19:58:10,054 [INFO] /home/flip/project/bazbia/bazbia-shop/scrap_abdisite/utils/scrap_abdi_site.py changed, reloading.
+2025-08-22 19:58:49,817 [ERROR] Internal Server Error: /scrap_abdisite/create_product/
+Traceback (most recent call last):
+  File "/home/flip/.local/lib/python3.10/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+  File "/home/flip/.local/lib/python3.10/site-packages/django/core/handlers/base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "/home/flip/.local/lib/python3.10/site-packages/django/contrib/auth/decorators.py", line 59, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+  File "/home/flip/project/bazbia/bazbia-shop/scrap_abdisite/views.py", line 143, in create_product
+    process_latest_file()
+  File "/home/flip/project/bazbia/bazbia-shop/scrap_abdisite/utils/scrap_abdi_site.py", line 30, in process_latest_file
+    result = merge_new_products()
+NameError: name 'merge_new_products' is not defined
+2025-08-22 20:01:31,737 [INFO] /home/flip/project/bazbia/bazbia-shop/scrap_abdisite/utils/scrap_abdi_site.py changed, reloading.
+2025-08-22 20:01:51,611 [INFO] /home/flip/project/bazbia/bazbia-shop/scrap_abdisite/utils/scrap_abdi_site.py changed, reloading.
+2025-08-23 02:38:44,406 [INFO] 🆕 تعداد محصولات جدید: 2
+2025-08-23 02:38:44,435 [INFO] 📦 مجموع محصولات پس از ادغام: 614
+2025-08-23 02:39:03,507 [INFO] 🗑️ حذف فایل موقت: edited_20250822_1957_temp.json
+2025-08-23 02:39:03,511 [INFO] 💾 ذخیره موقت بعد از 20 محصول
+2025-08-23 02:39:23,531 [INFO] 🗑️ حذف فایل موقت: edited_20250823_0239_temp.json
+2025-08-23 02:39:23,536 [INFO] 💾 ذخیره موقت بعد از 40 محصول
+2025-08-23 02:39:43,560 [INFO] 🗑️ حذف فایل موقت: edited_20250823_0239_temp.json
+2025-08-23 02:39:43,567 [INFO] 💾 ذخیره موقت بعد از 60 محصول
+2025-08-23 02:40:03,589 [INFO] 🗑️ حذف فایل موقت: edited_20250823_0239_temp.json
+2025-08-23 02:40:03,599 [INFO] 💾 ذخیره موقت بعد از 80 محصول
+2025-08-23 02:40:23,623 [INFO] 🗑️ حذف فایل موقت: edited_20250823_0240_temp.json
+2025-08-23 02:40:23,632 [INFO] 💾 ذخیره موقت بعد از 100 محصول
+2025-08-23 02:40:43,652 [INFO] 🗑️ حذف فایل موقت: edited_20250823_0240_temp.json
+2025-08-23 02:40:43,665 [INFO] 💾 ذخیره موقت بعد از 120 محصول
+2025-08-23 02:41:03,686 [INFO] 🗑️ حذف فایل موقت: edited_20250823_0240_temp.json
+2025-08-23 02:41:03,698 [INFO] 💾 ذخیره موقت بعد از 140 محصول
+2025-08-23 02:41:23,720 [INFO] 🗑️ حذف فایل موقت: edited_20250823_0241_temp.json
+2025-08-23 02:41:23,730 [INFO] 💾 ذخیره موقت بعد از 160 محصول
+2025-08-23 02:41:43,755 [INFO] 🗑️ حذف فایل موقت: edited_20250823_0241_temp.json
+2025-08-23 02:41:43,775 [INFO] 💾 ذخیره موقت بعد از 180 محصول
+2025-08-23 02:42:03,796 [INFO] 🗑️ حذف فایل موقت: edited_20250823_0241_temp.json
+2025-08-23 02:42:03,813 [INFO] 💾 ذخیره موقت بعد از 200 محصول
+2025-08-23 02:42:23,834 [INFO] 🗑️ حذف فایل موقت: edited_20250823_0242_temp.json
+2025-08-23 02:42:23,854 [INFO] 💾 ذخیره موقت بعد از 220 محصول
+2025-08-23 02:42:43,873 [INFO] 🗑️ حذف فایل موقت: edited_20250823_0242_temp.json
+2025-08-23 02:42:43,895 [INFO] 💾 ذخیره موقت بعد از 240 محصول
+2025-08-23 02:43:03,915 [INFO] 🗑️ حذف فایل موقت: edited_20250823_0242_temp.json
+2025-08-23 02:43:03,944 [INFO] 💾 ذخیره موقت بعد از 260 محصول
+2025-08-23 02:43:23,964 [INFO] 🗑️ حذف فایل موقت: edited_20250823_0243_temp.json
+2025-08-23 02:43:23,999 [INFO] 💾 ذخیره موقت بعد از 280 محصول
+2025-08-23 02:43:44,020 [INFO] 🗑️ حذف فایل موقت: edited_20250823_0243_temp.json
+2025-08-23 02:43:44,049 [INFO] 💾 ذخیره موقت بعد از 300 محصول
+2025-08-23 02:44:04,070 [INFO] 🗑️ حذف فایل موقت: edited_20250823_0243_temp.json
+2025-08-23 02:44:04,098 [INFO] 💾 ذخیره موقت بعد از 320 محصول
+2025-08-23 02:44:24,119 [INFO] 🗑️ حذف فایل موقت: edited_20250823_0244_temp.json
+2025-08-23 02:44:24,152 [INFO] 💾 ذخیره موقت بعد از 340 محصول
+2025-08-23 02:44:44,177 [INFO] 🗑️ حذف فایل موقت: edited_20250823_0244_temp.json
+2025-08-23 02:44:44,221 [INFO] 💾 ذخیره موقت بعد از 360 محصول
+2025-08-23 02:45:04,241 [INFO] 🗑️ حذف فایل موقت: edited_20250823_0244_temp.json
+2025-08-23 02:45:04,277 [INFO] 💾 ذخیره موقت بعد از 380 محصول
+2025-08-23 02:45:24,299 [INFO] 🗑️ حذف فایل موقت: edited_20250823_0245_temp.json
+2025-08-23 02:45:24,363 [INFO] 💾 ذخیره موقت بعد از 400 محصول
+2025-08-23 02:45:44,384 [INFO] 🗑️ حذف فایل موقت: edited_20250823_0245_temp.json
+2025-08-23 02:45:44,445 [INFO] 💾 ذخیره موقت بعد از 420 محصول
+2025-08-23 02:46:04,467 [INFO] 🗑️ حذف فایل موقت: edited_20250823_0245_temp.json
+2025-08-23 02:46:04,522 [INFO] 💾 ذخیره موقت بعد از 440 محصول
+2025-08-23 02:46:24,545 [INFO] 🗑️ حذف فایل موقت: edited_20250823_0246_temp.json
+2025-08-23 02:46:24,603 [INFO] 💾 ذخیره موقت بعد از 460 محصول
+2025-08-23 02:46:44,623 [INFO] 🗑️ حذف فایل موقت: edited_20250823_0246_temp.json
+2025-08-23 02:46:44,666 [INFO] 💾 ذخیره موقت بعد از 480 محصول
+2025-08-23 02:47:04,688 [INFO] 🗑️ حذف فایل موقت: edited_20250823_0246_temp.json
+2025-08-23 02:47:04,734 [INFO] 💾 ذخیره موقت بعد از 500 محصول
+2025-08-23 02:47:24,761 [INFO] 🗑️ حذف فایل موقت: edited_20250823_0247_temp.json
+2025-08-23 02:47:24,864 [INFO] 💾 ذخیره موقت بعد از 520 محصول
+2025-08-23 02:47:44,886 [INFO] 🗑️ حذف فایل موقت: edited_20250823_0247_temp.json
+2025-08-23 02:47:44,922 [INFO] 💾 ذخیره موقت بعد از 540 محصول
+2025-08-23 02:48:04,941 [INFO] 🗑️ حذف فایل موقت: edited_20250823_0247_temp.json
+2025-08-23 02:48:04,991 [INFO] 💾 ذخیره موقت بعد از 560 محصول
+2025-08-23 02:48:16,306 [INFO] /home/flip/project/bazbia/bazbia-shop/scrap_abdisite/utils/fetche_product_list.py changed, reloading.
+2025-08-23 02:56:01,309 [INFO] /home/flip/project/bazbia/bazbia-shop/scrap_abdisite/utils/fetche_product_list.py changed, reloading.
+2025-08-23 02:56:05,614 [INFO] /home/flip/project/bazbia/bazbia-shop/scrap_abdisite/utils/fetche_product_list.py changed, reloading.
+2025-08-23 02:56:20,436 [INFO] 🆕 تعداد محصولات جدید: 2
+2025-08-23 02:56:20,436 [INFO] 📦 مجموع محصولات پس از ادغام: 614
+2025-08-23 02:56:39,458 [INFO] 🗑️ حذف فایل موقت: edited_20250823_0248_temp.json
+2025-08-23 02:56:39,461 [INFO] 💾 ذخیره موقت بعد از 20 محصول
+2025-08-23 02:56:59,484 [INFO] 🗑️ حذف فایل موقت: edited_20250823_0256_temp.json
+2025-08-23 02:56:59,490 [INFO] 💾 ذخیره موقت بعد از 40 محصول
+2025-08-23 02:57:19,510 [INFO] 🗑️ حذف فایل موقت: edited_20250823_0256_temp.json
+2025-08-23 02:57:19,516 [INFO] 💾 ذخیره موقت بعد از 60 محصول
+2025-08-23 02:57:39,536 [INFO] 🗑️ حذف فایل موقت: edited_20250823_0257_temp.json
+2025-08-23 02:57:39,543 [INFO] 💾 ذخیره موقت بعد از 80 محصول
+2025-08-23 02:57:59,597 [INFO] 🗑️ حذف فایل موقت: edited_20250823_0257_temp.json
+2025-08-23 02:57:59,643 [INFO] 💾 ذخیره موقت بعد از 100 محصول
+2025-08-23 02:58:19,663 [INFO] 🗑️ حذف فایل موقت: edited_20250823_0257_temp.json
+2025-08-23 02:58:19,705 [INFO] 💾 ذخیره موقت بعد از 120 محصول
+2025-08-23 02:58:39,726 [INFO] 🗑️ حذف فایل موقت: edited_20250823_0258_temp.json
+2025-08-23 02:58:39,737 [INFO] 💾 ذخیره موقت بعد از 140 محصول
+2025-08-23 02:58:59,758 [INFO] 🗑️ حذف فایل موقت: edited_20250823_0258_temp.json
+2025-08-23 02:58:59,772 [INFO] 💾 ذخیره موقت بعد از 160 محصول
+2025-08-23 02:59:19,791 [INFO] 🗑️ حذف فایل موقت: edited_20250823_0258_temp.json
+2025-08-23 02:59:19,807 [INFO] 💾 ذخیره موقت بعد از 180 محصول
+2025-08-23 02:59:39,828 [INFO] 🗑️ حذف فایل موقت: edited_20250823_0259_temp.json
+2025-08-23 02:59:39,845 [INFO] 💾 ذخیره موقت بعد از 200 محصول
+2025-08-23 02:59:59,866 [INFO] 🗑️ حذف فایل موقت: edited_20250823_0259_temp.json
+2025-08-23 02:59:59,884 [INFO] 💾 ذخیره موقت بعد از 220 محصول
+2025-08-23 03:00:19,907 [INFO] 🗑️ حذف فایل موقت: edited_20250823_0259_temp.json
+2025-08-23 03:00:19,951 [INFO] 💾 ذخیره موقت بعد از 240 محصول
+2025-08-23 03:00:39,973 [INFO] 🗑️ حذف فایل موقت: edited_20250823_0300_temp.json
+2025-08-23 03:00:40,008 [INFO] 💾 ذخیره موقت بعد از 260 محصول
+2025-08-23 03:01:00,029 [INFO] 🗑️ حذف فایل موقت: edited_20250823_0300_temp.json
+2025-08-23 03:01:00,065 [INFO] 💾 ذخیره موقت بعد از 280 محصول
+2025-08-23 03:01:20,087 [INFO] 🗑️ حذف فایل موقت: edited_20250823_0301_temp.json
+2025-08-23 03:01:20,111 [INFO] 💾 ذخیره موقت بعد از 300 محصول
+2025-08-23 03:01:40,132 [INFO] 🗑️ حذف فایل موقت: edited_20250823_0301_temp.json
+2025-08-23 03:01:40,172 [INFO] 💾 ذخیره موقت بعد از 320 محصول
+2025-08-23 03:02:00,192 [INFO] 🗑️ حذف فایل موقت: edited_20250823_0301_temp.json
+2025-08-23 03:02:00,214 [INFO] 💾 ذخیره موقت بعد از 340 محصول
+2025-08-23 03:02:20,235 [INFO] 🗑️ حذف فایل موقت: edited_20250823_0302_temp.json
+2025-08-23 03:02:20,269 [INFO] 💾 ذخیره موقت بعد از 360 محصول
+2025-08-23 03:02:40,290 [INFO] 🗑️ حذف فایل موقت: edited_20250823_0302_temp.json
+2025-08-23 03:02:40,334 [INFO] 💾 ذخیره موقت بعد از 380 محصول
+2025-08-23 03:03:00,356 [INFO] 🗑️ حذف فایل موقت: edited_20250823_0302_temp.json
+2025-08-23 03:03:00,405 [INFO] 💾 ذخیره موقت بعد از 400 محصول
+2025-08-23 03:03:20,426 [INFO] 🗑️ حذف فایل موقت: edited_20250823_0303_temp.json
+2025-08-23 03:03:20,475 [INFO] 💾 ذخیره موقت بعد از 420 محصول
+2025-08-23 03:03:40,496 [INFO] 🗑️ حذف فایل موقت: edited_20250823_0303_temp.json
+2025-08-23 03:03:40,542 [INFO] 💾 ذخیره موقت بعد از 440 محصول
+2025-08-23 03:04:00,564 [INFO] 🗑️ حذف فایل موقت: edited_20250823_0303_temp.json
+2025-08-23 03:04:00,622 [INFO] 💾 ذخیره موقت بعد از 460 محصول
+2025-08-23 03:04:20,644 [INFO] 🗑️ حذف فایل موقت: edited_20250823_0304_temp.json
+2025-08-23 03:04:20,693 [INFO] 💾 ذخیره موقت بعد از 480 محصول
+2025-08-23 03:04:40,716 [INFO] 🗑️ حذف فایل موقت: edited_20250823_0304_temp.json
+2025-08-23 03:04:40,756 [INFO] 💾 ذخیره موقت بعد از 500 محصول
+2025-08-23 03:05:00,779 [INFO] 🗑️ حذف فایل موقت: edited_20250823_0304_temp.json
+2025-08-23 03:05:00,835 [INFO] 💾 ذخیره موقت بعد از 520 محصول
+2025-08-23 03:05:20,857 [INFO] 🗑️ حذف فایل موقت: edited_20250823_0305_temp.json
+2025-08-23 03:05:20,924 [INFO] 💾 ذخیره موقت بعد از 540 محصول
+2025-08-23 03:05:40,945 [INFO] 🗑️ حذف فایل موقت: edited_20250823_0305_temp.json
+2025-08-23 03:05:41,002 [INFO] 💾 ذخیره موقت بعد از 560 محصول
+2025-08-23 03:06:01,026 [INFO] 🗑️ حذف فایل موقت: edited_20250823_0305_temp.json
+2025-08-23 03:06:01,072 [INFO] 💾 ذخیره موقت بعد از 580 محصول
+2025-08-23 03:06:21,092 [INFO] 🗑️ حذف فایل موقت: edited_20250823_0306_temp.json
+2025-08-23 03:06:21,129 [INFO] 💾 ذخیره موقت بعد از 600 محصول
+2025-08-23 03:06:34,809 [INFO] ✅ مشخصات محصول 'خردکن بوش دو کاسه 1800w' استخراج شد.
+2025-08-23 03:06:34,813 [INFO] ✅ تگ‌های محصول 'خردکن بوش دو کاسه 1800w' استخراج شد.
+2025-08-23 03:06:34,817 [INFO] ✅ تصاویر محصول 'خردکن بوش دو کاسه 1800w' استخراج شد.
+2025-08-23 03:06:36,368 [INFO] ✅ مشخصات محصول 'آتشدان پایه کوتاه' استخراج شد.
+2025-08-23 03:06:36,372 [INFO] ✅ تگ‌های محصول 'آتشدان پایه کوتاه' استخراج شد.
+2025-08-23 03:06:36,376 [INFO] ✅ تصاویر محصول 'آتشدان پایه کوتاه' استخراج شد.
+2025-08-23 03:06:37,464 [INFO] 💾 فایل نهایی ذخیره شد: edited_20250823_0306_614.json
+2025-08-23 03:06:37,464 [INFO] 🗑️ حذف فایل موقت: edited_20250823_0306_temp.json
+2025-08-23 03:19:52,425 [WARNING] Not Found: /api/products//products/product/6-7/
+2025-08-23 03:21:09,108 [WARNING] Not Found: /api/products//products/product/-364/

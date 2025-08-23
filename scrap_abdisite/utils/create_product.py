@@ -15,9 +15,9 @@ from suppliers.models import Supplier
 
 
 def import_products_from_json(user):
+
     BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))  # scrap_abdisite/
     EDITED_FOLDER = os.path.join(BASE_DIR, "data/edited")
-
     pattern = re.compile(r"edited_(\d{8})_(\d{4})_\d+\.json$")
     list_of_files = [
         f for f in glob.glob(os.path.join(EDITED_FOLDER, "*.json"))
