@@ -1,7 +1,9 @@
 from rest_framework import serializers
 from products.models import Product ,ProductImage,ProductVariant
-from products.models import Category  # مدل دسته‌بندی شما
-from products.models import SpecialProduct
+from products.models import Category  ,ProductSpecification# مدل دسته‌بندی شما
+from products.models import SpecialProduct,Tag,Product
+from products.models import  Attribute, AttributeValue, ProductVideo
+
 
 
 class ProductImageSerializer(serializers.ModelSerializer):
@@ -87,8 +89,6 @@ class SpecialProductSerializer(serializers.ModelSerializer):
         return ProductVariantSerializer(obj.product.variants.all(), many=True).data
 
 
-
-
 class NewProductSerializer(serializers.ModelSerializer):
     # برگرداندن تصویر بندانگشتی محصول
     thumb = serializers.SerializerMethodField()
@@ -113,3 +113,92 @@ class NewProductSerializer(serializers.ModelSerializer):
      if request:
         return request.build_absolute_uri(url)
      return url
+
+
+class TagSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Tag
+        fields = '__all__'
+
+
+class AttributeValueSerializer(serializers.ModelSerializer):
+    attribute_name = serializers.CharField(source='attribute.name', read_only=True)
+    
+    class Meta:
+        model = AttributeValue
+        fields = ['id', 'attribute_name', 'value']
+
+
+class ProductSpecificationSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ProductSpecification
+        fields = ['name', 'value']
+
+class ProductImageSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ProductImage
+        fields = ['image', 'source_url', 'alt_text', 'is_main']
+
+class ProductVideoSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ProductVideo
+        fields = ['video', 'caption']
+
+class ProductVariantSerializer(serializers.ModelSerializer):
+    attributes = AttributeValueSerializer(many=True, read_only=True)
+    
+    class Meta:
+        model = ProductVariant
+        fields = [
+            'id', 'sku', 'price', 'discount_price', 'stock', 
+            'low_stock_threshold', 'expiration_date', 'attributes'
+        ]
+
+class ProductListSerializer(serializers.ModelSerializer):
+    category = CategorySerializer(read_only=True)
+    tags = TagSerializer(many=True, read_only=True)
+    main_image = serializers.SerializerMethodField()
+    
+    class Meta:
+        model = Product
+        fields = [
+            'id', 'name', 'slug', 'base_price', 'category', 
+            'tags', 'is_active', 'main_image'
+        ]
+    
+    def get_main_image(self, obj):
+        main_image = obj.images.filter(is_main=True).first()
+        if main_image:
+            return ProductImageSerializer(main_image).data
+        return None
+
+class ProductDetailSerializer(serializers.ModelSerializer):
+    category = CategorySerializer(read_only=True)
+    tags = TagSerializer(many=True, read_only=True)
+    specifications = ProductSpecificationSerializer(many=True, read_only=True)
+    variants = ProductVariantSerializer(many=True, read_only=True)
+    images = ProductImageSerializer(many=True, read_only=True)
+    videos = ProductVideoSerializer(many=True, read_only=True)
+    is_special = serializers.SerializerMethodField()
+    special_details = serializers.SerializerMethodField()
+    
+    class Meta:
+        model = Product
+        fields = [
+            'id', 'name', 'slug', 'description', 'base_price',
+            'category', 'tags', 'specifications', 'variants',
+            'images', 'videos', 'is_active', 'created_at', 'updated_at',
+            'is_special', 'special_details'
+        ]
+    
+    def get_is_special(self, obj):
+        return hasattr(obj, 'special') and obj.special.is_active
+    
+    def get_special_details(self, obj):
+        if hasattr(obj, 'special'):
+            return {
+                'title': obj.special.title,
+                'start_date': obj.special.start_date,
+                'end_date': obj.special.end_date
+            }
+        return None

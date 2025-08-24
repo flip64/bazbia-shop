@@ -7,6 +7,7 @@ from rest_framework.decorators import  api_view
 from rest_framework.response   import  Response
 from products.api.serializers  import  CategorySerializer , ProductImageSerializer
 from products.api.serializers  import  NewProductSerializer
+from products.api.serializers  import  ProductDetailSerializer
 from rest_framework.views      import  APIView
 
 
@@ -53,6 +54,28 @@ class NewProductsAPIView(APIView):
        new_products = Product.objects.order_by('-created_at')[:30]
        serializer = NewProductSerializer(new_products, many=True, context={'request': request})
        return Response(serializer.data)
+
+
+
+
+class ProductDetailAPIView(generics.RetrieveAPIView):
+    queryset = Product.objects.filter(is_active=True)
+    serializer_class = ProductDetailSerializer
+    lookup_field = 'slug'
+    
+    def retrieve(self, request, *args, **kwargs):
+        try:
+            instance = self.get_object()
+            serializer = self.get_serializer(instance)
+            return Response({
+                'success': True,
+                'data': serializer.data
+            })
+        except Product.DoesNotExist:
+            return Response({
+                'success': False,
+                'message': 'محصول یافت نشد'
+            }, status=status.HTTP_404_NOT_FOUND)
 
 
 
