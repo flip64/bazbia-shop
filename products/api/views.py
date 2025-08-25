@@ -67,10 +67,7 @@ class ProductDetailAPIView(generics.RetrieveAPIView):
         try:
             instance = self.get_object()
             serializer = self.get_serializer(instance)
-            return Response({
-                'success': True,
-                'data': serializer.data
-            })
+            return Response(serializer.data)
         except Product.DoesNotExist:
             return Response({
                 'success': False,

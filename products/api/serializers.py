@@ -46,6 +46,8 @@ class ProductSerializer(serializers.ModelSerializer):
      if request:
         return request.build_absolute_uri(url)
      return url
+
+
 class CategorySerializer(serializers.ModelSerializer):
     subcategories = serializers.SerializerMethodField()
 
@@ -118,7 +120,7 @@ class NewProductSerializer(serializers.ModelSerializer):
 class TagSerializer(serializers.ModelSerializer):
     class Meta:
         model = Tag
-        fields = '__all__'
+        fields = [ 'name']
 
 
 class AttributeValueSerializer(serializers.ModelSerializer):
@@ -174,7 +176,7 @@ class ProductListSerializer(serializers.ModelSerializer):
 
 class ProductDetailSerializer(serializers.ModelSerializer):
     category = CategorySerializer(read_only=True)
-    tags = TagSerializer(many=True, read_only=True)
+    tags = serializers.SerializerMethodField() 
     specifications = ProductSpecificationSerializer(many=True, read_only=True)
     variants = ProductVariantSerializer(many=True, read_only=True)
     images = ProductImageSerializer(many=True, read_only=True)
@@ -202,3 +204,9 @@ class ProductDetailSerializer(serializers.ModelSerializer):
                 'end_date': obj.special.end_date
             }
         return None
+    
+
+    def get_tags(self, obj):
+        # فقط نام تگ‌ها را به صورت لیست رشته‌ای برمی‌گرداند
+        return [tag.name for tag in obj.tags.all()]
+    
