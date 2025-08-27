@@ -1,24 +1,26 @@
-from rest_framework            import  generics
-from products.models           import  Product
-from products.api.serializers  import  ProductSerializer,SpecialProductSerializer
-from products.api.pagination   import  CustomCategoryPagination
-from products.models           import  Category , Product , SpecialProduct
-from rest_framework.decorators import  api_view
-from rest_framework.response   import  Response
-from products.api.serializers  import  CategorySerializer , ProductImageSerializer
-from products.api.serializers  import  NewProductSerializer
-from products.api.serializers  import  ProductDetailSerializer
-from rest_framework.views      import  APIView
-from django.http import JsonResponse
+from rest_framework import generics, status
+from rest_framework.views import APIView
+from rest_framework.decorators import api_view
+from rest_framework.response import Response
+from django.http import JsonResponse, HttpResponseBadRequest
 from django.views.decorators.csrf import csrf_exempt
-from django.http import HttpResponseBadRequest
+from django.db import transaction
 import json
 
+from products.models import Product, Category, SpecialProduct
+from products.api.serializers import (
+    ProductSerializer,
+    ProductDetailSerializer,
+    SpecialProductSerializer,
+    NewProductSerializer,
+    CategorySerializer
+)
+from products.api.pagination import CustomCategoryPagination
 
 
-
-
-
+# -----------------------------
+# List All Products
+# -----------------------------
 class ProductListAPIView(generics.ListAPIView):
     serializer_class = ProductSerializer
 
@@ -30,43 +32,14 @@ class ProductListAPIView(generics.ListAPIView):
         return queryset
 
 
-
-
-
+# -----------------------------
+# Product Detail
+# -----------------------------
 class ProductDetailAPIView(generics.RetrieveAPIView):
     queryset = Product.objects.filter(is_active=True)
-    serializer_class = ProductSerializer
-    lookup_field = 'slug'
-
-
-
-class CategoryListAPIView(generics.ListAPIView):
-    queryset = Category.objects.all()
-    serializer_class = CategorySerializer
-
-
-
-class SpecialProductListAPIView(generics.ListAPIView):
-    serializer_class = SpecialProductSerializer
-    def get_queryset(self):
-        return SpecialProduct.objects.filter(is_active=True)
-
-
-
-class NewProductsAPIView(APIView):
-    def get(self, request):
-       new_products = Product.objects.order_by('-created_at')[:30]
-       serializer = NewProductSerializer(new_products, many=True, context={'request': request})
-       return Response(serializer.data)
-
-
-
-
-class ProductDetailAPIView(generics.RetrieveAPIView):
-    queryset = Product.objects.filter(is_active=True)
-    serializer_class = ProductDetailSerializer   # 🔹 این لازمه
+    serializer_class = ProductDetailSerializer
     lookup_field = "slug"
-  
+
     def retrieve(self, request, *args, **kwargs):
         try:
             instance = self.get_object()
@@ -79,16 +52,44 @@ class ProductDetailAPIView(generics.RetrieveAPIView):
             }, status=status.HTTP_404_NOT_FOUND)
 
 
+# -----------------------------
+# List All Categories
+# -----------------------------
+class CategoryListAPIView(generics.ListAPIView):
+    queryset = Category.objects.all()
+    serializer_class = CategorySerializer
 
-class ProductListCategoryAPIView(generics.ListAPIView):
-    print('of')
-    serializer_class = ProductSerializer
-    pagination_class = CustomCategoryPagination   # 🔹 اضافه شد
+
+# -----------------------------
+# List Special Products
+# -----------------------------
+class SpecialProductListAPIView(generics.ListAPIView):
+    serializer_class = SpecialProductSerializer
 
     def get_queryset(self):
-        category_slug = self.kwargs.get("slug")  # گرفتن slug از URL
+        return SpecialProduct.objects.filter(is_active=True)
+
+
+# -----------------------------
+# List New Products
+# -----------------------------
+class NewProductsAPIView(APIView):
+    def get(self, request):
+        new_products = Product.objects.order_by('-created_at')[:30]
+        serializer = NewProductSerializer(new_products, many=True, context={'request': request})
+        return Response(serializer.data)
+
+
+# -----------------------------
+# List Products By Category
+# -----------------------------
+class ProductListCategoryAPIView(generics.ListAPIView):
+    serializer_class = ProductSerializer
+    pagination_class = CustomCategoryPagination
+
+    def get_queryset(self):
+        category_slug = self.kwargs.get("slug")
         queryset = Product.objects.filter(is_active=True)
-        print(queryset)
         if category_slug:
             queryset = queryset.filter(category__slug=category_slug)
         return queryset
@@ -96,7 +97,6 @@ class ProductListCategoryAPIView(generics.ListAPIView):
     def list(self, request, *args, **kwargs):
         queryset = self.get_queryset()
         page = self.paginate_queryset(queryset)
-
         if page is not None:
             serializer = self.get_serializer(page, many=True, context={'request': request})
             return self.get_paginated_response(serializer.data)
@@ -109,9 +109,11 @@ class ProductListCategoryAPIView(generics.ListAPIView):
         })
 
 
+# -----------------------------
+# List Categories as Tree
+# -----------------------------
 @api_view(['GET'])
 def list_categories(request):
-    print('op')
     def build_tree(parent=None):
         categories = Category.objects.filter(parent=parent).values('id', 'name', 'slug')
         tree = []
@@ -131,6 +133,9 @@ def list_categories(request):
     return JsonResponse(data, safe=False)
 
 
+# -----------------------------
+# Import Categories from JSON
+# -----------------------------
 @csrf_exempt
 def import_categories(request):
     if request.method != 'POST':
@@ -143,6 +148,7 @@ def import_categories(request):
 
     created = []
 
+    @transaction.atomic
     def create_or_get_category(item, parent=None):
         slug = item['slug']
         name = item['name']
@@ -152,15 +158,13 @@ def import_categories(request):
             defaults={'name': name, 'parent': parent}
         )
 
-        # فقط اگر تازه ساخته شده اضافه کن به لیست
         if is_created:
             created.append(category.name)
 
-        # بررسی children
         for child in item.get('children', []):
             create_or_get_category(child, parent=category)
 
     for cat_item in payload:
         create_or_get_category(cat_item)
 
-    return JsonResponse({"status": "done","created": created})
+    return JsonResponse({"status": "done", "created": created})
