@@ -4309,3 +4309,167 @@ NameError: name 'merge_new_products' is not defined
 2025-08-25 03:23:54,893 [INFO] /home/flip/project/bazbia/bazbia-shop/products/api/serializers.py changed, reloading.
 2025-08-25 03:24:07,104 [INFO] /home/flip/project/bazbia/bazbia-shop/products/api/serializers.py changed, reloading.
 2025-08-25 03:29:04,499 [INFO] /home/flip/project/bazbia/bazbia-shop/products/api/serializers.py changed, reloading.
+2025-08-27 02:39:21,616 [WARNING] Not Found: /favicon.ico
+2025-08-27 02:39:40,155 [WARNING] Not Found: /api/products/categories/beauty-and-health
+2025-08-27 02:42:18,881 [INFO] /home/flip/project/bazbia/bazbia-shop/products/api/urls.py changed, reloading.
+2025-08-27 02:43:21,461 [INFO] /home/flip/project/bazbia/bazbia-shop/products/api/urls.py changed, reloading.
+2025-08-27 02:43:24,700 [INFO] /home/flip/project/bazbia/bazbia-shop/products/api/urls.py changed, reloading.
+2025-08-27 02:43:59,679 [INFO] /home/flip/project/bazbia/bazbia-shop/products/api/urls.py changed, reloading.
+2025-08-27 02:48:25,396 [INFO] /home/flip/project/bazbia/bazbia-shop/products/api/views.py changed, reloading.
+2025-08-27 02:48:31,553 [INFO] /home/flip/project/bazbia/bazbia-shop/products/api/views.py changed, reloading.
+2025-08-27 02:48:35,884 [INFO] /home/flip/project/bazbia/bazbia-shop/products/api/views.py changed, reloading.
+2025-08-27 02:48:38,182 [INFO] /home/flip/project/bazbia/bazbia-shop/products/api/views.py changed, reloading.
+2025-08-27 02:52:10,772 [INFO] /home/flip/project/bazbia/bazbia-shop/products/api/urls.py changed, reloading.
+2025-08-27 02:52:18,463 [INFO] /home/flip/project/bazbia/bazbia-shop/products/api/urls.py changed, reloading.
+2025-08-27 02:58:22,658 [INFO] /home/flip/project/bazbia/bazbia-shop/products/api/urls.py changed, reloading.
+2025-08-27 02:58:24,941 [INFO] /home/flip/project/bazbia/bazbia-shop/products/api/urls.py changed, reloading.
+2025-08-27 02:59:00,920 [INFO] /home/flip/project/bazbia/bazbia-shop/products/api/urls.py changed, reloading.
+2025-08-27 02:59:38,659 [INFO] /home/flip/project/bazbia/bazbia-shop/products/api/urls.py changed, reloading.
+2025-08-27 03:00:02,894 [INFO] /home/flip/project/bazbia/bazbia-shop/products/api/urls.py changed, reloading.
+2025-08-27 03:00:36,866 [INFO] /home/flip/project/bazbia/bazbia-shop/products/api/category_api.py changed, reloading.
+2025-08-27 03:00:45,157 [INFO] /home/flip/project/bazbia/bazbia-shop/products/api/views.py changed, reloading.
+2025-08-27 03:01:19,859 [INFO] /home/flip/project/bazbia/bazbia-shop/products/api/views.py changed, reloading.
+2025-08-27 03:01:35,044 [INFO] /home/flip/project/bazbia/bazbia-shop/products/api/urls.py changed, reloading.
+2025-08-27 03:01:39,039 [INFO] /home/flip/project/bazbia/bazbia-shop/products/api/urls.py changed, reloading.
+2025-08-27 03:01:42,996 [INFO] /home/flip/project/bazbia/bazbia-shop/products/api/urls.py changed, reloading.
+2025-08-27 03:01:44,949 [INFO] /home/flip/project/bazbia/bazbia-shop/products/api/urls.py changed, reloading.
+2025-08-27 03:02:29,833 [INFO] /home/flip/project/bazbia/bazbia-shop/products/api/category_api.py changed, reloading.
+2025-08-27 03:03:10,646 [INFO] /home/flip/project/bazbia/bazbia-shop/products/api/views.py changed, reloading.
+2025-08-27 03:03:38,522 [INFO] /home/flip/project/bazbia/bazbia-shop/products/api/views.py changed, reloading.
+2025-08-27 03:03:45,690 [INFO] /home/flip/project/bazbia/bazbia-shop/products/api/views.py changed, reloading.
+2025-08-27 03:03:50,691 [INFO] /home/flip/project/bazbia/bazbia-shop/products/api/views.py changed, reloading.
+2025-08-27 03:03:53,655 [INFO] /home/flip/project/bazbia/bazbia-shop/products/api/views.py changed, reloading.
+2025-08-27 03:04:16,229 [INFO] /home/flip/project/bazbia/bazbia-shop/products/api/views.py changed, reloading.
+2025-08-27 03:04:19,313 [INFO] /home/flip/project/bazbia/bazbia-shop/products/api/views.py changed, reloading.
+2025-08-27 03:04:34,543 [INFO] /home/flip/project/bazbia/bazbia-shop/products/api/category_api.py changed, reloading.
+2025-08-27 03:04:37,505 [INFO] /home/flip/project/bazbia/bazbia-shop/products/api/category_api.py changed, reloading.
+2025-08-27 03:04:43,562 [INFO] /home/flip/project/bazbia/bazbia-shop/products/api/category_api.py changed, reloading.
+2025-08-27 03:04:54,899 [INFO] /home/flip/project/bazbia/bazbia-shop/products/api/views.py changed, reloading.
+2025-08-27 03:05:00,891 [INFO] /home/flip/project/bazbia/bazbia-shop/products/api/views.py changed, reloading.
+2025-08-27 03:05:35,635 [INFO] /home/flip/project/bazbia/bazbia-shop/products/api/views.py changed, reloading.
+2025-08-27 03:05:59,076 [INFO] /home/flip/project/bazbia/bazbia-shop/products/api/views.py changed, reloading.
+2025-08-27 03:06:44,937 [INFO] /home/flip/project/bazbia/bazbia-shop/products/api/views.py changed, reloading.
+2025-08-27 03:06:47,182 [INFO] /home/flip/project/bazbia/bazbia-shop/products/api/views.py changed, reloading.
+2025-08-27 03:06:52,257 [INFO] /home/flip/project/bazbia/bazbia-shop/products/api/views.py changed, reloading.
+2025-08-27 03:07:35,113 [INFO] /home/flip/project/bazbia/bazbia-shop/products/api/urls.py changed, reloading.
+2025-08-27 03:07:37,153 [INFO] /home/flip/project/bazbia/bazbia-shop/products/api/urls.py changed, reloading.
+2025-08-27 03:07:40,110 [INFO] /home/flip/project/bazbia/bazbia-shop/products/api/urls.py changed, reloading.
+2025-08-27 03:07:42,273 [INFO] /home/flip/project/bazbia/bazbia-shop/products/api/urls.py changed, reloading.
+2025-08-27 03:08:52,974 [INFO] /home/flip/project/bazbia/bazbia-shop/products/api/views.py changed, reloading.
+2025-08-27 03:08:56,691 [INFO] /home/flip/project/bazbia/bazbia-shop/products/api/views.py changed, reloading.
+2025-08-27 03:08:58,964 [INFO] /home/flip/project/bazbia/bazbia-shop/products/api/views.py changed, reloading.
+2025-08-27 03:10:53,979 [INFO] /home/flip/project/bazbia/bazbia-shop/products/api/urls.py changed, reloading.
+2025-08-27 03:12:06,338 [INFO] /home/flip/project/bazbia/bazbia-shop/bazbia_shop/urls.py changed, reloading.
+2025-08-27 03:12:26,941 [INFO] /home/flip/project/bazbia/bazbia-shop/bazbia_shop/urls.py changed, reloading.
+2025-08-27 03:12:29,070 [INFO] /home/flip/project/bazbia/bazbia-shop/bazbia_shop/urls.py changed, reloading.
+2025-08-27 03:13:25,522 [WARNING] Not Found: /api/products/categories/
+2025-08-27 03:13:32,845 [INFO] /home/flip/project/bazbia/bazbia-shop/bazbia_shop/urls.py changed, reloading.
+2025-08-27 03:13:35,274 [INFO] /home/flip/project/bazbia/bazbia-shop/bazbia_shop/urls.py changed, reloading.
+2025-08-27 03:14:09,099 [INFO] /home/flip/project/bazbia/bazbia-shop/products/api/urls.py changed, reloading.
+2025-08-27 03:14:15,304 [WARNING] Not Found: /api/products/
+2025-08-27 03:14:27,363 [INFO] /home/flip/project/bazbia/bazbia-shop/products/api/urls.py changed, reloading.
+2025-08-27 03:14:33,584 [INFO] /home/flip/project/bazbia/bazbia-shop/products/api/urls.py changed, reloading.
+2025-08-27 03:14:36,839 [INFO] /home/flip/project/bazbia/bazbia-shop/products/api/urls.py changed, reloading.
+2025-08-27 03:14:41,436 [WARNING] Not Found: /api/products//
+2025-08-27 03:14:58,514 [INFO] /home/flip/project/bazbia/bazbia-shop/products/api/urls.py changed, reloading.
+2025-08-27 03:15:00,696 [INFO] /home/flip/project/bazbia/bazbia-shop/products/api/urls.py changed, reloading.
+2025-08-27 03:15:04,071 [INFO] /home/flip/project/bazbia/bazbia-shop/products/api/urls.py changed, reloading.
+2025-08-27 03:15:06,331 [INFO] /home/flip/project/bazbia/bazbia-shop/products/api/urls.py changed, reloading.
+2025-08-27 03:16:57,729 [INFO] /home/flip/project/bazbia/bazbia-shop/products/api/urls.py changed, reloading.
+2025-08-27 03:16:59,902 [INFO] /home/flip/project/bazbia/bazbia-shop/products/api/urls.py changed, reloading.
+2025-08-27 03:17:56,814 [INFO] /home/flip/project/bazbia/bazbia-shop/products/api/urls.py changed, reloading.
+2025-08-27 03:18:35,933 [INFO] /home/flip/project/bazbia/bazbia-shop/products/api/urls.py changed, reloading.
+2025-08-27 03:18:38,219 [INFO] /home/flip/project/bazbia/bazbia-shop/products/api/urls.py changed, reloading.
+2025-08-27 03:20:05,304 [ERROR] Internal Server Error: /api/products/400-1
+Traceback (most recent call last):
+  File "/home/flip/.local/lib/python3.10/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+  File "/home/flip/.local/lib/python3.10/site-packages/django/core/handlers/base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "/home/flip/.local/lib/python3.10/site-packages/django/views/decorators/csrf.py", line 65, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+  File "/home/flip/.local/lib/python3.10/site-packages/django/views/generic/base.py", line 105, in view
+    return self.dispatch(request, *args, **kwargs)
+  File "/home/flip/.local/lib/python3.10/site-packages/rest_framework/views.py", line 515, in dispatch
+    response = self.handle_exception(exc)
+  File "/home/flip/.local/lib/python3.10/site-packages/rest_framework/views.py", line 475, in handle_exception
+    self.raise_uncaught_exception(exc)
+  File "/home/flip/.local/lib/python3.10/site-packages/rest_framework/views.py", line 486, in raise_uncaught_exception
+    raise exc
+  File "/home/flip/.local/lib/python3.10/site-packages/rest_framework/views.py", line 512, in dispatch
+    response = handler(request, *args, **kwargs)
+  File "/home/flip/.local/lib/python3.10/site-packages/rest_framework/generics.py", line 212, in get
+    return self.retrieve(request, *args, **kwargs)
+  File "/home/flip/project/bazbia/bazbia-shop/products/api/views.py", line 70, in retrieve
+    instance = self.get_object()
+  File "/home/flip/.local/lib/python3.10/site-packages/rest_framework/generics.py", line 92, in get_object
+    assert lookup_url_kwarg in self.kwargs, (
+AssertionError: Expected view ProductDetailAPIView to be called with a URL keyword argument named "pk". Fix your URL conf, or set the `.lookup_field` attribute on the view correctly.
+2025-08-27 03:21:54,677 [INFO] /home/flip/project/bazbia/bazbia-shop/products/api/urls.py changed, reloading.
+2025-08-27 03:21:57,216 [INFO] /home/flip/project/bazbia/bazbia-shop/products/api/urls.py changed, reloading.
+2025-08-27 03:22:02,388 [INFO] /home/flip/project/bazbia/bazbia-shop/products/api/urls.py changed, reloading.
+2025-08-27 03:24:10,328 [INFO] /home/flip/project/bazbia/bazbia-shop/products/api/views.py changed, reloading.
+2025-08-27 03:24:15,430 [INFO] /home/flip/project/bazbia/bazbia-shop/products/api/views.py changed, reloading.
+2025-08-27 03:24:53,479 [INFO] /home/flip/project/bazbia/bazbia-shop/products/api/views.py changed, reloading.
+2025-08-27 03:25:00,398 [ERROR] Internal Server Error: /api/products/400-1/
+Traceback (most recent call last):
+  File "/home/flip/.local/lib/python3.10/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+  File "/home/flip/.local/lib/python3.10/site-packages/django/core/handlers/base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "/home/flip/.local/lib/python3.10/site-packages/django/views/decorators/csrf.py", line 65, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+  File "/home/flip/.local/lib/python3.10/site-packages/django/views/generic/base.py", line 105, in view
+    return self.dispatch(request, *args, **kwargs)
+  File "/home/flip/.local/lib/python3.10/site-packages/rest_framework/views.py", line 515, in dispatch
+    response = self.handle_exception(exc)
+  File "/home/flip/.local/lib/python3.10/site-packages/rest_framework/views.py", line 475, in handle_exception
+    self.raise_uncaught_exception(exc)
+  File "/home/flip/.local/lib/python3.10/site-packages/rest_framework/views.py", line 486, in raise_uncaught_exception
+    raise exc
+  File "/home/flip/.local/lib/python3.10/site-packages/rest_framework/views.py", line 512, in dispatch
+    response = handler(request, *args, **kwargs)
+  File "/home/flip/.local/lib/python3.10/site-packages/rest_framework/generics.py", line 212, in get
+    return self.retrieve(request, *args, **kwargs)
+  File "/home/flip/project/bazbia/bazbia-shop/products/api/views.py", line 72, in retrieve
+    serializer = self.get_serializer(instance)
+  File "/home/flip/.local/lib/python3.10/site-packages/rest_framework/generics.py", line 112, in get_serializer
+    serializer_class = self.get_serializer_class()
+  File "/home/flip/.local/lib/python3.10/site-packages/rest_framework/generics.py", line 126, in get_serializer_class
+    assert self.serializer_class is not None, (
+AssertionError: 'ProductDetailAPIView' should either include a `serializer_class` attribute, or override the `get_serializer_class()` method.
+2025-08-27 03:25:43,912 [INFO] /home/flip/project/bazbia/bazbia-shop/products/api/views.py changed, reloading.
+2025-08-27 03:25:51,150 [INFO] /home/flip/project/bazbia/bazbia-shop/products/api/views.py changed, reloading.
+2025-08-27 03:25:53,529 [INFO] /home/flip/project/bazbia/bazbia-shop/products/api/views.py changed, reloading.
+2025-08-27 03:26:31,781 [INFO] /home/flip/project/bazbia/bazbia-shop/products/api/urls.py changed, reloading.
+2025-08-27 03:26:34,030 [INFO] /home/flip/project/bazbia/bazbia-shop/products/api/urls.py changed, reloading.
+2025-08-27 03:26:41,158 [WARNING] Not Found: /api/products/categories/
+2025-08-27 03:27:32,856 [WARNING] Not Found: /api/products/categories/
+2025-08-27 03:28:53,767 [INFO] /home/flip/project/bazbia/bazbia-shop/products/api/urls.py changed, reloading.
+2025-08-27 03:28:56,981 [INFO] /home/flip/project/bazbia/bazbia-shop/products/api/urls.py changed, reloading.
+2025-08-27 03:29:11,300 [INFO] /home/flip/project/bazbia/bazbia-shop/products/api/urls.py changed, reloading.
+2025-08-27 03:29:14,495 [INFO] /home/flip/project/bazbia/bazbia-shop/products/api/urls.py changed, reloading.
+2025-08-27 03:29:16,565 [INFO] /home/flip/project/bazbia/bazbia-shop/products/api/urls.py changed, reloading.
+2025-08-27 03:30:08,979 [WARNING] Not Found: /api/products/categories/
+2025-08-27 03:30:24,291 [INFO] /home/flip/project/bazbia/bazbia-shop/products/api/urls.py changed, reloading.
+2025-08-27 03:30:28,310 [INFO] /home/flip/project/bazbia/bazbia-shop/products/api/urls.py changed, reloading.
+2025-08-27 03:30:30,746 [INFO] /home/flip/project/bazbia/bazbia-shop/products/api/urls.py changed, reloading.
+2025-08-27 03:30:34,957 [INFO] /home/flip/project/bazbia/bazbia-shop/products/api/urls.py changed, reloading.
+2025-08-27 03:30:40,837 [INFO] /home/flip/project/bazbia/bazbia-shop/products/api/urls.py changed, reloading.
+2025-08-27 03:30:42,822 [INFO] /home/flip/project/bazbia/bazbia-shop/products/api/urls.py changed, reloading.
+2025-08-27 03:30:44,944 [INFO] /home/flip/project/bazbia/bazbia-shop/products/api/urls.py changed, reloading.
+2025-08-27 03:30:47,193 [INFO] /home/flip/project/bazbia/bazbia-shop/products/api/urls.py changed, reloading.
+2025-08-27 03:30:52,044 [WARNING] Not Found: /api/products/categories/
+2025-08-27 03:30:55,501 [WARNING] Not Found: /api/products/categories/
+2025-08-27 03:31:07,945 [WARNING] Not Found: /api/products/categories/
+2025-08-27 03:31:13,329 [WARNING] Not Found: /api/products/categories/
+2025-08-27 03:31:54,531 [WARNING] Not Found: /api/products/import-categories/
+2025-08-27 03:32:01,722 [WARNING] Not Found: /api/products/import-categories/
+2025-08-27 03:32:28,025 [INFO] /home/flip/project/bazbia/bazbia-shop/products/api/category_api.py changed, reloading.
+2025-08-27 03:32:30,279 [INFO] /home/flip/project/bazbia/bazbia-shop/products/api/category_api.py changed, reloading.
+2025-08-27 03:32:49,842 [INFO] /home/flip/project/bazbia/bazbia-shop/products/api/urls.py changed, reloading.
+2025-08-27 03:32:54,238 [WARNING] Not Found: /api/products/import-categories/
+2025-08-27 03:32:56,917 [WARNING] Not Found: /api/products/import-categories/
+2025-08-27 03:33:36,110 [INFO] /home/flip/project/bazbia/bazbia-shop/products/api/urls.py changed, reloading.
+2025-08-27 03:33:38,473 [INFO] /home/flip/project/bazbia/bazbia-shop/products/api/urls.py changed, reloading.
+2025-08-27 03:33:48,384 [WARNING] Not Found: /api/products/import-categories/
