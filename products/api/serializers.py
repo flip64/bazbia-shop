@@ -34,7 +34,7 @@ class ProductSerializer(serializers.ModelSerializer):
 
     
 
-   def get_category(self, obj):
+    def get_category(self, obj):
      if obj.category:
         return [obj.category.name]   # ⬅️ تبدیل به آرایه
      return []
