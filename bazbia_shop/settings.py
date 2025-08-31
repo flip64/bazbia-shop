@@ -206,10 +206,27 @@ AUTH_PASSWORD_VALIDATORS = [
 LANGUAGE_CODE = 'en-us'
 # تنظیمات منطقه زمانی 
 
+
+import os
+from django.utils import timezone
+
+# خواندن USE_TZ از محیط
 USE_TZ = os.environ.get("DJANGO_USE_TZ", "false").lower() != "false"
+
+# رشته TIME_ZONE همیشه معتبر باشد
 TIME_ZONE = "UTC"
 
+# اگر USE_TZ=false بود، توابع زمان را override کنیم تا خطای ZoneInfo ندهد
+if not USE_TZ:
+    class FixedTimezone:
+        def utcoffset(self, dt): return None
+        def tzname(self, dt): return None
+        def dst(self, dt): return None
 
+    timezone.get_default_timezone = lambda: FixedTimezone()
+    timezone.get_current_timezone = lambda: FixedTimezone()
+    timezone.localtime = lambda value=None, timezone=None: value
+    timezone.template_localtime = lambda value, use_tz=None: value
 USE_I18N = True
 
 
