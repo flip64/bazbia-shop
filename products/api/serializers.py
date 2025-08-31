@@ -22,7 +22,7 @@ class ProductVariantSerializer(serializers.ModelSerializer):
 class ProductSerializer(serializers.ModelSerializer):
     images = ProductImageSerializer(many=True, read_only=True)
     variants = ProductVariantSerializer(many=True, read_only=True)
-    category = serializers.StringRelatedField()
+    category = serializers.SerializerMethodField()
     thumb = serializers.SerializerMethodField()
 
     class Meta:
@@ -32,6 +32,15 @@ class ProductSerializer(serializers.ModelSerializer):
             'category', 'images', 'variants', 'thumb', 'created_at'
         ]
 
+    
+
+   def get_category(self, obj):
+     if obj.category:
+        return [obj.category.name]   # ⬅️ تبدیل به آرایه
+     return []
+
+
+    
     
     def get_thumb(self, obj):
      request = self.context.get('request')
