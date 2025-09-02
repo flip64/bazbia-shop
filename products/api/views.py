@@ -75,7 +75,7 @@ class SpecialProductListAPIView(generics.ListAPIView):
 # -----------------------------
 # List New Products
 # -----------------------------
-class NewProductsAPIView(APIView):
+class NewProductsAPIView(generics.ListAPIView):
     serializer_class = ProductListSerializer
     def get_queryset(self):
         queryset = Product.objects.filter(is_active=True).order_by('-created_at')
