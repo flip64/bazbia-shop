@@ -1,4 +1,4 @@
-from rest_framework import generics, status
+kfrom rest_framework import generics, status
 from rest_framework.views import APIView
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
@@ -74,9 +74,7 @@ class SpecialProductListAPIView(generics.ListAPIView):
 # List New Products
 # -----------------------------
 class NewProductsAPIView(APIView):
-    
-serializer_class = ProductListSerializer
-
+    serializer_class = ProductListSerializer
     def get_queryset(self):
         queryset = Product.objects.filter(is_active=True).order_by('-created_at')[:30]
         category_slug = self.request.query_params.get('category')
