@@ -158,11 +158,7 @@ class ProductVideoSerializer(serializers.ModelSerializer):
 
 
 class ProductListSerializer(serializers.ModelSerializer):
-    name = serializers.CharField(source='product.name')
-    slug = serializers.SlugField(source='product.slug')
-    base_price = serializers.DecimalField(source='product.base_price', max_digits=10, decimal_places=0)
-    category = serializers.StringRelatedField(source='product.category')
-    created_at = serializers.DateTimeField(source='product.created_at')
+
     thumb = serializers.SerializerMethodField()
     
     class Meta:
