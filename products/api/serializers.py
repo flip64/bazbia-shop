@@ -112,9 +112,14 @@ class SpecialProductSerializer(serializers.ModelSerializer):
 
 
 class NewProductSerializer(serializers.ModelSerializer):
+    
+    name = serializers.CharField(source='product.name')
+    slug = serializers.SlugField(source='product.slug')
+    base_price = serializers.DecimalField(source='product.base_price', max_digits=10, decimal_places=0)
+    category = serializers.StringRelatedField(source='product.category')
+    created_at = serializers.DateTimeField(source='product.created_at')
     thumb = serializers.SerializerMethodField()
-    category = serializers.StringRelatedField()
-
+    
     class Meta:
         model = Product
         fields = ['id', 'name', 'slug', 'base_price', 'category', 'thumb', 'created_at']
@@ -153,23 +158,30 @@ class ProductVideoSerializer(serializers.ModelSerializer):
 
 
 class ProductListSerializer(serializers.ModelSerializer):
-    category = CategorySerializer(read_only=True)
-    tags = TagSerializer(many=True, read_only=True)
-    main_image = serializers.SerializerMethodField()
-
+    name = serializers.CharField(source='product.name')
+    slug = serializers.SlugField(source='product.slug')
+    base_price = serializers.DecimalField(source='product.base_price', max_digits=10, decimal_places=0)
+    category = serializers.StringRelatedField(source='product.category')
+    created_at = serializers.DateTimeField(source='product.created_at')
+    thumb = serializers.SerializerMethodField()
+    
     class Meta:
         model = Product
-        fields = [
-            'id', 'name', 'slug', 'base_price', 'category',
-            'tags', 'is_active', 'main_image'
-        ]
+        fields = ['id', 'name', 'slug', 'base_price', 'category', 'thumb', 'created_at']
 
-    def get_main_image(self, obj):
+    def get_thumb(self, obj):
+        request = self.context.get('request')
         main_image = obj.images.filter(is_main=True).first()
         if main_image:
-            return ProductImageSerializer(main_image).data
-        return None
+            url = main_image.image.url
+        elif obj.images.exists():
+            url = obj.images.first().image.url
+        else:
+            url = '/media/default-thumb.jpg'
 
+        if request:
+            return request.build_absolute_uri(url)
+        return url
 
 class ProductDetailSerializer(serializers.ModelSerializer):
     category = CategorySerializer(read_only=True)
