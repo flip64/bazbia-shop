@@ -88,13 +88,21 @@ class SpecialProductSerializer(serializers.ModelSerializer):
         fields = ['id', 'name', 'slug', 'base_price', 'category', 'thumb', 'created_at']
 
     def get_thumb(self, obj):
-        main_image = obj.product.images.filter(is_main=True).first()
-        if main_image:
-            return main_image.image.url
-        first_image = obj.product.images.first()
-        if first_image:
-            return first_image.image.url
-        return '/media/default-thumb.jpg'
+     request = self.context.get('request')
+     main_image = obj.product.images.filter(is_main=True).first()
+     if main_image:
+        url = main_image.image.url
+     elif obj.product.images.exists():
+        url = obj.product.images.first().image.url
+     else:
+        url = '/media/default-thumb.jpg'
+
+     if request:
+        return request.build_absolute_uri(url)
+     return url
+
+
+
 
     def get_images(self, obj):
         return [img.image.url for img in obj.product.images.all()]
