@@ -78,13 +78,16 @@ class SpecialProductListAPIView(generics.ListAPIView):
 class NewProductsAPIView(APIView):
     serializer_class = ProductListSerializer
     def get_queryset(self):
-        queryset = Product.objects.filter(is_active=True).order_by('-created_at')[:30]
+        queryset = Product.objects.filter(is_active=True).order_by('-created_at')
         category_slug = self.request.query_params.get('category')
         if category_slug:
             queryset = queryset.filter(category__slug=category_slug)
-        return queryset
+        return queryset[:30]
+
+
 
 # -----------------------------
+
 # List Products By Category
 # -----------------------------
 class ProductListCategoryAPIView(generics.ListAPIView):
