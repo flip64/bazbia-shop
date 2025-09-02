@@ -22,7 +22,7 @@ from products.api.pagination import CustomCategoryPagination
 # List All Products
 # -----------------------------
 class ProductListAPIView(generics.ListAPIView):
-    serializer_class = ProductSerializer
+    serializer_class = ProductListSerializer
 
     def get_queryset(self):
         queryset = Product.objects.filter(is_active=True)[:30]
@@ -74,11 +74,15 @@ class SpecialProductListAPIView(generics.ListAPIView):
 # List New Products
 # -----------------------------
 class NewProductsAPIView(APIView):
-    def get(self, request):
-        new_products = Product.objects.order_by('-created_at')[:30]
-        serializer = NewProductSerializer(new_products, many=True, context={'request': request})
-        return Response(serializer.data)
+    
+serializer_class = ProductListSerializer
 
+    def get_queryset(self):
+        queryset = Product.objects.filter(is_active=True).order_by('-created_at')[:30]
+        category_slug = self.request.query_params.get('category')
+        if category_slug:
+            queryset = queryset.filter(category__slug=category_slug).
+        return queryset
 
 # -----------------------------
 # List Products By Category
