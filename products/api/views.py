@@ -13,7 +13,8 @@ from products.api.serializers import (
     ProductDetailSerializer,
     SpecialProductSerializer,
     NewProductSerializer,
-    CategorySerializer
+    CategorySerializer,
+    ProductListSerializer
 )
 from products.api.pagination import CustomCategoryPagination
 
