@@ -158,7 +158,6 @@ class ProductVideoSerializer(serializers.ModelSerializer):
 
 
 class ProductListSerializer(serializers.ModelSerializer):
-
     thumb = serializers.SerializerMethodField()
     
     class Meta:
