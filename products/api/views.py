@@ -12,7 +12,6 @@ from products.api.serializers import (
     ProductSerializer,
     ProductDetailSerializer,
     SpecialProductSerializer,
-    NewProductSerializer,
     CategorySerializer,
     ProductListSerializer
 )
