@@ -23,10 +23,10 @@ from products.api.pagination import CustomCategoryPagination
 # -----------------------------
 class ProductListAPIView(generics.ListAPIView):
     serializer_class = ProductListSerializer
+    pagination_class = CustomCategoryPagination  # اضافه شد
 
     def get_queryset(self):
-        print("7667")
-        queryset = Product.objects.filter(is_active=True)[:30]
+        queryset = Product.objects.filter(is_active=True).order_by("-id")  # کل محصولات فعال
         category_slug = self.request.query_params.get('category')
         if category_slug:
             queryset = queryset.filter(category__slug=category_slug)
