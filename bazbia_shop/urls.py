@@ -38,7 +38,7 @@ urlpatterns = [
 
     # مسیرهای api
     path('api/products/', include('products.api.urls')),
-    path('api/order/', include('order.api.urls')),
+    path('api/order/', include('orders.api.urls')),
 
 
 ]
