@@ -8,7 +8,6 @@ from orders.models import SalesSummary
 from products.models import Product
 from orders.api.serializers import ProductSerializer
 
-
 class WeeklyBestSellersAPIView(APIView):
     class StandardResultsSetPagination(PageNumberPagination):
         page_size = 10
@@ -40,6 +39,11 @@ class WeeklyBestSellersAPIView(APIView):
         else:
             # اگر فروش هفته اخیر نبود، محصولات جدید فعال را جایگزین کن
             products = Product.objects.filter(is_active=True).order_by("-created_at")
+
+        # تبدیل همه تاریخ‌ها به timezone لوکال برای template
+        for p in products:
+            if timezone.is_aware(p.created_at):
+                p.created_at = timezone.localtime(p.created_at)
 
         # pagination
         paginator = self.StandardResultsSetPagination()
