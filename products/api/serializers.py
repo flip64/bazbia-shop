@@ -62,6 +62,13 @@ class ProductSerializer(serializers.ModelSerializer):
             return request.build_absolute_uri(url)
         return url
 
+    def get_created_at(self, obj):
+        # تاریخ همیشه به صورت رشته ISO برگردد
+        return obj.created_at.isoformat()
+    
+
+
+
 
 class CategorySerializer(serializers.ModelSerializer):
     subcategories = serializers.SerializerMethodField()
