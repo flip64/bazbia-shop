@@ -116,3 +116,61 @@ class CartItem(models.Model):
 
     def __str__(self):
         return f"{self.variant} x {self.quantity}"
+
+
+
+
+# ==============================
+#. مدل خلاصه گزارش. فروش (SalesSummery)
+# ==============================
+
+
+class SalesSummary(models.Model):
+    """
+    جدول خلاصه گزارش فروش محصولات.
+    هر رکورد نشان‌دهنده جمع فروش یک محصول در یک بازه زمانی مشخص است.
+    """
+    
+    # محصول مربوط به رکورد
+    product = models.ForeignKey(
+        'products_product',
+        on_delete=models.CASCADE,
+        related_name='sales_summary',
+        help_text='محصولی که این رکورد خلاصه فروش آن است'
+    )
+
+    # اگر محصول دارای واریانت باشد (مثلاً رنگ یا سایز)، مشخص می‌کند
+    variant = models.ForeignKey(
+        'products_productvariant',
+        on_delete=models.CASCADE,
+        blank=True,
+        null=True,
+        related_name='sales_summary',
+        help_text='واریانت محصول، اگر وجود داشته باشد'
+    )
+
+    # بازه زمانی خلاصه
+    period_start = models.DateField(help_text='تاریخ شروع بازه')
+    period_end = models.DateField(help_text='تاریخ پایان بازه')
+
+    # تعداد کل فروش در این بازه
+    total_quantity = models.PositiveIntegerField(default=0, help_text='جمع تعداد فروش در بازه')
+
+    # مجموع مبلغ فروش در این بازه
+    total_amount = models.DecimalField(max_digits=12, decimal_places=2, default=0, help_text='جمع مبلغ فروش در بازه')
+
+    # تاریخ ایجاد رکورد
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    # آخرین بروزرسانی رکورد
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        unique_together = ('product', 'variant', 'period_start', 'period_end')
+        indexes = [
+            models.Index(fields=['product', 'period_start']),
+            models.Index(fields=['period_start']),
+        ]
+
+    def __str__(self):
+        return f"{self.product.name} ({self.variant}) : {self.total_quantity} sold from {self.period_start} to {self.period_end}"
