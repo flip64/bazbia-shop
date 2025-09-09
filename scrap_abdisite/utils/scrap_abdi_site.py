@@ -15,7 +15,7 @@ EDITED_FOLDER = os.path.join(BASE_DIR, "data/edited")
 os.makedirs(EDITED_FOLDER, exist_ok=True)
 
 # تنظیمات لاگ
-LOG_FILE = os.path.join(EDITED_FOLDER, "scrap_log.txt")
+LOG_FILE = os.path.join(EDITED_FOLDER, "scrap_log.log")
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s [%(levelname)s] %(message)s",
