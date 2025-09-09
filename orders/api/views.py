@@ -6,7 +6,7 @@ from rest_framework.pagination import PageNumberPagination
 from django.db.models import Sum, Case, When, IntegerField
 from orders.models import SalesSummary
 from products.models import Product
-from .serializers import ProductSerializer
+from products.api.serializers import ProductSerializer
 
 
 class WeeklyBestSellersAPIView(APIView):
