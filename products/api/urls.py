@@ -12,7 +12,9 @@ urlpatterns = [
     path('import-categories/', category_api.import_categories, name='import-categories'),
     path('specialproduct/', views.SpecialProductListAPIView.as_view(), name='specialproduct'),
     path('new_products/', views.NewProductsAPIView.as_view(), name='newproducts'),
-
+    path('weeklyBestSellers/', views.WeeklyBestSellersAPIView.as_view(), name='WeeklyBestSellers'),
+   
+    
     # در آخر مسیر slug رو بذار
     path('<slug:slug>/', views.ProductDetailAPIView.as_view(), name='product-detail'),
 ]
