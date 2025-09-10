@@ -1,27 +1,25 @@
-# orders/api/views.py
+from rest_framework import generics, status
+from rest_framework.response import Response
 from datetime import timedelta
 from django.utils import timezone
-from rest_framework.views import APIView
-from rest_framework.pagination import PageNumberPagination
 from django.db.models import Sum, Case, When, IntegerField
 from orders.models import SalesSummary
 from products.models import Product
-from orders.api.serializers import ProductSerializer
+from products.api.serializers import ProductListSerializer
+from products.api.pagination import CustomCategoryPagination  # فرض می‌کنیم pagination مشترک دارید
 
-class WeeklyBestSellersAPIView(APIView):
-    class StandardResultsSetPagination(PageNumberPagination):
-        page_size = 10
-        page_size_query_param = "page_size"
-        max_page_size = 50
+class WeeklyBestSellersAPIView(generics.ListAPIView):
+    serializer_class = ProductListSerializer
+    pagination_class = CustomCategoryPagination  # استفاده از pagination مشترک
 
-    def get(self, request, *args, **kwargs):
+    def get_queryset(self):
         today = timezone.now().date()
         week_ago = today - timedelta(days=7)
 
         # آمار فروش هفته اخیر
         sales_qs = (
             SalesSummary.objects
-            .filter(summary_date__range=(week_ago, today))
+            .filter(created_at__date__range=(week_ago, today))  
             .values("product_id")
             .annotate(total_sold=Sum("total_quantity"))
             .order_by("-total_sold")
@@ -40,15 +38,32 @@ class WeeklyBestSellersAPIView(APIView):
             # اگر فروش هفته اخیر نبود، محصولات جدید فعال را جایگزین کن
             products = Product.objects.filter(is_active=True).order_by("-created_at")
 
-        # تبدیل همه تاریخ‌ها به timezone لوکال برای template
+        # تبدیل همه تاریخ‌ها به timezone لوکال
         for p in products:
             if timezone.is_aware(p.created_at):
                 p.created_at = timezone.localtime(p.created_at)
 
-        # pagination
-        paginator = self.StandardResultsSetPagination()
-        page = paginator.paginate_queryset(products, request, view=self)
+        return products
 
-        # سریالایزر
-        serializer = ProductSerializer(page, many=True)
-        return paginator.get_paginated_response(serializer.data)
+    def list(self, request, *args, **kwargs):
+        try:
+            queryset = self.get_queryset()
+            page = self.paginate_queryset(queryset)
+            
+            if page is not None:
+                serializer = self.get_serializer(page, many=True, context={'request': request})
+                return self.get_paginated_response(serializer.data)
+
+            serializer = self.get_serializer(queryset, many=True, context={'request': request})
+            return Response({
+                "success": True,
+                "count": queryset.count(),
+                "data": serializer.data
+            })
+            
+        except Exception as e:
+            return Response({
+                "success": False,
+                "message": "خطا در دریافت اطلاعات",
+                "error": str(e)
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
