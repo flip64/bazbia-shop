@@ -6,16 +6,14 @@ from customers.models import Customer
 
 class RegisterSerializer(serializers.ModelSerializer):
     phone = serializers.CharField(write_only=True)
-    address = serializers.CharField(write_only=True, required=False)
 
     class Meta:
         model = User
-        fields = ["username", "email", "password", "phone", "address"]
+        fields = ["username", "email", "password", "phone"]
         extra_kwargs = {"password": {"write_only": True}}
 
     def create(self, validated_data):
         phone = validated_data.pop("phone","")
-        address = validated_data.pop("address", "")
 
         # ساخت یوزر
         user = User.objects.create_user(
@@ -28,7 +26,6 @@ class RegisterSerializer(serializers.ModelSerializer):
         Customer.objects.create(
             user=user,
             phone=phone,
-            address=address
         )
 
         return user
