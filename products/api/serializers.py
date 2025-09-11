@@ -67,9 +67,6 @@ class ProductSerializer(serializers.ModelSerializer):
         return obj.created_at.isoformat()
     
 
-
-
-
 class CategorySerializer(serializers.ModelSerializer):
     subcategories = serializers.SerializerMethodField()
     parent_id = serializers.IntegerField(source='parent.id', read_only=True)
@@ -118,8 +115,6 @@ class SpecialProductSerializer(serializers.ModelSerializer):
         return ProductVariantSerializer(obj.product.variants.all(), many=True).data
 
 
-
-
 class TagSerializer(serializers.ModelSerializer):
     class Meta:
         model = Tag
@@ -139,8 +134,8 @@ class ProductVideoSerializer(serializers.ModelSerializer):
 
 
 class ProductListSerializer(serializers.ModelSerializer):
-    thumb = serializers.SerializerMethodField()
-    
+    thumb =    serializers.SerializerMethodField()
+    category = serializers.SerializerMethodField()
     class Meta:
         model = Product
         fields = ['id', 'name', 'slug', 'base_price', 'category', 'thumb', 'created_at']
@@ -158,6 +153,10 @@ class ProductListSerializer(serializers.ModelSerializer):
         if request:
             return request.build_absolute_uri(url)
         return url
+    
+    def get_category(self,obj):
+        return obj.category.name
+
 
 class ProductDetailSerializer(serializers.ModelSerializer):
     category = CategorySerializer(read_only=True)
