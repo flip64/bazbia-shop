@@ -1,5 +1,10 @@
 from django.db import models
 from django.contrib.auth.models import User
+from django.utils import timezone
+import uuid
+
+
+
 
 # ==============================
 # مدل سطح مشتری (CustomerLevel)
@@ -36,6 +41,14 @@ class Customer(models.Model):
 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+
+    avatar = models.ImageField(
+        upload_to='avatar/',
+        help_text='مسیر ذخیره تصویر در media',
+        blank=True, null=True
+    )
+
+    
 
     def __str__(self):
         return f"{self.user.username} Profile"
@@ -109,3 +122,19 @@ class CustomerAddress(models.Model):
 
     def __str__(self):
         return f"{self.customer.user.username} - {self.title or 'بدون عنوان'}"
+
+
+
+
+# ==============================
+# مدل کد تایید  مشتری (OTP)
+# ==============================
+
+class OTP(models.Model):
+    phone = models.CharField(max_length=15)
+    code = models.CharField(max_length=6)
+    created_at = models.DateTimeField(default=timezone.now)
+    session_id = models.UUIDField(default=uuid.uuid4, editable=False)
+
+    def __str__(self):
+        return f"{self.phone} - {self.code}"
