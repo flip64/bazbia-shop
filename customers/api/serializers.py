@@ -49,7 +49,6 @@ class LoginSerializer(serializers.Serializer):
 
     def validate(self, data):
         username = data.get("username")
-        print(username)
         password = data.get("password")
 
         if username and password:
