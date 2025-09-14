@@ -13,7 +13,6 @@ class Order(models.Model):
         ('paid', 'پرداخت شده'),
         ('shipped', 'ارسال شده'),
         ('completed', 'تحویل داده شده'),
-        ('cancelled', 'لغو شده'),
     ]
 
     user = models.ForeignKey(
