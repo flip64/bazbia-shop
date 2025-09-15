@@ -1,7 +1,7 @@
 # scrap_abdisite/utils/create_product.py
 
-import sys
 import os
+import sys
 import glob
 import re
 import json
@@ -9,27 +9,6 @@ from decimal import Decimal
 from urllib.parse import urlparse
 import requests
 import logging
-import django
-
-# ---------- مسیر پروژه ----------
-BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))  # مسیر ریشه پروژه (جایی که manage.py هست)
-sys.path.insert(0, BASE_DIR)  # اضافه کردن مسیر پروژه به sys.path
-
-# ---------- تنظیمات Django ----------
-os.environ.setdefault("DJANGO_SETTINGS_MODULE", "bazbia_shop.settings")  # جایگزین با settings پروژه
-django.setup()
-
-# ---------- Django imports ----------
-from django.core.files.base import ContentFile
-from django.utils.text import slugify
-from django.contrib.auth import get_user_model
-
-from products.models import (
-    Product, Category, Tag, ProductSpecification,
-    ProductImage, ProductVariant
-)
-from scrap_abdisite.models import WatchedURL
-from suppliers.models import Supplier
 
 # ---------- Logging ----------
 logging.basicConfig(
@@ -41,6 +20,35 @@ logging.basicConfig(
     ]
 )
 logger = logging.getLogger(__name__)
+
+# ---------- مسیر پروژه و sys.path ----------
+current_file_dir = os.path.dirname(__file__)
+logger.info(f"Current file dir: {current_file_dir}")
+
+# مسیر ریشه پروژه (محل manage.py)
+project_root = os.path.abspath(os.path.join(current_file_dir, "../../.."))
+logger.info(f"Project root: {project_root}")
+
+# اضافه کردن مسیر پروژه به sys.path
+if project_root not in sys.path:
+    sys.path.insert(0, project_root)
+logger.info(f"sys.path: {sys.path}")
+
+# ---------- تنظیمات Django ----------
+import django
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "bazbia_shop.settings")  # نام پروژه خودت
+django.setup()
+
+from django.core.files.base import ContentFile
+from django.utils.text import slugify
+from django.contrib.auth import get_user_model
+
+from products.models import (
+    Product, Category, Tag, ProductSpecification,
+    ProductImage, ProductVariant
+)
+from scrap_abdisite.models import WatchedURL
+from suppliers.models import Supplier
 
 # ---------- Helper Functions ----------
 def generate_unique_slug(name):
@@ -82,7 +90,8 @@ def download_and_attach_images(product: Product, image_urls: list, main_index: i
 
 # ---------- Main Import Function ----------
 def import_products():
-    EDITED_FOLDER = os.path.join(BASE_DIR, "scrap_abdisite", "data", "edited")
+    BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))  # scrap_abdisite/
+    EDITED_FOLDER = os.path.join(BASE_DIR, "data/edited")
     pattern = re.compile(r"edited_(\d{8})_(\d{4})_\d+\.json$")
     list_of_files = [f for f in glob.glob(os.path.join(EDITED_FOLDER, "*.json")) if pattern.search(os.path.basename(f))]
 
