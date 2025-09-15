@@ -17,7 +17,7 @@ echo "شروع Scraping:" $(date) >> "$LOG_FILE"
 
 # رفتن به شاخه اصلی پروژه تا ماژول‌ها درست پیدا شوند
 cd "$PROJECT_DIR"
-
+soure bin/activate   # اجرای محیط مجازی 
 # اجرای فایل‌ها به صورت ماژول Python
 python3 -m scrap_abdisite.utils.fetche_products_list >> "$LOG_FILE" 2>&1
 echo "فایل fetche_products_list.py اجرا شد" >> "$LOG_FILE"
