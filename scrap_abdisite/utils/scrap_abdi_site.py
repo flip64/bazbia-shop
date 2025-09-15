@@ -175,3 +175,7 @@ def clear_temp_files():
                 logging.info(f"🗑️ حذف فایل موقت: {f}")
             except Exception as e:
                 logging.error(f"❌ خطا در حذف فایل موقت {f}: {e}")
+
+
+if __name__ == "__main__":
+    process_latest_file()
