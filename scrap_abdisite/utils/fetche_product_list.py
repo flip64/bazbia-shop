@@ -174,3 +174,10 @@ def fetche_products_list():
     print("=" * 60)
     print(f"✅ فایل «{file_path}» با {total_count} محصول ذخیره شد.")
     return products, file_path
+
+
+# … پایان تعریف fetche_products_list
+
+if __name__ == "__main__":
+    fetche_products_list()
+
