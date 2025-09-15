@@ -139,6 +139,7 @@ def change_price_all(request):
 def create_product(request):
     user = request.user
     if user.is_authenticated:
+      print("ok for fetch")
       #  fetche_productsـlist()
       #  process_latest_file()   
       #  import_products_from_json(user)
