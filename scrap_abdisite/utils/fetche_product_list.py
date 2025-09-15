@@ -40,7 +40,7 @@ def is_need_scrap():
         print(f"⏳ آخرین گزارش ({os.path.basename(last_file)}) کمتر از ۱۲ ساعت پیش ذخیره شده. نیازی به اسکرپ نیست.")
         return False
 
-def fetche_productsـlist():
+def fetche_products_list():
     """اسکرپ محصولات پخش عبدی یا خواندن آخرین فایل ذخیره‌شده"""
     products = []
     total_count = 0

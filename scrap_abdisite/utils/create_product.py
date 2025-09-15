@@ -1,3 +1,72 @@
+import os
+import glob
+import re
+import json
+from decimal import Decimal
+from urllib.parse import urlparse
+
+import requests
+from django.core.files.base import ContentFile
+from django.utils.text import slugify
+
+from products.models import Product, Category, Tag, ProductSpecification, ProductImage
+from scrap_abdisite.models import WatchedURL
+from suppliers.models import Supplier
+from products.models import ProductVariant
+import logging
+
+# ------------------- Logging Configuration -------------------
+logging.basicConfig(
+    filename="import_products.log",
+    level=logging.INFO,
+    format="%(asctime)s - %(levelname)s - %(message)s",
+    encoding="utf-8"
+)
+logger = logging.getLogger(__name__)
+
+# ------------------- Helper Functions -------------------
+def generate_unique_slug(name):
+    """
+    Generate a unique slug compatible with latin1_swedish_ci database collation.
+    """
+    base_slug = slugify(name)
+    slug = base_slug
+    counter = 1
+
+    while Product.objects.filter(slug=slug).exists():
+        slug = f"{base_slug}-{counter}"
+        counter += 1
+
+    return slug
+
+def download_and_attach_images(product: Product, image_urls: list, main_index: int = 0):
+    for idx, url in enumerate(image_urls):
+        if not url:
+            continue
+        if ProductImage.objects.filter(product=product, source_url=url).exists():
+            logger.info(f"Duplicate image skipped: {url}")
+            continue
+        try:
+            response = requests.get(url, timeout=15)
+            if response.status_code != 200:
+                logger.error(f"Download failed ({response.status_code}): {url}")
+                continue
+
+            parsed_url = urlparse(url)
+            filename = os.path.basename(parsed_url.path) or f"{product.slug}_{idx}.jpg"
+            filename = filename.encode("latin1", "ignore").decode("latin1")
+
+            image_instance = ProductImage(
+                product=product,
+                source_url=url,
+                is_main=(idx == main_index)
+            )
+            image_instance.image.save(filename, ContentFile(response.content), save=True)
+            logger.info(f"Image saved: {filename}")
+
+        except Exception as e:
+            logger.error(f"Error downloading {url}: {e}")
+
 def import_products_from_json(user):
 
     BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))  # scrap_abdisite/
@@ -52,14 +121,19 @@ def import_products_from_json(user):
         # 🔹 واریانت پیش‌فرض ایجاد کن
         # ===========================
         if not product.variants.exists():
-            from products.models import ProductVariant
-            ProductVariant.objects.create(
-                product=product,
-                sku=f"{product.slug}-default",
-                price=product.base_price,
-                stock=item.get('quantity', 0)  # موجودی از فایل JSON یا صفر
-            )
+         base_sku = f"{product.slug}-default"
+         sku = base_sku
+         counter = 1
+         while ProductVariant.objects.filter(sku=sku).exists():
+           sku = f"{base_sku}-{counter}"
+           counter += 1
 
+         ProductVariant.objects.create(
+          product=product,
+          sku=sku,
+          price=product.base_price,
+          stock=item.get('quantity', 0)
+    )
         # تگ‌ها
         for tag_name in item.get('tags', []):
             tag_slug = slugify(tag_name)
