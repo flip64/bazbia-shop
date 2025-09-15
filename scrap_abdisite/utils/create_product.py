@@ -26,7 +26,7 @@ current_file_dir = os.path.dirname(__file__)
 logger.info(f"Current file dir: {current_file_dir}")
 
 # مسیر ریشه پروژه (محل manage.py)
-project_root = os.path.abspath(os.path.join(current_file_dir, "../../.."))
+project_root = os.path.abspath(os.path.join(current_file_dir, "../../"))
 logger.info(f"Project root: {project_root}")
 
 # اضافه کردن مسیر پروژه به sys.path
