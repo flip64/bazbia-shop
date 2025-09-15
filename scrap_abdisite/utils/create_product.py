@@ -1,3 +1,5 @@
+# scrap_abdisite/utils/create_product.py
+
 import os
 import glob
 import re
@@ -6,29 +8,35 @@ from decimal import Decimal
 from urllib.parse import urlparse
 import requests
 import logging
-
-# Django imports
 import django
-os.environ.setdefault("DJANGO_SETTINGS_MODULE", "bazbia_shop.settings")  # جایگزین با settings خودت
+
+# ---------- تنظیمات Django ----------
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "bazbia_shop.settings")  # جایگزین با settings پروژه خودت
 django.setup()
 
 from django.core.files.base import ContentFile
 from django.utils.text import slugify
-from products.models import Product, Category, Tag, ProductSpecification, ProductImage, ProductVariant
-from scrap_abdisite.models import WatchedURL
-from suppliers.models import Supplier
 from django.contrib.auth import get_user_model
 
-# ------------------- Logging -------------------
+from products.models import (
+    Product, Category, Tag, ProductSpecification,
+    ProductImage, ProductVariant
+)
+from scrap_abdisite.models import WatchedURL
+from suppliers.models import Supplier
+
+# ---------- Logging ----------
 logging.basicConfig(
-    filename="import_products.log",
     level=logging.INFO,
     format="%(asctime)s - %(levelname)s - %(message)s",
-    encoding="utf-8"
+    handlers=[
+        logging.FileHandler("import_products.log", encoding="utf-8"),
+        logging.StreamHandler()
+    ]
 )
 logger = logging.getLogger(__name__)
 
-# ------------------- Helper Functions -------------------
+# ---------- Helper Functions ----------
 def generate_unique_slug(name):
     base_slug = slugify(name)
     slug = base_slug
@@ -66,7 +74,7 @@ def download_and_attach_images(product: Product, image_urls: list, main_index: i
         except Exception as e:
             logger.error(f"Error downloading {url}: {e}")
 
-# ------------------- Main Import Function -------------------
+# ---------- Main Import Function ----------
 def import_products():
     BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))  # scrap_abdisite/
     EDITED_FOLDER = os.path.join(BASE_DIR, "data/edited")
@@ -97,85 +105,89 @@ def import_products():
     flip_user = User.objects.get(username="flip")
 
     for idx, item in enumerate(data, start=1):
-        name = item.get('name')
-        price = Decimal(item.get('price', 0))
-        product_link = item.get('product_link')
-        category_slug = slugify(item.get('category', ''))
+        try:
+            name = item.get('name')
+            price = Decimal(item.get('price', 0))
+            product_link = item.get('product_link')
+            category_slug = slugify(item.get('category', ''))
 
-        category = None
-        if category_slug:
-            category, _ = Category.objects.get_or_create(
-                slug=category_slug,
-                defaults={'name': item.get('category', '')}
+            category = None
+            if category_slug:
+                category, _ = Category.objects.get_or_create(
+                    slug=category_slug,
+                    defaults={'name': item.get('category', '')}
+                )
+
+            product, created = Product.objects.update_or_create(
+                name=name,
+                defaults={
+                    'slug': generate_unique_slug(name),
+                    'base_price': price * Decimal("1.2") if price > 0 else Decimal("0"),
+                    'category': category,
+                    'description': item.get('description', ''),
+                    'is_active': True
+                }
             )
 
-        product, created = Product.objects.update_or_create(
-            name=name,
-            defaults={
-                'slug': generate_unique_slug(name),
-                'base_price': price * Decimal("1.2") if price > 0 else Decimal("0"),
-                'category': category,
-                'description': item.get('description', ''),
-                'is_active': True
-            }
-        )
+            # 🔹 ایجاد واریانت پیش‌فرض
+            if not product.variants.exists():
+                base_sku = f"{product.slug}-default"
+                sku = base_sku
+                counter = 1
+                while ProductVariant.objects.filter(sku=sku).exists():
+                    sku = f"{base_sku}-{counter}"
+                    counter += 1
 
-        # 🔹 ایجاد واریانت پیش‌فرض
-        if not product.variants.exists():
-            base_sku = f"{product.slug}-default"
-            sku = base_sku
-            counter = 1
-            while ProductVariant.objects.filter(sku=sku).exists():
-                sku = f"{base_sku}-{counter}"
-                counter += 1
+                ProductVariant.objects.create(
+                    product=product,
+                    sku=sku,
+                    price=product.base_price,
+                    stock=item.get('quantity', 0)
+                )
 
-            ProductVariant.objects.create(
-                product=product,
-                sku=sku,
-                price=product.base_price,
-                stock=item.get('quantity', 0)
-            )
+            # تگ‌ها
+            for tag_name in item.get('tags', []):
+                tag_slug = slugify(tag_name)
+                tag, _ = Tag.objects.get_or_create(slug=tag_slug, defaults={'name': tag_name})
+                product.tags.add(tag)
 
-        # تگ‌ها
-        for tag_name in item.get('tags', []):
-            tag_slug = slugify(tag_name)
-            tag, _ = Tag.objects.get_or_create(slug=tag_slug, defaults={'name': tag_name})
-            product.tags.add(tag)
+            # مشخصات
+            existing_specs = {(spec.name, spec.value) for spec in product.specifications.all()}
+            for spec in item.get('specifications', []):
+                if ':' in spec:
+                    spec_name, spec_value = [part.strip() for part in spec.split(':', 1)]
+                    if (spec_name, spec_value) not in existing_specs:
+                        ProductSpecification.objects.create(
+                            product=product,
+                            name=spec_name,
+                            value=spec_value
+                        )
 
-        # مشخصات
-        existing_specs = {(spec.name, spec.value) for spec in product.specifications.all()}
-        for spec in item.get('specifications', []):
-            if ':' in spec:
-                spec_name, spec_value = [part.strip() for part in spec.split(':', 1)]
-                if (spec_name, spec_value) not in existing_specs:
-                    ProductSpecification.objects.create(
-                        product=product,
-                        name=spec_name,
-                        value=spec_value
-                    )
+            # موجودی صفر اگر قیمت صفر
+            if price == 0:
+                for variant in product.variants.all():
+                    variant.stock = 0
+                    variant.save()
 
-        # موجودی صفر اگر قیمت صفر
-        if price == 0:
-            for variant in product.variants.all():
-                variant.stock = 0
-                variant.save()
+            # WatchedURL با user flip
+            if product_link:
+                WatchedURL.objects.update_or_create(
+                    user=flip_user,
+                    product=product,
+                    supplier=supplier,
+                    url=product_link,
+                    defaults={"price": price}
+                )
 
-        # WatchedURL با user flip
-        if product_link:
-            WatchedURL.objects.update_or_create(
-                user=flip_user,
-                product=product,
-                supplier=supplier,
-                url=product_link,
-                defaults={"price": price}
-            )
+            # تصاویر
+            image_urls = item.get('images', [])
+            if image_urls:
+                download_and_attach_images(product, image_urls, main_index=0)
 
-        # تصاویر
-        image_urls = item.get('images', [])
-        if image_urls:
-            download_and_attach_images(product, image_urls, main_index=0)
+            logger.info(f"{idx}. محصول '{name}' پردازش شد.")
 
-        logger.info(f"{idx}. محصول '{name}' پردازش شد.")
+        except Exception as e:
+            logger.error(f"❌ خطا در پردازش محصول {item.get('name', 'نامعلوم')}: {e}")
 
     logger.info("✅ همه محصولات با موفقیت پردازش شدند.")
 
