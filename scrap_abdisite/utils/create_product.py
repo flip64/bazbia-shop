@@ -1,5 +1,6 @@
 # scrap_abdisite/utils/create_product.py
 
+import sys
 import os
 import glob
 import re
@@ -10,10 +11,15 @@ import requests
 import logging
 import django
 
+# ---------- مسیر پروژه ----------
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))  # مسیر ریشه پروژه (جایی که manage.py هست)
+sys.path.insert(0, BASE_DIR)  # اضافه کردن مسیر پروژه به sys.path
+
 # ---------- تنظیمات Django ----------
-os.environ.setdefault("DJANGO_SETTINGS_MODULE", "bazbia_shop.settings")  # جایگزین با settings پروژه خودت
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "bazbia_shop.settings")  # جایگزین با settings پروژه
 django.setup()
 
+# ---------- Django imports ----------
 from django.core.files.base import ContentFile
 from django.utils.text import slugify
 from django.contrib.auth import get_user_model
@@ -76,8 +82,7 @@ def download_and_attach_images(product: Product, image_urls: list, main_index: i
 
 # ---------- Main Import Function ----------
 def import_products():
-    BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))  # scrap_abdisite/
-    EDITED_FOLDER = os.path.join(BASE_DIR, "data/edited")
+    EDITED_FOLDER = os.path.join(BASE_DIR, "scrap_abdisite", "data", "edited")
     pattern = re.compile(r"edited_(\d{8})_(\d{4})_\d+\.json$")
     list_of_files = [f for f in glob.glob(os.path.join(EDITED_FOLDER, "*.json")) if pattern.search(os.path.basename(f))]
 
