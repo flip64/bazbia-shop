@@ -35,8 +35,6 @@ fi
 # چک کردن پایتون فعال
 which python3 >> "$LOG_FILE"
 
-# نصب مطمئن requests اگر نصب نشده
-pip install -q --disable-pip-version-check requests
 
 # اجرای فایل‌ها به صورت ماژول Python
 python3 -m scrap_abdisite.utils.fetche_products_list >> "$LOG_FILE" 2>&1
