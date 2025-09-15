@@ -4,9 +4,21 @@ import json
 import time
 import os
 from datetime import datetime, timedelta
-from django.utils.text import slugify
+
 import re
 
+
+
+
+
+
+def slugify(text):
+    """تبدیل متن به slug بدون Django"""
+    text = text.lower()
+    text = re.sub(r"[^\w\s-]", "", text)  # حذف کاراکترهای غیرمجاز
+    text = re.sub(r"[\s_-]+", "-", text)  # فاصله و _ و - به -
+    text = re.sub(r"^-+|-+$", "", text)   # حذف - در ابتدا و انتها
+    return text
 # مسیر app اصلی
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))  # میشه scrap_abdisite/
 OUTPUT_DIR = os.path.join(BASE_DIR, "data", "raw")
