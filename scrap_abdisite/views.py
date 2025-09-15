@@ -3,12 +3,12 @@ from django.http import JsonResponse, HttpResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth.decorators import login_required
 from django.utils import timezone
-from scrap_abdisite.utils.scrap_abdi_site import process_latest_file, is_running
+#from scrap_abdisite.utils.scrap_abdi_site import process_latest_file, is_running
 from scrap_abdisite.models import WatchedURL, PriceHistory
 from scrap_abdisite.forms import WatchedURLForm
-from scrap_abdisite.utils.abdi_fetcher import fetch_product_details, send_price_alert
-from scrap_abdisite.utils.fetche_product_list import fetche_products_list
-from scrap_abdisite.utils.create_product import import_products_from_json
+#from scrap_abdisite.utils.abdi_fetcher import fetch_product_details, send_price_alert
+#from scrap_abdisite.utils.fetche_product_list import fetche_products_list
+#from scrap_abdisite.utils.create_product import import_products_from_json
 
 from suppliers.models import Supplier
 
