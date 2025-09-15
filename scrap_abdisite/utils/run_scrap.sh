@@ -15,9 +15,29 @@ LOG_FILE="$LOG_DIR/scraping_$(date +%Y%m%d_%H%M).log"
 
 echo "شروع Scraping:" $(date) >> "$LOG_FILE"
 
-# رفتن به شاخه اصلی پروژه تا ماژول‌ها درست پیدا شوند
+# رفتن به شاخه اصلی پروژه
 cd "$PROJECT_DIR"
-soure bin/activate   # اجرای محیط مجازی 
+
+# فعال‌سازی محیط مجازی (bin داخل پوشه اصلی)
+if [ -f "$PROJECT_DIR/bin/activate" ]; then
+    source "$PROJECT_DIR/bin/activate"
+else
+    echo "⚠️ محیط مجازی پیدا نشد!" >> "$LOG_FILE"
+fi
+
+# لاگ وضعیت محیط مجازی
+if [ -z "$VIRTUAL_ENV" ]; then
+    echo "❌ محیط مجازی فعال نیست" >> "$LOG_FILE"
+else
+    echo "✅ محیط مجازی فعال است: $VIRTUAL_ENV" >> "$LOG_FILE"
+fi
+
+# چک کردن پایتون فعال
+which python3 >> "$LOG_FILE"
+
+# نصب مطمئن requests اگر نصب نشده
+pip install -q --disable-pip-version-check requests
+
 # اجرای فایل‌ها به صورت ماژول Python
 python3 -m scrap_abdisite.utils.fetche_products_list >> "$LOG_FILE" 2>&1
 echo "فایل fetche_products_list.py اجرا شد" >> "$LOG_FILE"
