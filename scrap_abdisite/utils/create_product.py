@@ -11,7 +11,7 @@ import logging
 import django
 
 # ---------- تنظیمات Django ----------
-os.environ.setdefault("DJANGO_SETTINGS_MODULE", "settings")  # جایگزین با settings پروژه خودت
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "bazbia_shop.settings")  # جایگزین با settings پروژه خودت
 django.setup()
 
 from django.core.files.base import ContentFile
