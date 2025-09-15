@@ -22,22 +22,24 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 # ---------- مسیر پروژه و sys.path ----------
-current_file_dir = os.path.dirname(__file__)
+current_file_dir = os.path.dirname(os.path.abspath(__file__))
 logger.info(f"Current file dir: {current_file_dir}")
 
-# مسیر ریشه پروژه (محل manage.py)
 project_root = os.path.abspath(os.path.join(current_file_dir, "../../"))
 logger.info(f"Project root: {project_root}")
 
-# اضافه کردن مسیر پروژه به sys.path
 if project_root not in sys.path:
     sys.path.insert(0, project_root)
 logger.info(f"sys.path: {sys.path}")
 
 # ---------- تنظیمات Django ----------
 import django
-os.environ.setdefault("DJANGO_SETTINGS_MODULE", "bazbia_shop.settings")  # نام پروژه خودت
-django.setup()
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "bazbia_shop.settings")
+try:
+    django.setup()
+except Exception as e:
+    logger.error(f"❌ خطا در راه‌اندازی Django: {e}")
+    sys.exit(1)
 
 from django.core.files.base import ContentFile
 from django.utils.text import slugify
@@ -61,7 +63,7 @@ def generate_unique_slug(name):
     return slug
 
 def download_and_attach_images(product: Product, image_urls: list, main_index: int = 0):
-    for idx, url in enumerate(image_urls):
+    for idx, url in enumerate(image_urls or []):
         if not url:
             continue
         if ProductImage.objects.filter(product=product, source_url=url).exists():
@@ -99,13 +101,7 @@ def import_products():
         logger.error("هیچ فایل JSON ویرایش‌شده‌ای پیدا نشد.")
         return
 
-    def file_key(f):
-        match = pattern.search(os.path.basename(f))
-        date_part = match.group(1)
-        time_part = match.group(2)
-        return date_part + time_part
-
-    latest_file = max(list_of_files, key=file_key)
+    latest_file = max(list_of_files, key=lambda f: ''.join(pattern.search(os.path.basename(f)).groups()))
     logger.info(f"⏳ در حال پردازش فایل: {latest_file}")
 
     with open(latest_file, "r", encoding="utf-8") as f:
@@ -116,20 +112,24 @@ def import_products():
 
     # User flip
     User = get_user_model()
-    flip_user = User.objects.get(username="flip")
+    try:
+        flip_user = User.objects.get(username="flip")
+    except User.DoesNotExist:
+        logger.error("❌ کاربر flip پیدا نشد.")
+        return
 
     for idx, item in enumerate(data, start=1):
         try:
-            name = item.get('name')
-            price = Decimal(item.get('price', 0))
+            name = item.get('name', 'نامعلوم')
+            price = Decimal(item.get('price') or 0)
             product_link = item.get('product_link')
-            category_slug = slugify(item.get('category', ''))
+            category_slug = slugify(item.get('category') or '')
 
             category = None
             if category_slug:
                 category, _ = Category.objects.get_or_create(
                     slug=category_slug,
-                    defaults={'name': item.get('category', '')}
+                    defaults={'name': item.get('category') or ''}
                 )
 
             product, created = Product.objects.update_or_create(
@@ -138,7 +138,7 @@ def import_products():
                     'slug': generate_unique_slug(name),
                     'base_price': price * Decimal("1.2") if price > 0 else Decimal("0"),
                     'category': category,
-                    'description': item.get('description', ''),
+                    'description': item.get('description') or '',
                     'is_active': True
                 }
             )
@@ -156,18 +156,18 @@ def import_products():
                     product=product,
                     sku=sku,
                     price=product.base_price,
-                    stock=item.get('quantity', 0)
+                    stock=item.get('quantity') or 0
                 )
 
             # تگ‌ها
-            for tag_name in item.get('tags', []):
+            for tag_name in item.get('tags') or []:
                 tag_slug = slugify(tag_name)
                 tag, _ = Tag.objects.get_or_create(slug=tag_slug, defaults={'name': tag_name})
                 product.tags.add(tag)
 
             # مشخصات
             existing_specs = {(spec.name, spec.value) for spec in product.specifications.all()}
-            for spec in item.get('specifications', []):
+            for spec in item.get('specifications') or []:
                 if ':' in spec:
                     spec_name, spec_value = [part.strip() for part in spec.split(':', 1)]
                     if (spec_name, spec_value) not in existing_specs:
@@ -194,9 +194,7 @@ def import_products():
                 )
 
             # تصاویر
-            image_urls = item.get('images', [])
-            if image_urls:
-                download_and_attach_images(product, image_urls, main_index=0)
+            download_and_attach_images(product, item.get('images') or [], main_index=0)
 
             logger.info(f"{idx}. محصول '{name}' پردازش شد.")
 
