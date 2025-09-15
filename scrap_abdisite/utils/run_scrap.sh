@@ -1,29 +1,28 @@
 #!/bin/bash
 
-# مسیر جاری اسکریپت (شاخه scrap_abdisite/utils)
+# مسیر جاری اسکریپت (scrap_abdisite/utils)
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 
-# مسیر شاخه اصلی پروژه (یک سطح بالاتر از scrap_abdisite)
+# مسیر شاخه اصلی پروژه (bazbia-shop)
 PROJECT_DIR="$(dirname "$(dirname "$SCRIPT_DIR")")"
 
-# فولدر لاگ داخل شاخه scrap_abdisite
+# فولدر لاگ داخل scrap_abdisite
 LOG_DIR="$PROJECT_DIR/scrap_abdisite/logs"
 mkdir -p "$LOG_DIR"
 
 # نام فایل لاگ با تاریخ و ساعت
 LOG_FILE="$LOG_DIR/scraping_$(date +%Y%m%d_%H%M).log"
 
-# اضافه کردن مسیر پروژه به PYTHONPATH تا پکیج scrap_abdisite پیدا شود
-export PYTHONPATH="$PROJECT_DIR:$PYTHONPATH"
-
 echo "شروع Scraping:" $(date) >> "$LOG_FILE"
 
-# اجرای فایل اول
-python3 "$PROJECT_DIR/scrap_abdisite/utils/fetche_products_list.py" >> "$LOG_FILE" 2>&1
+# رفتن به شاخه اصلی پروژه تا ماژول‌ها درست پیدا شوند
+cd "$PROJECT_DIR"
+
+# اجرای فایل‌ها به صورت ماژول Python
+python3 -m scrap_abdisite.utils.fetche_products_list >> "$LOG_FILE" 2>&1
 echo "فایل fetche_products_list.py اجرا شد" >> "$LOG_FILE"
 
-# اجرای فایل دوم
-python3 "$PROJECT_DIR/scrap_abdisite/utils/scrap_abdi_site.py" >> "$LOG_FILE" 2>&1
+python3 -m scrap_abdisite.utils.scrap_abdi_site >> "$LOG_FILE" 2>&1
 echo "فایل scrap_abdi_site.py اجرا شد" >> "$LOG_FILE"
 
 echo "پایان Scraping:" $(date) >> "$LOG_FILE"
