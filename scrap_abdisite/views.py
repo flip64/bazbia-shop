@@ -167,3 +167,6 @@ def fetch_details_products(request):
     return JsonResponse({"status": "started", "message": "اسکریپت در پس‌زمینه شروع شد"})
 
 
+
+if __name__ == "__main__":
+    process_latest_file()
