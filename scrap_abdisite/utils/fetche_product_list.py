@@ -4,13 +4,11 @@ import json
 import time
 import os
 from datetime import datetime, timedelta
-
 import re
 
-
-
-
-
+# -------------------------------
+# توابع کمکی
+# -------------------------------
 
 def slugify(text):
     """تبدیل متن به slug بدون Django"""
@@ -19,8 +17,12 @@ def slugify(text):
     text = re.sub(r"[\s_-]+", "-", text)  # فاصله و _ و - به -
     text = re.sub(r"^-+|-+$", "", text)   # حذف - در ابتدا و انتها
     return text
-# مسیر app اصلی
-BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))  # میشه scrap_abdisite/
+
+# -------------------------------
+# مسیرها و تنظیمات
+# -------------------------------
+
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))  # scrap_abdisite/
 OUTPUT_DIR = os.path.join(BASE_DIR, "data", "raw")
 os.makedirs(OUTPUT_DIR, exist_ok=True)
 
@@ -32,7 +34,10 @@ list_cat = [
     "baby-and-infant", "fashion-and-clothing"
 ]
 
-# پیدا کردن آخرین فایل
+# -------------------------------
+# توابع مدیریت فایل و زمان
+# -------------------------------
+
 def get_last_file():
     files = [f for f in os.listdir(OUTPUT_DIR) if f.startswith("raw_") and f.endswith(".json")]
     if not files:
@@ -52,6 +57,10 @@ def is_need_scrap():
         print(f"⏳ آخرین گزارش ({os.path.basename(last_file)}) کمتر از ۱۲ ساعت پیش ذخیره شده. نیازی به اسکرپ نیست.")
         return False
 
+# -------------------------------
+# تابع اصلی اسکرپ
+# -------------------------------
+
 def fetche_products_list():
     """اسکرپ محصولات پخش عبدی یا خواندن آخرین فایل ذخیره‌شده"""
     products = []
@@ -66,6 +75,9 @@ def fetche_products_list():
         else:
             return [], None
 
+    session = requests.Session()
+    session.headers.update(headers)
+
     for cat in list_cat:
         page = 1
         while True:
@@ -76,7 +88,7 @@ def fetche_products_list():
             print(f"🔗 URL: {url}")
 
             try:
-                response = requests.get(url, headers=headers, timeout=10)
+                response = session.get(url, timeout=10)
                 if response.status_code != 200:
                     print("❌ صفحه یافت نشد یا به پایان رسید.")
                     break
@@ -101,7 +113,7 @@ def fetche_products_list():
                     continue
 
                 name = name_link_tag.text.strip()
-                link = name_link_tag["href"] if name_link_tag.has_attr("href") else "لینک یافت نشد"
+                link = name_link_tag.get("href", "لینک یافت نشد")
                 slug = slugify(name)
 
                 price_tag = item.find("span", class_="woocommerce-Price-amount")
@@ -173,11 +185,14 @@ def fetche_products_list():
 
     print("=" * 60)
     print(f"✅ فایل «{file_path}» با {total_count} محصول ذخیره شد.")
+
     return products, file_path
 
-
-# … پایان تعریف fetche_products_list
+# -------------------------------
+# اجرای مستقیم تابع اصلی
+# -------------------------------
 
 if __name__ == "__main__":
-    fetche_products_list()
-
+    products, file_path = fetche_products_list()
+    print(f"\n📝 تعداد کل محصولات: {len(products)}")
+    print(f"🗂️ مسیر فایل ذخیره‌شده: {file_path}")
