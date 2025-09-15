@@ -40,7 +40,7 @@ class ProductSerializer(serializers.ModelSerializer):
         model = Product
         fields = [
             'id', 'name', 'slug', 'description', 'base_price',
-            'category', 'images', 'variants', 'thumb', 'created_at'
+            'category', 'images', 'variants', 'thumb', 'created_at','quantity'
         ]
 
     def get_category(self, obj):
@@ -138,7 +138,7 @@ class ProductListSerializer(serializers.ModelSerializer):
     category = serializers.SerializerMethodField()
     class Meta:
         model = Product
-        fields = ['id', 'name', 'slug', 'base_price', 'category', 'thumb', 'created_at']
+        fields = ['id', 'name', 'slug', 'base_price', 'category', 'thumb', 'created_at','quantity']
 
     def get_thumb(self, obj):
         request = self.context.get('request')
@@ -174,7 +174,7 @@ class ProductDetailSerializer(serializers.ModelSerializer):
             'id', 'name', 'slug', 'description', 'base_price',
             'category', 'tags', 'specifications', 'variants',
             'images', 'videos', 'is_active', 'created_at', 'updated_at',
-            'is_special', 'special_details'
+            'is_special', 'special_details' ,'quantity'
         ]
 
     def get_is_special(self, obj):

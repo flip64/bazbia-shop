@@ -3,7 +3,6 @@ from django.shortcuts import get_object_or_404
 from products.models import Product, Category, Tag
 from products.forms import CategoryForm
 from promotions.models import Banner
-from orders.cart.cart import Cart
 from django.core.paginator import Paginator
 
 

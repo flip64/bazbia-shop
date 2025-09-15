@@ -1,5 +1,7 @@
 from rest_framework import generics, status
 from rest_framework.response import Response
+from rest_framework.views import APIView
+from orders.utils.cart import CartManager
 from datetime import timedelta
 from django.utils import timezone
 from django.db.models import Sum, Case, When, IntegerField
@@ -9,6 +11,7 @@ from products.api.serializers import ProductListSerializer
 from products.api.pagination import CustomCategoryPagination  # فرض می‌کنیم pagination مشترک دارید
 
 class WeeklyBestSellersAPIView(generics.ListAPIView):
+
     serializer_class = ProductListSerializer
     pagination_class = CustomCategoryPagination  # استفاده از pagination مشترک
 
@@ -67,3 +70,75 @@ class WeeklyBestSellersAPIView(generics.ListAPIView):
                 "message": "خطا در دریافت اطلاعات",
                 "error": str(e)
             }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        
+
+
+
+class CartView(APIView):
+    """
+    مدیریت کامل سبد خرید:
+    - GET: نمایش آیتم‌ها
+    - POST: افزودن آیتم
+    - PATCH: بروزرسانی تعداد
+    - DELETE: حذف آیتم یا خالی کردن سبد
+    """
+
+    def get_cart_manager(self, request):
+        return CartManager(request)
+
+    def get(self, request):
+        cart_manager = self.get_cart_manager(request)
+        items = [
+            {
+                "id": item.id,
+                "variant": item.variant.id,
+                "product_name": str(item.variant),
+                "quantity": item.quantity,
+                "price": item.price(),
+                "total_price": item.total_price(),
+            }
+            for item in cart_manager.items()
+        ]
+        return Response({
+            "items": items,
+            "total_price": cart_manager.total_price(),
+        })
+
+    def post(self, request):
+        variant_id = request.data.get("variant_id")
+        quantity = int(request.data.get("quantity", 1))
+
+        if not variant_id:
+            return Response({"error": "variant_id الزامی است"}, status=status.HTTP_400_BAD_REQUEST)
+
+        cart_manager = self.get_cart_manager(request)
+        cart_manager.add(variant_id, quantity)
+
+        return Response({"message": "محصول به سبد اضافه شد"}, status=status.HTTP_201_CREATED)
+
+    def patch(self, request):
+        variant_id = request.data.get("variant_id")
+        quantity = int(request.data.get("quantity", 1))
+
+        if not variant_id:
+            return Response({"error": "variant_id الزامی است"}, status=status.HTTP_400_BAD_REQUEST)
+
+        cart_manager = self.get_cart_manager(request)
+        cart_manager.update(variant_id, quantity)
+
+        return Response({"message": "سبد بروزرسانی شد"}, status=status.HTTP_200_OK)
+
+    def delete(self, request):
+        """
+        اگر variant_id ارسال شد → حذف یک آیتم
+        اگر ارسال نشد → خالی کردن کل سبد
+        """
+        variant_id = request.data.get("variant_id")
+        cart_manager = self.get_cart_manager(request)
+
+        if variant_id:
+            cart_manager.remove(variant_id)
+            return Response({"message": "آیتم حذف شد"}, status=status.HTTP_200_OK)
+        else:
+            cart_manager.clear()
+            return Response({"message": "سبد خرید خالی شد"}, status=status.HTTP_200_OK)

@@ -140,7 +140,7 @@ def create_product(request):
     user = request.user
     if user.is_authenticated:
         fetche_productsـlist()
-        process_latest_file()   
+    #    process_latest_file()   
         import_products_from_json(user)
         
     return HttpResponse("Import completed successfully.")

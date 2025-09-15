@@ -1,8 +1,9 @@
 from django.contrib import admin
-from .models import Customer, CustomerLevel, CustomerGuarantee
+from customers import models
 
 
-admin.site.register(Customer)
-admin.site.register(CustomerLevel)
-admin.site.register(CustomerGuarantee)
-
+admin.site.register(models.Customer)
+admin.site.register(models.CustomerLevel)
+admin.site.register(models.CustomerGuarantee)
+admin.site.register(models.Status)
+admin.site.register(models.CustomerState)
