@@ -101,3 +101,30 @@ def fetch_product_details(url):
         product_price = clean_price(price_tag.text) if price_tag else None
 
     return product_name, product_price
+
+
+def extract_quantity(product_link):
+    resp = requests.get(product_link, timeout=10)
+    resp.raise_for_status()
+    soup = BeautifulSoup(resp.text, "html.parser")
+
+    # پیدا کردن المان موجودی
+    # مثال: span یا div ای که متن "در انبار" دارد
+    stock_elem = soup.find(lambda tag: tag.name in ["span", "div", "p", "li"] 
+                           and "در انبار" in tag.get_text())
+    if not stock_elem:
+        return None
+
+    text = stock_elem.get_text().strip()
+    # متن ممکن است مثل "128 در انبار"
+    match = re.search(r"(\d+)\s*در انبار", text)
+    if match:
+        return int(match.group(1))
+    else:
+        # اگر فرمت متفاوت باشد، تلاش دیگری
+        match2 = re.search(r"(\d+)", text)
+        if match2:
+            return int(match2.group(1))
+    return None
+
+

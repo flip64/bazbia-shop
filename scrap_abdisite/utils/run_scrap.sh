@@ -2,11 +2,14 @@
 set -x  # برای نمایش دستورات اجرا شده
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+
 PROJECT_DIR="$(dirname "$(dirname "$SCRIPT_DIR")")"
 
 LOG_DIR="$PROJECT_DIR/scrap_abdisite/logs"
 mkdir -p "$LOG_DIR"
 LOG_FILE="$LOG_DIR/scraping_$(date +%Y%m%d_%H%M).log"
+echo "📂 PROJECT_DIR = $PROJECT_DIR" >> "$LOG_FILE"
+ls -l "$PROJECT_DIR/scrap_abdisite/utils" >> "$LOG_FILE"
 
 echo "شروع Scraping:" $(date) >> "$LOG_FILE"
 
@@ -30,10 +33,16 @@ fi
 which python3 >> "$LOG_FILE"
 
 # اجرای مستقیم فایل Python
-python3 scrap_abdisite/utils/fetche_products_list.py >> "$LOG_FILE" 2>&1
+python3 scrap_abdisite/utils/fetche_product_list.py >> "$LOG_FILE" 2>&1
 echo "فایل fetche_products_list.py اجرا شد" >> "$LOG_FILE"
 
 python3 scrap_abdisite/utils/scrap_abdi_site.py >> "$LOG_FILE" 2>&1
 echo "فایل scrap_abdi_site.py اجرا شد" >> "$LOG_FILE"
+
+
+python3 scrap_abdisite/utils/create_product.py >> "$LOG_FILE" 2>&1
+echo "فایل create_product.py اجرا شد" >> "$LOG_FILE"
+
+
 
 echo "پایان Scraping:" $(date) >> "$LOG_FILE"

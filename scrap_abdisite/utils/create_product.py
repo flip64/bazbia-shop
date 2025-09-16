@@ -5,6 +5,7 @@ import sys
 import glob
 import re
 import json
+import time
 from decimal import Decimal
 from urllib.parse import urlparse
 import requests
@@ -23,14 +24,10 @@ logger = logging.getLogger(__name__)
 
 # ---------- مسیر پروژه و sys.path ----------
 current_file_dir = os.path.dirname(os.path.abspath(__file__))
-logger.info(f"Current file dir: {current_file_dir}")
-
 project_root = os.path.abspath(os.path.join(current_file_dir, "../../"))
-logger.info(f"Project root: {project_root}")
 
 if project_root not in sys.path:
     sys.path.insert(0, project_root)
-logger.info(f"sys.path: {sys.path}")
 
 # ---------- تنظیمات Django ----------
 import django
@@ -67,12 +64,12 @@ def download_and_attach_images(product: Product, image_urls: list, main_index: i
         if not url:
             continue
         if ProductImage.objects.filter(product=product, source_url=url).exists():
-            logger.info(f"Duplicate image skipped: {url}")
+            logger.info(f"⏭️ تصویر تکراری رد شد: {url}")
             continue
         try:
             response = requests.get(url, timeout=15)
             if response.status_code != 200:
-                logger.error(f"Download failed ({response.status_code}): {url}")
+                logger.error(f"دانلود نشد ({response.status_code}): {url}")
                 continue
 
             parsed_url = urlparse(url)
@@ -85,10 +82,10 @@ def download_and_attach_images(product: Product, image_urls: list, main_index: i
                 is_main=(idx == main_index)
             )
             image_instance.image.save(filename, ContentFile(response.content), save=True)
-            logger.info(f"Image saved: {filename}")
+            logger.info(f"✅ تصویر ذخیره شد: {filename}")
 
         except Exception as e:
-            logger.error(f"Error downloading {url}: {e}")
+            logger.error(f"❌ خطا در دانلود {url}: {e}")
 
 # ---------- Main Import Function ----------
 def import_products():
@@ -118,6 +115,10 @@ def import_products():
         logger.error("❌ کاربر flip پیدا نشد.")
         return
 
+    # ---------- Batch processing ----------
+    BATCH_SIZE = 10
+    SLEEP_TIME = 2  # ثانیه
+
     for idx, item in enumerate(data, start=1):
         try:
             name = item.get('name', 'نامعلوم')
@@ -143,7 +144,7 @@ def import_products():
                 }
             )
 
-            # 🔹 ایجاد واریانت پیش‌فرض
+            # 🔹 ایجاد واریانت پیش‌فرض اگر موجود نیست
             if not product.variants.exists():
                 base_sku = f"{product.slug}-default"
                 sku = base_sku
@@ -156,8 +157,20 @@ def import_products():
                     product=product,
                     sku=sku,
                     price=product.base_price,
-                    stock=item.get('quantity') or 0
+                    stock=0
                 )
+
+            # 🔹 آپدیت موجودی فقط وقتی که توی JSON باشه
+            if 'quantity' in item and item['quantity'] is not None:
+                for variant in product.variants.all():
+                    variant.stock = item['quantity']
+                    variant.save()
+
+            # موجودی صفر اگر قیمت صفر
+            if price == 0:
+                for variant in product.variants.all():
+                    variant.stock = 0
+                    variant.save()
 
             # تگ‌ها
             for tag_name in item.get('tags') or []:
@@ -177,12 +190,6 @@ def import_products():
                             value=spec_value
                         )
 
-            # موجودی صفر اگر قیمت صفر
-            if price == 0:
-                for variant in product.variants.all():
-                    variant.stock = 0
-                    variant.save()
-
             # WatchedURL با user flip
             if product_link:
                 WatchedURL.objects.update_or_create(
@@ -200,6 +207,11 @@ def import_products():
 
         except Exception as e:
             logger.error(f"❌ خطا در پردازش محصول {item.get('name', 'نامعلوم')}: {e}")
+
+        # ---------- توقف کوتاه بعد از هر batch ----------
+        if idx % BATCH_SIZE == 0:
+            logger.info(f"💤 توقف کوتاه {SLEEP_TIME} ثانیه بعد از {idx} محصول")
+            time.sleep(SLEEP_TIME)
 
     logger.info("✅ همه محصولات با موفقیت پردازش شدند.")
 

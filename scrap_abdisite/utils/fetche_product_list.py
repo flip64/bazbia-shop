@@ -151,7 +151,7 @@ def fetche_products_list():
                     "description": description,
                     "checked_description": False,
                     "price": price,
-                    "stock": None,
+                    "quantity": None,
                     "category": cat,
                     "tags": [],
                     "checked_tags": False,

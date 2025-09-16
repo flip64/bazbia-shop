@@ -4,6 +4,7 @@ import os
 import json
 from datetime import datetime
 from scrap_abdisite.utils.abdi_fetcher import extract_specifications, extract_tags, extract_product_images
+from scrap_abdisite.utils.abdi_fetcher import extract_quantity
 from time import sleep
 import logging
 
@@ -64,6 +65,14 @@ def process_latest_file():
                 except Exception as e:
                     logging.error(f"❌ خطا در استخراج تصاویر محصول {product.get('name')}: {e}")
 
+
+            try:
+              quantity = extract_quantity(product["product_link"])
+              product["quantity"] = quantity
+              logging.info(f"✅ موجودی محصول '{product.get('name')}' بررسی شد: {quantity}")
+            except Exception as e:
+               logging.error(f"❌ خطا در بررسی موجودی محصول {product.get('name')}: {e}")
+   
             processed.append(product)
 
             # هر batch_size محصول یکبار ذخیره کن
