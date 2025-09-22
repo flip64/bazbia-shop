@@ -1,0 +1,41 @@
+{% extends 'scrap_abdisite/base.html' %}
+
+{% block content %}
+<h2>ثبت لینک جدید</h2>
+
+<form method="post" style="margin-bottom: 30px;">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit">ثبت لینک</button>
+</form>
+
+<hr>
+
+<h2>لیست لینک‌های شما</h2>
+
+<table border="1" cellpadding="8" cellspacing="0" width="100%">
+    <tr>
+        <th>نام محصول</th>
+        <th>لینک</th>
+        <th>آخرین قیمت</th>
+        <th>آخرین بررسی</th>
+        <th>  </th>
+    </tr>
+    {% for url in urls %}
+    <tr>
+        <td>{{ url.product.name|default:"نامشخص" }}</td>
+        <td><a href="{{ url.url }}" target="_blank">{{ url.url }}</a></td>
+        <td>{{ url.price|default:"-" }}</td>
+        <td>{{ url.last_checked|date:"Y-m-d H:i" }}</td>
+        <td><a href="../delet/{{url.id}} " style="display: inline-block; padding: 10px 20px; background-color: #4CAF50; color: white; text-align: center; text-decoration: none; border-radius: 5px;"> حذف  </a>
+</td>
+        
+    </tr>
+    {% empty %}
+    <tr>
+        <td colspan="4">شما هنوز هیچ لینکی ثبت نکرده‌اید.</td>
+    </tr>
+    {% endfor %}
+</table>
+
+{% endblock %}

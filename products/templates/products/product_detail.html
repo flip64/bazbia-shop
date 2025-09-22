@@ -1,0 +1,153 @@
+{% extends 'core/base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container my-5">
+    <div class="row">
+        <!-- گالری تصاویر -->
+        <div class="col-md-6">
+            <div id="productCarousel" class="carousel slide" data-bs-ride="carousel">
+                <div class="carousel-inner">
+                    {% for image in images %}
+                    <div class="carousel-item {% if forloop.first %}active{% endif %}">
+                        <img src="{{ image.image.url }}" class="d-block w-100 rounded" 
+                             alt="{{ image.alt_text|default:product.name }}"
+                             style="max-height: 500px; object-fit: contain;">
+                    </div>
+                    {% empty %}
+                    <div class="carousel-item active">
+                        <img src="{% static 'images/no-image.jpg' %}" class="d-block w-100 rounded"
+                             alt="بدون تصویر" style="max-height: 500px; object-fit: contain;">
+                    </div>
+                    {% endfor %}
+                </div>
+                {% if images|length > 1 %}
+                <button class="carousel-control-prev" type="button" data-bs-target="#productCarousel" data-bs-slide="prev">
+                    <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                </button>
+                <button class="carousel-control-next" type="button" data-bs-target="#productCarousel" data-bs-slide="next">
+                    <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                </button>
+                {% endif %}
+            </div>
+
+            <!-- ویدئوهای محصول -->
+            {% if videos %}
+            <div class="mt-4">
+                <h5 class="mb-3">ویدئوهای محصول</h5>
+                <div class="row">
+                    {% for video in videos %}
+                    <div class="col-md-6 mb-3">
+                        <video controls class="w-100 rounded" style="max-height: 200px;">
+                            <source src="{{ video.video.url }}" type="video/mp4">
+                            مرورگر شما از تگ ویدئو پشتیبانی نمی‌کند.
+                        </video>
+                        {% if video.caption %}
+                        <p class="text-muted mt-2">{{ video.caption }}</p>
+                        {% endif %}
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- اطلاعات محصول -->
+        <div class="col-md-6">
+            <h1 class="fw-bold">{{ product.name }}</h1>
+            
+            {% if product.category %}
+            <a href="{% url 'products:category_detail' product.category.slug %}" 
+               class="badge bg-primary text-decoration-none mb-3">
+                {{ product.category.name }}
+            </a>
+            {% endif %}
+
+            <div class="d-flex align-items-center mb-3">
+                <h4 class="text-success fw-bold mb-0 me-2">{{ product.base_price }} تومان</h4>
+                {% if product.discount_price %}
+                <del class="text-muted">{{ product.discount_price }} تومان</del>
+                {% endif %}
+            </div>
+
+            <!-- واریان‌های محصول -->
+            {% if variants %}
+            <div class="card mb-4">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0">گزینه‌های موجود</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        {% for variant in variants %}
+                        <div class="col-6 mb-3">
+                            <div class="border p-3 rounded {% if variant.stock <= 0 %}bg-light text-muted{% endif %}">
+                                <h6>{{ variant.get_attributes_display }}</h6>
+                                <p class="mb-1">{{ variant.price }} تومان</p>
+                                <small class="d-block {% if variant.stock > 0 %}text-success{% else %}text-danger{% endif %}">
+                                    {% if variant.stock > 0 %}
+                                    موجودی: {{ variant.stock }} عدد
+                                    {% else %}
+                                    ناموجود
+                                    {% endif %}
+                                </small>
+                                {% if variant.expiration_date %}
+                                <small class="text-muted d-block">انقضا: {{ variant.expiration_date }}</small>
+                                {% endif %}
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- دکمه‌های اقدام -->
+            <div class="d-grid gap-2 d-md-flex mb-4">
+                <button class="btn btn-primary btn-lg me-md-2">
+                    <i class="fas fa-cart-plus me-2"></i>افزودن به سبد خرید
+                </button>
+                <button class="btn btn-outline-secondary btn-lg">
+                    <i class="fas fa-heart me-2"></i>افزودن به علاقه‌مندی‌ها
+                </button>
+            </div>
+
+            <!-- ویژگی‌های محصول -->
+            {% if specifications %}
+            <div class="card mb-4">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0">مشخصات فنی</h5>
+                </div>
+                <div class="card-body">
+                    <table class="table table-striped table-hover">
+                        <tbody>
+                            {% for spec in specifications %}
+                            <tr>
+                                <th width="30%">{{ spec.name }}</th>
+                                <td>{{ spec.value }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- توضیحات محصول -->
+    {% if product.description %}
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-light">
+                    <h5>توضیحات محصول</h5>
+                </div>
+                <div class="card-body">
+                    {{ product.description|linebreaks }}
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,8 @@
+<h2>{% if form.instance.pk %}ویرایش دسته‌بندی{% else %}افزودن دسته‌بندی{% endif %}</h2>
+<form method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit">ذخیره</button>
+</form>
+<a href="{% url 'products:category_list' %}">⬅ بازگشت به لیست</a>
+
