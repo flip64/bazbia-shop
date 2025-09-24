@@ -1,41 +1,50 @@
 {% extends 'scrap_abdisite/base.html' %}
 
 {% block content %}
-<h2>ثبت لینک جدید</h2>
+<h2 class="text-2xl font-bold mb-6">مدیریت قیمت محصولات</h2>
 
-<form method="post" style="margin-bottom: 30px;">
-    {% csrf_token %}
-    {{ form.as_p }}
-    <button type="submit">ثبت لینک</button>
-</form>
-
-<hr>
-
-<h2>لیست لینک‌های شما</h2>
-
-<table border="1" cellpadding="8" cellspacing="0" width="100%">
-    <tr>
-        <th>نام محصول</th>
-        <th>لینک</th>
-        <th>آخرین قیمت</th>
-        <th>آخرین بررسی</th>
-        <th>  </th>
-    </tr>
-    {% for url in urls %}
-    <tr>
-        <td>{{ url.product.name|default:"نامشخص" }}</td>
-        <td><a href="{{ url.url }}" target="_blank">{{ url.url }}</a></td>
-        <td>{{ url.price|default:"-" }}</td>
-        <td>{{ url.last_checked|date:"Y-m-d H:i" }}</td>
-        <td><a href="../delet/{{url.id}} " style="display: inline-block; padding: 10px 20px; background-color: #4CAF50; color: white; text-align: center; text-decoration: none; border-radius: 5px;"> حذف  </a>
-</td>
-        
-    </tr>
-    {% empty %}
-    <tr>
-        <td colspan="4">شما هنوز هیچ لینکی ثبت نکرده‌اید.</td>
-    </tr>
-    {% endfor %}
-</table>
-
+<div class="overflow-x-auto">
+  <table class="min-w-full border border-gray-200 shadow-md rounded-lg">
+    <thead class="bg-gray-100">
+      <tr>
+        <th class="px-4 py-2 border">نام محصول</th>
+        <th class="px-4 py-2 border">لینک</th>
+        <th class="px-4 py-2 border">قیمت تأمین‌کننده</th>
+        <th class="px-4 py-2 border">قیمت فروش</th>
+        <th class="px-4 py-2 border">تخفیف (%)</th>
+        <th class="px-4 py-2 border">آخرین بروزرسانی</th>
+        <th class="px-4 py-2 border">عملیات</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for item in products %}
+      <tr class="hover:bg-gray-50">
+        <td class="px-4 py-2 border">{{ item.name }}</td>
+        <td class="px-4 py-2 border">
+          <a href="{{ item.supplier_link }}" target="_blank" class="text-blue-600 hover:underline">
+            مشاهده
+          </a>
+        </td>
+        <td class="px-4 py-2 border">{{ item.supplier_price }} تومان</td>
+        <td class="px-4 py-2 border">
+          <input type="number" value="{{ item.sale_price|default:'' }}" class="w-full border rounded px-2 py-1">
+        </td>
+        <td class="px-4 py-2 border">
+          <input type="number" value="{{ item.discount|default:0 }}" min="0" max="100" class="w-full border rounded px-2 py-1">
+        </td>
+        <td class="px-4 py-2 border">{{ item.last_checked|date:"Y-m-d H:i" }}</td>
+        <td class="px-4 py-2 border text-center">
+          <button class="bg-green-500 hover:bg-green-600 text-white px-3 py-1 rounded">
+            ذخیره
+          </button>
+        </td>
+      </tr>
+      {% empty %}
+      <tr>
+        <td colspan="7" class="px-4 py-3 text-center text-gray-500">هیچ محصولی یافت نشد.</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
 {% endblock %}
