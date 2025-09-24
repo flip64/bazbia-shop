@@ -9,54 +9,64 @@ from django.conf import settings
 # مدل بررسی لینکها  = (WatchedURL)
 # ==============================
 
+from django.db import models
+from django.conf import settings
+from products.models import ProductVariant
+from suppliers.models import Supplier 
+
+
 class WatchedURL(models.Model):
     """
     این مدل برای نگهداری لینک‌ها و قیمت‌های پایش شده محصولات در سایت‌های تأمین‌کننده است.
     هر رکورد نشان‌دهنده یک لینک از یک تأمین‌کننده برای یک محصول خاص است.
     """
-   
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
-    #  ارتباط با محصول فروشگاه شما (هر WatchedUrl به یک محصول وصل می‌شود)
+
     variant = models.ForeignKey(
         ProductVariant,
         on_delete=models.CASCADE,
-        related_name='watched_urls',null=True
+        related_name='watched_urls',
+        null=True
     )
-    
 
-    # ارتباط با تأمین‌کننده محصول (هر WatchedUrl به یک Supplier وصل می‌شود)
     supplier = models.ForeignKey(
         Supplier,
         on_delete=models.CASCADE,
         related_name='watched_urls',
-            # از طریق supplier.watched_urls می‌توان به همه لینک‌های آن تأمین‌کننده دسترسی داشت
     )
 
-    # لینک صفحه محصول در سایت تأمین‌کننده
     url = models.URLField(max_length=500)
 
-    # اخرین قیمت مشاهده شده در لینک تأمین‌کننده 
     price = models.DecimalField(
         max_digits=10,
         decimal_places=0,
-        default=0 , 
+        default=0,
         blank=True,
-        
     )
 
-    # زمان ایجاد رکورد (زمانی که این لینک برای اولین بار پایش شده یا ثبت شده)
     created_at = models.DateTimeField(auto_now_add=True)
-
-    # زمان آخرین باری که این لینک بررسی یا به‌روزرسانی شده
     last_checked = models.DateTimeField(auto_now=True)
 
     class Meta:
-        # مرتب‌سازی پیش‌فرض: جدیدترین‌ها ابتدا
         ordering = ['-created_at']
 
+    @property
+    def product(self):
+        """برگرداندن محصول از روی واریانت"""
+        return self.variant.product if self.variant else None
+
     def __str__(self):
-        # نمایش رشته‌ای خوانا از نام محصول، نام تأمین‌کننده و قیمت
-        return f"{self.variant.name} | {self.supplier.name} | {self.price}"
+        product_name = self.product.name if self.product else "بدون محصول"
+        return f"{product_name} | {self.supplier.name} | {self.price}"
+
+
+class PriceHistory(models.Model):
+    watched_url = models.ForeignKey(WatchedURL, on_delete=models.CASCADE, related_name='history')
+    price = models.BigIntegerField()  # ✅ عدد صحیح ریالی بدون اعشار
+    checked_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.price} at {self.checked_at}"
 
 
 
