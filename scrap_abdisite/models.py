@@ -1,7 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import User
 from django.db import models
-from products.models import Product
+from products.models import Product,ProductVariant
 from suppliers.models import Supplier 
 from django.conf import settings
 
