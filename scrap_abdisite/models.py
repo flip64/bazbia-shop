@@ -1,15 +1,4 @@
 from django.db import models
-from django.contrib.auth.models import User
-from django.db import models
-from products.models import Product,ProductVariant
-from suppliers.models import Supplier 
-from django.conf import settings
-
-# ==============================
-# مدل بررسی لینکها  = (WatchedURL)
-# ==============================
-
-from django.db import models
 from django.conf import settings
 from products.models import ProductVariant
 from suppliers.models import Supplier 
@@ -58,16 +47,6 @@ class WatchedURL(models.Model):
     def __str__(self):
         product_name = self.product.name if self.product else "بدون محصول"
         return f"{product_name} | {self.supplier.name} | {self.price}"
-
-
-class PriceHistory(models.Model):
-    watched_url = models.ForeignKey(WatchedURL, on_delete=models.CASCADE, related_name='history')
-    price = models.BigIntegerField()  # ✅ عدد صحیح ریالی بدون اعشار
-    checked_at = models.DateTimeField(auto_now_add=True)
-
-    def __str__(self):
-        return f"{self.price} at {self.checked_at}"
-
 
 
 class PriceHistory(models.Model):
