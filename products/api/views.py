@@ -90,7 +90,7 @@ class NewProductsAPIView(generics.ListAPIView):
 # List Products By Category
 # -----------------------------
 class ProductListCategoryAPIView(generics.ListAPIView):
-    serializer_class = ProductSerializer
+    serializer_class = ProductListSerializer
     pagination_class = CustomCategoryPagination
 
     def get_queryset(self):
