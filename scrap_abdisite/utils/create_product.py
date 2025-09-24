@@ -209,7 +209,7 @@ def import_products():
                 if product_link:
                     WatchedURL.objects.update_or_create(
                         user=flip_user,
-                        product=product,
+                       variant=variant,
                         supplier=supplier,
                         url=product_link,
                         defaults={"price": price}
