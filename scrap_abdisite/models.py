@@ -16,13 +16,13 @@ class WatchedURL(models.Model):
     """
    
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
-    # ارتباط با محصول فروشگاه شما (هر WatchedUrl به یک محصول وصل می‌شود)
-    product = models.ForeignKey(
-        Product,
+    #  ارتباط با محصول فروشگاه شما (هر WatchedUrl به یک محصول وصل می‌شود)
+    variant = models.ForeignKey(
+        ProductVariant,
         on_delete=models.CASCADE,
-        related_name='watched_urls' ,
-        null=True  # از طریق product.watched_urls می‌توان به همه لینک‌ها دسترسی داشت
+        related_name='watched_urls',null=True
     )
+    
 
     # ارتباط با تأمین‌کننده محصول (هر WatchedUrl به یک Supplier وصل می‌شود)
     supplier = models.ForeignKey(
