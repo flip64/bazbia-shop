@@ -34,6 +34,7 @@ from django.core.files.base import ContentFile
 from django.utils.text import slugify
 from django.contrib.auth import get_user_model
 
+# 👇 ProductVariant مستقیم ایمپورت شد
 from products.models import (
     Product, Category, Tag, ProductSpecification, ProductImage, ProductVariant
 )
@@ -97,17 +98,15 @@ def import_products():
     created_file = latest_edited_file.replace("edited_", "created_")
     creating_file = latest_edited_file.replace("edited_", "creating_")
 
-    # ---------- اگر فایل created وجود داشت پردازش لازم نیست ----------
+    # ---------- اگر فایل created وجود داشت ----------
     if os.path.exists(created_file):
         logger.info(f"✅ فایل {created_file} قبلاً ساخته شده است. نیازی به پردازش نیست.")
-        
-            # ایجاد فایل stopemail
         STOP_EMAIL_FILE = os.path.join(BASE_DIR, "stopemail")
         with open(STOP_EMAIL_FILE, "w") as f:
-          f.write("")  # خالی
+            f.write("")  # خالی
         return
 
-    # ---------- اگر creating وجود داشت از همان ادامه بده ----------
+    # ---------- اگر creating وجود داشت ----------
     if os.path.exists(creating_file):
         logger.info(f"⚡ ادامه پردازش از فایل existing creating: {creating_file}")
     else:
@@ -206,10 +205,11 @@ def import_products():
                             )
 
                 # WatchedURL
-                if product_link:
+                variant = product.variants.first()
+                if variant and product_link:
                     WatchedURL.objects.update_or_create(
                         user=flip_user,
-                       variant=variant,
+                        variant=variant,
                         supplier=supplier,
                         url=product_link,
                         defaults={"price": price}
