@@ -56,7 +56,7 @@ class WatchedURL(models.Model):
 
     def __str__(self):
         # نمایش رشته‌ای خوانا از نام محصول، نام تأمین‌کننده و قیمت
-        return f"{self.product.name} | {self.supplier.name} | {self.price}"
+        return f"{self.variant.name} | {self.supplier.name} | {self.price}"
 
 
 
