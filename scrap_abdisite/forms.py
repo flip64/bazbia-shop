@@ -4,14 +4,14 @@ from .models import WatchedURL
 class WatchedURLForm(forms.ModelForm):
     class Meta:
         model = WatchedURL
-        fields = ['product', 'supplier', 'url']
+        fields = ['variant', 'supplier', 'url']
         widgets = {
-            'product': forms.Select(attrs={'class': 'form-control'}),
+            'variant': forms.Select(attrs={'class': 'form-control'}),
             'supplier': forms.Select(attrs={'class': 'form-control'}),
             'url': forms.URLInput(attrs={'class': 'form-control', 'placeholder': 'آدرس لینک محصول'}),
         }
         labels = {
-            'product': 'محصول',
+            'variant': 'محصول',
             'supplier': 'تأمین‌کننده',
             'url': 'لینک محصول',
         }
