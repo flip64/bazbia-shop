@@ -166,28 +166,26 @@ def import_products():
                         stock=item.get('quantity', 0)
                     )
 
-                    # WatchedURL و PriceHistory
-                    watched = WatchedURL.objects.create(
-                        user=flip_user,
-                        variant=variant,
-                        supplier=supplier,
-                        url=product_link,
-                        price=supplier_price
-                    )
-                    PriceHistory.objects.create(watched_url=watched, price=supplier_price)
-
-                else:
-                    # بررسی و بروزرسانی قیمت تامین‌کننده
-                    watched, created = WatchedURL.objects.get_or_create(
+                # ---------- مدیریت WatchedURL و PriceHistory ----------
+                if variant and product_link:
+                    watched, created_w = WatchedURL.objects.get_or_create(
                         user=flip_user,
                         variant=variant,
                         supplier=supplier,
                         defaults={"url": product_link, "price": supplier_price}
                     )
-                    if not created and watched.price != supplier_price:
+
+                    # اگر تازه ساخته شد یا تاریخچه خالی است، رکورد PriceHistory اضافه کن
+                    if created_w or not watched.history.exists():
+                        PriceHistory.objects.create(watched_url=watched, price=supplier_price)
+                        logger.info(f"📌 PriceHistory اولیه برای {variant.sku} ثبت شد.")
+
+                    # اگر قیمت تغییر کرده، PriceHistory جدید بساز و WatchedURL را بروزرسانی کن
+                    elif watched.price != supplier_price:
                         PriceHistory.objects.create(watched_url=watched, price=supplier_price)
                         watched.price = supplier_price
                         watched.save()
+                        logger.info(f"🔔 قیمت تغییر کرد برای {variant.sku}: {supplier_price} ریال ثبت شد.")
 
                     # بروزرسانی موجودی
                     if 'quantity' in item and item['quantity'] is not None:
