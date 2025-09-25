@@ -33,14 +33,11 @@ django.setup()
 from django.core.files.base import ContentFile
 from django.utils.text import slugify
 from django.contrib.auth import get_user_model
-
-# 👇 ProductVariant مستقیم ایمپورت شد
 from products.models import (
     Product, Category, Tag, ProductSpecification, ProductImage, ProductVariant
 )
-from scrap_abdisite.models import WatchedURL
+from scrap_abdisite.models import WatchedURL, PriceHistory
 from suppliers.models import Supplier
-
 
 # ---------- توابع کمکی ----------
 def generate_unique_slug(name):
@@ -51,7 +48,6 @@ def generate_unique_slug(name):
         slug = f"{base_slug}-{counter}"
         counter += 1
     return slug
-
 
 def download_and_attach_images(product: Product, image_urls: list, main_index: int = 0):
     for idx, url in enumerate(image_urls or []):
@@ -79,13 +75,11 @@ def download_and_attach_images(product: Product, image_urls: list, main_index: i
             logger.error(f"❌ خطا در دانلود {url}: {e}")
             raise e
 
-
 # ---------- تابع اصلی import ----------
 def import_products():
     BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     EDITED_FOLDER = os.path.join(BASE_DIR, "data/edited")
 
-    # ---------- پیدا کردن آخرین فایل edited ----------
     all_edited_files = glob.glob(os.path.join(EDITED_FOLDER, "edited_*.json"))
     if not all_edited_files:
         logger.info("⚠️ هیچ فایل JSON ویرایش‌شده‌ای پیدا نشد. پردازش متوقف شد.")
@@ -94,30 +88,25 @@ def import_products():
     latest_edited_file = max(all_edited_files, key=os.path.getmtime)
     logger.info(f"آخرین فایل ویرایش‌شده: {latest_edited_file}")
 
-    # نام فایل created و creating بر اساس همان edited
     created_file = latest_edited_file.replace("edited_", "created_")
     creating_file = latest_edited_file.replace("edited_", "creating_")
 
-    # ---------- اگر فایل created وجود داشت ----------
     if os.path.exists(created_file):
-        logger.info(f"✅ فایل {created_file} قبلاً ساخته شده است. نیازی به پردازش نیست.")
+        logger.info(f"✅ فایل {created_file} قبلاً ساخته شده است.")
         STOP_EMAIL_FILE = os.path.join(BASE_DIR, "stopemail")
         with open(STOP_EMAIL_FILE, "w") as f:
-            f.write("")  # خالی
+            f.write("")
         return
 
-    # ---------- اگر creating وجود داشت ----------
     if os.path.exists(creating_file):
         logger.info(f"⚡ ادامه پردازش از فایل existing creating: {creating_file}")
     else:
-        # ایجاد فایل creating جدید از edited
         with open(latest_edited_file, "r", encoding="utf-8") as f:
             data = json.load(f)
         with open(creating_file, "w", encoding="utf-8") as f:
             json.dump(data, f, ensure_ascii=False, indent=2)
         logger.info(f"فایل creating ساخته شد: {creating_file}")
 
-    # ---------- پردازش محصولات ----------
     with open(creating_file, "r+", encoding="utf-8") as f:
         data = json.load(f)
 
@@ -139,7 +128,7 @@ def import_products():
 
             try:
                 name = item.get('name', 'نامعلوم')
-                price = Decimal(item.get('price') or 0)
+                supplier_price = Decimal(item.get('price') or 0)
                 product_link = item.get('product_link')
                 category_slug = slugify(item.get('category') or '')
 
@@ -154,45 +143,64 @@ def import_products():
                     name=name,
                     defaults={
                         'slug': generate_unique_slug(name),
-                        'base_price': price * Decimal("1.2") if price > 0 else Decimal("0"),
+                        'base_price': supplier_price * Decimal("1.2") if supplier_price > 0 else Decimal("0"),
                         'category': category,
                         'description': item.get('description') or '',
                         'is_active': True
                     }
                 )
 
-                # ایجاد و بروزرسانی واریانت‌ها
-                if not product.variants.exists():
-                    base_sku = f"{product.slug}-default"
-                    sku = base_sku
+                # ---------- واریانت ----------
+                variant = product.variants.first()
+                if not variant:
+                    sku_base = f"{product.slug}-default"
+                    sku = sku_base
                     counter = 1
                     while ProductVariant.objects.filter(sku=sku).exists():
-                        sku = f"{base_sku}-{counter}"
+                        sku = f"{sku_base}-{counter}"
                         counter += 1
-                    ProductVariant.objects.create(
+                    variant = ProductVariant.objects.create(
                         product=product,
                         sku=sku,
-                        price=product.base_price,
-                        stock=0
+                        price=supplier_price * Decimal("1.2"),  # ۲۰٪ سود
+                        stock=item.get('quantity', 0)
                     )
 
-                if 'quantity' in item and item['quantity'] is not None:
-                    for variant in product.variants.all():
+                    # WatchedURL و PriceHistory
+                    watched = WatchedURL.objects.create(
+                        user=flip_user,
+                        variant=variant,
+                        supplier=supplier,
+                        url=product_link,
+                        price=supplier_price
+                    )
+                    PriceHistory.objects.create(watched_url=watched, price=supplier_price)
+
+                else:
+                    # بررسی و بروزرسانی قیمت تامین‌کننده
+                    watched, created = WatchedURL.objects.get_or_create(
+                        user=flip_user,
+                        variant=variant,
+                        supplier=supplier,
+                        defaults={"url": product_link, "price": supplier_price}
+                    )
+                    if not created and watched.price != supplier_price:
+                        PriceHistory.objects.create(watched_url=watched, price=supplier_price)
+                        watched.price = supplier_price
+                        watched.save()
+
+                    # بروزرسانی موجودی
+                    if 'quantity' in item and item['quantity'] is not None:
                         variant.stock = item['quantity']
                         variant.save()
 
-                if price == 0:
-                    for variant in product.variants.all():
-                        variant.stock = 0
-                        variant.save()
-
-                # تگ‌ها
+                # ---------- تگ‌ها ----------
                 for tag_name in item.get('tags') or []:
                     tag_slug = slugify(tag_name)
                     tag, _ = Tag.objects.get_or_create(slug=tag_slug, defaults={'name': tag_name})
                     product.tags.add(tag)
 
-                # مشخصات
+                # ---------- مشخصات ----------
                 existing_specs = {(spec.name, spec.value) for spec in product.specifications.all()}
                 for spec in item.get('specifications') or []:
                     if ':' in spec:
@@ -204,18 +212,7 @@ def import_products():
                                 value=spec_value
                             )
 
-                # WatchedURL
-                variant = product.variants.first()
-                if variant and product_link:
-                    WatchedURL.objects.update_or_create(
-                        user=flip_user,
-                        variant=variant,
-                        supplier=supplier,
-                        url=product_link,
-                        defaults={"price": price}
-                    )
-
-                # تصاویر
+                # ---------- تصاویر ----------
                 download_and_attach_images(product, item.get('images') or [], main_index=0)
 
                 item["status"] = "created"
@@ -240,7 +237,6 @@ def import_products():
         f.truncate()
         f.flush()
 
-    # تغییر نام creating → created
     os.rename(creating_file, created_file)
     logger.info(f"✅ همه محصولات پردازش شدند و فایل ایجاد شد: {created_file}")
 
