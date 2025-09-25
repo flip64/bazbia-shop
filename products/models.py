@@ -238,6 +238,43 @@ class SpecialProduct(models.Model):
 
 
 
+# ==============================
+# مدل تصاویر واریانت محصول (ProductVariantImage)
+# ==============================
+class ProductVariantImage(models.Model):
+    # ارتباط با واریانت
+    variant = models.ForeignKey(
+        ProductVariant, on_delete=models.CASCADE,
+        related_name='images'
+    )
+
+    # خود تصویر (دانلود شده)
+    image = models.ImageField(
+        upload_to='variant_images/',
+        help_text='مسیر ذخیره تصویر واریانت در media',
+        blank=True, null=True
+    )
+
+    # لینک تصویر از تأمین‌کننده (اختیاری)
+    source_url = models.URLField(
+        blank=True, null=True, unique=True,
+        help_text='لینک تصویر اصلی واریانت از تأمین‌کننده (اختیاری)'
+    )
+
+    # متن جایگزین (برای SEO و کاربران نابینا)
+    alt_text = models.CharField(
+        max_length=255, blank=True, null=True
+    )
+
+    # آیا این تصویر به عنوان تصویر اصلی واریانت استفاده میشه؟
+    is_main = models.BooleanField(
+        default=False, help_text='تصویر اصلی واریانت'
+    )
+
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Image of {self.variant.product.name} - {self.variant.sku} - {self.source_url or 'No URL'}"
 
 
 
