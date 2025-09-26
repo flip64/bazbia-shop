@@ -145,39 +145,78 @@ class ProductListSerializer(serializers.ModelSerializer):
     category = serializers.SerializerMethodField()
     price = serializers.SerializerMethodField()
     discount_price = serializers.SerializerMethodField()
+    thumb = serializers.SerializerMethodField()  # تصویر اصلی محصول
 
     class Meta:
         model = Product
         fields = [
             'id', 'name', 'slug',
-            'price', 'discount_price',  # 👈 اضافه شد
-            'category', 'variants',
+            'price', 'discount_price',
+            'category', 'thumb', 'variants',
             'created_at'
         ]
 
     def get_category(self, obj):
         return obj.category.name if obj.category else None
 
+    def get_thumb(self, obj):
+        main_image = obj.images.filter(is_main=True).first()
+        if main_image:
+            url = main_image.image.url
+        elif obj.images.exists():
+            url = obj.images.first().image.url
+        else:
+            url = '/media/default-thumb.jpg'
+
+        request = self.context.get('request')
+        if request:
+            return request.build_absolute_uri(url)
+        return url
+
     def get_price(self, obj):
-        """کمترین قیمت از بین واریانت‌ها"""
         variant = obj.variants.order_by('price').first()
         return int(variant.price) if variant and variant.price else None
 
     def get_discount_price(self, obj):
-        """کمترین قیمت تخفیف‌خورده از بین واریانت‌ها"""
         variant = obj.variants.exclude(discount_price__isnull=True).order_by('discount_price').first()
         return int(variant.discount_price) if variant and variant.discount_price else None
 
     def get_variants(self, obj):
         variants = obj.variants.all()
         if not variants.exists():
-            return None  
+            return None
 
-        serializer = ProductVariantSerializer(variants, many=True)
         if variants.count() == 1:
-            return serializer.data[0]  # 👈 یک واریانت → object
-        return serializer.data
+            # فقط یک واریانت → variants null
+            return None
 
+        serialized = []
+        for variant in variants:
+            main_image = variant.images.filter(is_main=True).first()
+            if main_image:
+                url = main_image.image.url
+            elif variant.images.exists():
+                url = variant.images.first().image.url
+            else:
+                url = '/media/default-thumb.jpg'
+
+            request = self.context.get('request')
+            if request:
+                url = request.build_absolute_uri(url)
+
+            serialized.append({
+                'id': variant.id,
+                'sku': variant.sku,
+                'price': int(variant.price) if variant.price else None,
+                'discount_price': int(variant.discount_price) if variant.discount_price else None,
+                'stock': variant.stock,
+                'thumb': url,
+                'attributes': [
+                    f"{attr.attribute.name}: {attr.value}" for attr in variant.attributes.all()
+                ]
+            })
+
+        return serialized
 
 
 class ProductDetailSerializer(serializers.ModelSerializer):

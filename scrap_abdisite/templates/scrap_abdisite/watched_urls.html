@@ -19,24 +19,27 @@
     <tbody>
       {% for item in products %}
       <tr class="hover:bg-gray-50">
-        <td class="px-4 py-2 border">{{ item.name }}</td>
+        <td class="px-4 py-2 border">{{ item.variant.product.name }}</td>
         <td class="px-4 py-2 border">
-          <a href="{{ item.supplier_link }}" target="_blank" class="text-blue-600 hover:underline">
+          <a href="{{ item.url }}" target="_blank" class="text-blue-600 hover:underline">
             مشاهده
           </a>
         </td>
-        <td class="px-4 py-2 border">{{ item.supplier_price }} تومان</td>
+        <td class="px-4 py-2 border">{{ item.price }} تومان</td>
         <td class="px-4 py-2 border">
-          <input type="number" value="{{ item.sale_price|default:'' }}" class="w-full border rounded px-2 py-1">
+          <form method="POST" action="{% url 'update_sale_price' item.variant.id %}">
+            {% csrf_token %}
+            <input type="number" name="sale_price" value="{{ item.variant.sale_price|default:'' }}" class="w-full border rounded px-2 py-1">
         </td>
         <td class="px-4 py-2 border">
-          <input type="number" value="{{ item.discount|default:0 }}" min="0" max="100" class="w-full border rounded px-2 py-1">
+            <input type="number" name="discount" value="{{ item.variant.discount|default:0 }}" min="0" max="100" class="w-full border rounded px-2 py-1">
         </td>
         <td class="px-4 py-2 border">{{ item.last_checked|date:"Y-m-d H:i" }}</td>
         <td class="px-4 py-2 border text-center">
-          <button class="bg-green-500 hover:bg-green-600 text-white px-3 py-1 rounded">
-            ذخیره
-          </button>
+            <button type="submit" class="bg-green-500 hover:bg-green-600 text-white px-3 py-1 rounded">
+              ذخیره
+            </button>
+          </form>
         </td>
       </tr>
       {% empty %}

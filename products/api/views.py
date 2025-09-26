@@ -26,11 +26,18 @@ class ProductListAPIView(generics.ListAPIView):
     pagination_class = CustomCategoryPagination  # اضافه شد
 
     def get_queryset(self):
-        queryset = Product.objects.filter(is_active=True).order_by("-id")  # کل محصولات فعال
-        category_slug = self.request.query_params.get('category')
-        if category_slug:
-            queryset = queryset.filter(category__slug=category_slug)
-        return queryset
+     
+     category_slug = self.kwargs.get("slug")
+     queryset = Product.objects.filter(
+         is_active=True,
+         variants__isnull=False  # حداقل یک واریانت
+            ).order_by("-id").distinct()
+
+     if category_slug:
+         queryset = queryset.filter(category__slug=category_slug)
+
+        
+     return queryset
 
 
 # -----------------------------
