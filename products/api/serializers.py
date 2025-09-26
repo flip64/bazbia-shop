@@ -134,35 +134,50 @@ class ProductVideoSerializer(serializers.ModelSerializer):
         fields = ['video', 'caption']
 
 
+class ProductVariantSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ProductVariant
+        fields = ['id', 'sku', 'price', 'discount_price', 'stock']
+
+
 class ProductListSerializer(serializers.ModelSerializer):
-    thumb = serializers.SerializerMethodField()
+    variants = serializers.SerializerMethodField()
     category = serializers.SerializerMethodField()
-    quantity = serializers.SerializerMethodField()  # <-- اضافه شد
+    price = serializers.SerializerMethodField()
+    discount_price = serializers.SerializerMethodField()
 
     class Meta:
         model = Product
-        fields = ['id', 'name', 'slug', 'base_price', 'category', 'thumb', 'created_at', 'quantity']
-
-    def get_thumb(self, obj):
-        request = self.context.get('request')
-        main_image = obj.images.filter(is_main=True).first()
-        if main_image:
-            url = main_image.image.url
-        elif obj.images.exists():
-            url = obj.images.first().image.url
-        else:
-            url = '/media/default-thumb.jpg'
-
-        if request:
-            return request.build_absolute_uri(url)
-        return url
+        fields = [
+            'id', 'name', 'slug',
+            'price', 'discount_price',  # 👈 اضافه شد
+            'category', 'variants',
+            'created_at'
+        ]
 
     def get_category(self, obj):
         return obj.category.name if obj.category else None
 
-    def get_quantity(self, obj):
-        total = obj.variants.aggregate(total=Sum('stock'))['total']
-        return int(total or 0)
+    def get_price(self, obj):
+        """کمترین قیمت از بین واریانت‌ها"""
+        variant = obj.variants.order_by('price').first()
+        return int(variant.price) if variant and variant.price else None
+
+    def get_discount_price(self, obj):
+        """کمترین قیمت تخفیف‌خورده از بین واریانت‌ها"""
+        variant = obj.variants.exclude(discount_price__isnull=True).order_by('discount_price').first()
+        return int(variant.discount_price) if variant and variant.discount_price else None
+
+    def get_variants(self, obj):
+        variants = obj.variants.all()
+        if not variants.exists():
+            return None  
+
+        serializer = ProductVariantSerializer(variants, many=True)
+        if variants.count() == 1:
+            return serializer.data[0]  # 👈 یک واریانت → object
+        return serializer.data
+
 
 
 class ProductDetailSerializer(serializers.ModelSerializer):

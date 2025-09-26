@@ -46,7 +46,7 @@ class Product(models.Model):
     description = models.TextField(blank=True, null=True)
 
     # قیمت بر حسب تومان (یا هر واحد پیشفرض)
-    base_price = models.DecimalField(max_digits=12, decimal_places=2)
+    base_price = models.DecimalField(max_digits=12, decimal_places=0)
 
     # دسته اصلی محصول
     category = models.ForeignKey(
@@ -121,10 +121,10 @@ class ProductVariant(models.Model):
         max_length=50, unique=True,
         help_text='کد اختصاصی محصول برای انبار'
     )
-    price = models.DecimalField(max_digits=12, decimal_places=2)
+    price = models.DecimalField(max_digits=12, decimal_places=0)
 
     discount_price = models.DecimalField(
-        max_digits=12, decimal_places=2,
+        max_digits=12, decimal_places=0,
         blank=True, null=True,
         help_text='قیمت پس از تخفیف (اختیاری)'
     )
