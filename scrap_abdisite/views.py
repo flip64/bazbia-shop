@@ -41,7 +41,7 @@ def product_price_list(request):
         'variant', 'variant__product', 'supplier'
     ).all()
     
-    print(watched)
+    
 
 
     return render(request, "scrap_abdisite/watched_urls.html", {"products": watched})
