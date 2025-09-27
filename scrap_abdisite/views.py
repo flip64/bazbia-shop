@@ -2,6 +2,8 @@ from django.shortcuts import render, redirect
 from django.http import JsonResponse, HttpResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth.decorators import login_required
+from django.views.decorators.http import require_POST
+
 from django.utils import timezone
 from scrap_abdisite.models import WatchedURL, PriceHistory
 from scrap_abdisite.forms import WatchedURLForm
@@ -9,10 +11,6 @@ from django.shortcuts import get_object_or_404, redirect
 from django.views.decorators.http import require_POST
 from django.contrib import messages
 from products.models import ProductVariant
-
-
-
-
 from suppliers.models import Supplier
 
 import time
@@ -37,14 +35,26 @@ def clean_price_text(price_text):
 # ===============================
 # 🔹 Watched URLs Views
 # ===============================
+def product_price_list(request):
+    # select_related برای بهینه‌سازی joinها
+    watched = WatchedURL.objects.select_related(
+        'variant', 'variant__product', 'supplier'
+    ).all()
+    
+    print(watched)
+
+
+    return render(request, "scrap_abdisite/watched_urls.html", {"products": watched})
+
+
+
 @require_POST
-def watched_urls_view(request, variant_id):
+def watched_urls_update(request, variant_id):
     """
     بروزرسانی قیمت فروش و تخفیف محصول (بازبیا)
     """
     variant = get_object_or_404(ProductVariant, id=variant_id)
-    
-    # دریافت داده‌ها از فرم
+
     try:
         sale_price = request.POST.get('sale_price')
         discount = request.POST.get('discount', 0)
@@ -53,16 +63,14 @@ def watched_urls_view(request, variant_id):
             sale_price = int(sale_price)
         discount = int(discount)
 
-        # اعتبارسنجی ساده
         if sale_price < 0 or not (0 <= discount <= 100):
             messages.error(request, "مقادیر وارد شده معتبر نیستند.")
             return redirect('product_price_list')
-        
+
     except ValueError:
         messages.error(request, "مقادیر وارد شده معتبر نیستند.")
         return redirect('product_price_list')
 
-    # ذخیره تغییرات
     variant.sale_price = sale_price
     variant.discount = discount
     variant.save()
