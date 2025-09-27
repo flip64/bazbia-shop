@@ -1,9 +1,9 @@
 {% extends 'scrap_abdisite/base.html' %}
-{% load humanize %}
 
 {% block content %}
 <h2 class="text-2xl font-bold mb-6">مدیریت قیمت محصولات</h2>
 
+{# پیام‌های سیستم #}
 {% if messages %}
 <div class="mb-4">
   {% for message in messages %}
@@ -15,6 +15,13 @@
   {% endfor %}
 </div>
 {% endif %}
+
+{# فرم جستجو #}
+<form method="get" class="mb-4 flex gap-2">
+    <input type="text" name="q" value="{{ query }}" placeholder="جستجوی محصول"
+           class="border rounded px-3 py-1 w-64">
+    <button type="submit" class="bg-blue-500 text-white px-3 py-1 rounded">جستجو</button>
+</form>
 
 <div class="overflow-x-auto">
   <table class="min-w-full border border-gray-200 shadow-md rounded-lg">
@@ -31,12 +38,12 @@
       </tr>
     </thead>
     <tbody>
-      {% for item in products %}
+      {% for item in page_obj %}
       {% if item.variant %}
       <tr class="hover:bg-gray-50">
         <td>{{ item.variant.product.name }}</td>
         <td>{{ item.supplier.name }}</td>
-        <td>{{ item.price|default_if_none:"-"|intcomma }} تومان</td>
+        <td>{{ item.price|intcomma }} تومان</td>
         <td>
           <a href="{{ item.url }}" target="_blank" class="text-blue-600 hover:underline">مشاهده</a>
         </td>
@@ -49,15 +56,11 @@
             <input type="number" name="discount_price" value="{{ item.variant.discount_price|default_if_none:'' }}" min="0" max="{{ item.variant.price }}" class="w-full border rounded px-2 py-1">
           </td>
           <td>{{ item.last_checked|date:"Y-m-d H:i" }}</td>
-          <td class="text-center flex justify-center gap-1">
+          <td class="text-center">
             <button type="submit" class="bg-green-500 hover:bg-green-600 text-white px-3 py-1 rounded">ذخیره</button>
-            <a href="{% url 'scrap_abdisite:watched_urls_delete' item.id %}" class="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded">حذف</a>
+            <a href="{% url 'scrap_abdisite:watched_urls_delete' item.id %}" class="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded ml-1">حذف</a>
           </td>
         </form>
-      </tr>
-      {% else %}
-      <tr class="hover:bg-gray-50">
-        <td colspan="8" class="text-center text-gray-400">واریانت ندارد</td>
       </tr>
       {% endif %}
       {% empty %}
@@ -68,4 +71,16 @@
     </tbody>
   </table>
 </div>
+
+{# Pagination #}
+<div class="mt-4 flex justify-center items-center gap-2">
+  {% if page_obj.has_previous %}
+    <a href="?q={{ query }}&page={{ page_obj.previous_page_number }}" class="px-3 py-1 border rounded hover:bg-gray-100">صفحه قبل</a>
+  {% endif %}
+  <span>صفحه {{ page_obj.number }} از {{ page_obj.paginator.num_pages }}</span>
+  {% if page_obj.has_next %}
+    <a href="?q={{ query }}&page={{ page_obj.next_page_number }}" class="px-3 py-1 border rounded hover:bg-gray-100">صفحه بعد</a>
+  {% endif %}
+</div>
+
 {% endblock %}
