@@ -1,30 +1,20 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.http import JsonResponse, HttpResponse
-from django.views.decorators.csrf import csrf_exempt
+from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.http import require_POST
-
-from django.utils import timezone
-from scrap_abdisite.models import WatchedURL, PriceHistory
-from scrap_abdisite.forms import WatchedURLForm
-from django.shortcuts import get_object_or_404, redirect
-from django.views.decorators.http import require_POST
-from django.contrib import messages
-from products.models import ProductVariant
-from suppliers.models import Supplier
-
-import time
-import re
-import json
 from threading import Thread
+import re
 
+from scrap_abdisite.models import WatchedURL
+from products.models import ProductVariant
 
 # ===============================
-# 🔹 Utility Functions
+# 🔹 Utility Function
 # ===============================
 def clean_price_text(price_text):
     """
-    تبدیل قیمت مثل "850,000 ریال" به 850000 (عدد صحیح بزرگ)
+    تبدیل قیمت مثل "850,000 ریال" به 850000
     """
     if not price_text:
         return None
@@ -33,13 +23,16 @@ def clean_price_text(price_text):
 
 
 # ===============================
-# 🔹 Watched URLs Views
+# 🔹 Views
 # ===============================
+
+def product_price_list(request):
+    watched = WatchedURL.objects.select_related('variant', 'variant__product', 'supplier').all()
+    return render(request, "scrap_abdisite/watched_urls.html", {"products": watched})
+
+
 @require_POST
 def watched_urls_update(request, watched_id):
-    """
-    بروزرسانی قیمت محصول بر اساس رکورد WatchedURL
-    """
     watched = get_object_or_404(WatchedURL, id=watched_id)
     variant = watched.variant
 
@@ -72,37 +65,12 @@ def watched_urls_update(request, watched_id):
     return redirect("scrap_abdisite:product_price_list")
 
 
-def product_price_list(request):
-    # select_related برای بهینه‌سازی joinها
-    watched = WatchedURL.objects.select_related('variant', 'variant__product', 'supplier').all()
-    return render(request, "scrap_abdisite/watched_urls.html", {"products": watched})
-
-
-def delet(request, id):
-    url = get_object_or_404(WatchedURL, id=id)
+@login_required
+def delet(request, watched_id):
+    url = get_object_or_404(WatchedURL, id=watched_id)
     url.delete()
     messages.success(request, "رکورد حذف شد.")
     return redirect('scrap_abdisite:product_price_list')
-
-
-
-
-
-
-        variant.save()
-        messages.success(request, f"قیمت‌های {variant.product.name} بروزرسانی شد.")
-
-    except ValueError:
-        messages.error(request, "ورودی معتبر نیست.")
-
-    return redirect('scrap_abdisite:product_price_list')
-
-@login_required
-def delet(request, id):
-    url = WatchedURL.objects.get(id=id)
-    url.delete()
-    return redirect('/scrap_abdisite/watched_urls/')
-
 
 
 # ===============================
@@ -112,10 +80,10 @@ def delet(request, id):
 def create_product(request):
     user = request.user
     if user.is_authenticated:
-      print("ok for fetch")
-      #  fetche_productsـlist()
-      #  process_latest_file()   
-      #  import_products_from_json(user)
+        print("ok for fetch")
+        # fetche_products_list()
+        # process_latest_file()   
+        # import_products_from_json(user)
         
     return HttpResponse("Import completed successfully.")
 
@@ -123,7 +91,6 @@ def create_product(request):
 # ===============================
 # 🔹 Background Script Runner
 # ===============================
-
 def fetch_details_products(request):
     global is_running
     if is_running:
@@ -139,6 +106,3 @@ def fetch_details_products(request):
 
     Thread(target=run).start()
     return JsonResponse({"status": "started", "message": "اسکریپت در پس‌زمینه شروع شد"})
-
-
-
