@@ -5,9 +5,10 @@ from django.contrib.auth.decorators import login_required
 from django.views.decorators.http import require_POST
 from threading import Thread
 import re
-
 from scrap_abdisite.models import WatchedURL
 from products.models import ProductVariant
+from django.core.paginator import Paginator
+
 
 # ===============================
 # 🔹 Utility Function
@@ -26,9 +27,34 @@ def clean_price_text(price_text):
 # 🔹 Views
 # ===============================
 
+
 def product_price_list(request):
-    watched = WatchedURL.objects.select_related('variant', 'variant__product', 'supplier').all()
-    return render(request, "scrap_abdisite/watched_urls.html", {"products": watched})
+    """
+    نمایش لیست لینک‌های پایش شده محصولات
+    - امکان جستجو فقط روی نام محصول
+    - نمایش Pagination
+    """
+    query = request.GET.get('q', '')
+
+    # فیلتر روی نام محصول (variant__product__name)
+    watched_list = WatchedURL.objects.select_related(
+        'variant', 'variant__product', 'supplier'
+    )
+    if query:
+        watched_list = watched_list.filter(variant__product__name__icontains=query)
+
+    # Pagination: هر صفحه 20 رکورد
+    paginator = Paginator(watched_list, 20)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+
+    context = {
+        'page_obj': page_obj,
+        'query': query,  # برای فرم جستجو
+    }
+    return render(request, "scrap_abdisite/watched_urls.html", context)
+
+
 
 
 @require_POST
