@@ -61,23 +61,27 @@ def watched_urls_update(request, variant_id):
 
         if sale_price:
             sale_price = int(sale_price)
+        else:
+            sale_price = None
         discount = int(discount)
 
-        if sale_price < 0 or not (0 <= discount <= 100):
+        if (sale_price is not None and sale_price < 0) or not (0 <= discount <= 100):
             messages.error(request, "مقادیر وارد شده معتبر نیستند.")
-            return redirect('product_price_list')
+            return redirect('scrap_abdisite:product_price_list')
 
     except ValueError:
         messages.error(request, "مقادیر وارد شده معتبر نیستند.")
-        redirect('scrap_abdisite:product_price_list')
+        return redirect('scrap_abdisite:product_price_list')
 
     variant.sale_price = sale_price
     variant.discount = discount
     variant.save()
 
-    messages.success(request, f"قیمت و تخفیف محصول {variant.product.name} با موفقیت بروزرسانی شد.")
-    redirect('scrap_abdisite:product_price_list')
-
+    messages.success(
+        request,
+        f"قیمت و تخفیف محصول {variant.product.name} با موفقیت بروزرسانی شد."
+    )
+    return redirect('scrap_abdisite:product_price_list')
 
 
 @login_required
