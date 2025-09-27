@@ -47,45 +47,33 @@ def product_price_list(request):
     return render(request, "scrap_abdisite/watched_urls.html", {"products": watched})
 
 
-from django.shortcuts import get_object_or_404, redirect
-from django.contrib import messages
-from django.views.decorators.http import require_POST
-from products.models import ProductVariant
-
-
-
 @require_POST
 def watched_urls_update(request, variant_id):
-    """
-    بروزرسانی قیمت با تخفیف محصول
-    - price اصلی بدون تغییر
-    - discount_price قیمت نهایی با تخفیف است
-    """
     variant = get_object_or_404(ProductVariant, id=variant_id)
 
-    discount_price = request.POST.get('discount_price')
-
     try:
+        price = request.POST.get('price')
+        discount_price = request.POST.get('discount_price')
+
+        if price:
+            variant.price = int(price)
+
         if discount_price:
-            discount_price = int(discount_price)
-            if discount_price < 0:
-                messages.error(request, "قیمت وارد شده معتبر نیست.")
+            dp = int(discount_price)
+            if dp > variant.price:
+                messages.error(request, "قیمت تخفیف نمی‌تواند بیشتر از قیمت اصلی باشد.")
                 return redirect('scrap_abdisite:product_price_list')
+            variant.discount_price = dp
         else:
-            discount_price = None  # اگر خالی بود، می‌توانیم null ذخیره کنیم
+            variant.discount_price = None  # اگر خالی بود
+
+        variant.save()
+        messages.success(request, f"قیمت‌های {variant.product.name} بروزرسانی شد.")
+
     except ValueError:
-        messages.error(request, "قیمت وارد شده معتبر نیست.")
-        return redirect('scrap_abdisite:product_price_list')
+        messages.error(request, "ورودی معتبر نیست.")
 
-    variant.discount_price = discount_price
-    variant.save()
-
-    messages.success(
-        request,
-        f"قیمت با تخفیف محصول {variant.product.name} با موفقیت بروزرسانی شد."
-    )
     return redirect('scrap_abdisite:product_price_list')
-
 
 @login_required
 def delet(request, id):
