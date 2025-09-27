@@ -21,10 +21,8 @@ urlpatterns = [
     path("watched_urls/<int:watched_id>/update/", views.watched_urls_update, name="watched_urls_update"),
 
     
+    path('watched_urls/<int:watched_id>/delete/', views.delet, name='watched_urls_delete'),
     
-    
-    
-    path('delet/<int:id>/', views.delet, name='delet'),
     path('create_product/', views.create_product , name= 'create_product'),
     path('fetch_details_products/',views.fetch_details_products , name= 'fetch_details_products'),
     
