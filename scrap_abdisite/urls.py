@@ -10,7 +10,7 @@ urlpatterns = [
     path("watched_urls/", views.product_price_list, name="product_price_list"),
 
     # بروزرسانی قیمت فروش و تخفیف یک واریانت
-    path("watched_urls/<int:variant_id>/update/", views.watched_urls_update, name="watched_urls_update"),
+    path("watched_urls/<int:pk>/update/", views.watched_urls_update, name="watched_urls_update"),
 
     
     
