@@ -35,21 +35,17 @@ def clean_price_text(price_text):
 # ===============================
 # 🔹 Watched URLs Views
 # ===============================
-def product_price_list(request):
-    # select_related برای بهینه‌سازی joinها
-    watched = WatchedURL.objects.select_related(
-        'variant', 'variant__product', 'supplier'
-    ).all()
-    
-    
-
-
-    return render(request, "scrap_abdisite/watched_urls.html", {"products": watched})
-
-
 @require_POST
-def watched_urls_update(request, variant_id):
-    variant = get_object_or_404(ProductVariant, id=variant_id)
+def watched_urls_update(request, watched_id):
+    """
+    بروزرسانی قیمت محصول بر اساس رکورد WatchedURL
+    """
+    watched = get_object_or_404(WatchedURL, id=watched_id)
+    variant = watched.variant
+
+    if not variant:
+        messages.error(request, "این لینک واریانت ندارد.")
+        return redirect("scrap_abdisite:product_price_list")
 
     try:
         price = request.POST.get('price')
@@ -62,10 +58,36 @@ def watched_urls_update(request, variant_id):
             dp = int(discount_price)
             if dp > variant.price:
                 messages.error(request, "قیمت تخفیف نمی‌تواند بیشتر از قیمت اصلی باشد.")
-                return redirect('scrap_abdisite:product_price_list')
+                return redirect("scrap_abdisite:product_price_list")
             variant.discount_price = dp
         else:
-            variant.discount_price = None  # اگر خالی بود
+            variant.discount_price = None
+
+        variant.save()
+        messages.success(request, f"قیمت‌های {variant.product.name} بروزرسانی شد.")
+
+    except ValueError:
+        messages.error(request, "ورودی معتبر نیست.")
+
+    return redirect("scrap_abdisite:product_price_list")
+
+
+def product_price_list(request):
+    # select_related برای بهینه‌سازی joinها
+    watched = WatchedURL.objects.select_related('variant', 'variant__product', 'supplier').all()
+    return render(request, "scrap_abdisite/watched_urls.html", {"products": watched})
+
+
+def delet(request, id):
+    url = get_object_or_404(WatchedURL, id=id)
+    url.delete()
+    messages.success(request, "رکورد حذف شد.")
+    return redirect('scrap_abdisite:product_price_list')
+
+
+
+
+
 
         variant.save()
         messages.success(request, f"قیمت‌های {variant.product.name} بروزرسانی شد.")
