@@ -1,26 +1,10 @@
-{% extends 'scrap_abdisite/base.html' %}
-
-{% block content %}
-<h2 class="text-2xl font-bold mb-6">مدیریت قیمت محصولات</h2>
-
-{% if messages %}
-<div class="mb-4">
-  {% for message in messages %}
-    <div class="p-3 rounded mb-2
-      {% if message.tags == 'success' %}bg-green-100 text-green-800{% endif %}
-      {% if message.tags == 'error' %}bg-red-100 text-red-800{% endif %}">
-      {{ message }}
-    </div>
-  {% endfor %}
-</div>
-{% endif %}
-
 <div class="overflow-x-auto">
   <table class="min-w-full border border-gray-200 shadow-md rounded-lg">
     <thead class="bg-gray-100">
       <tr>
         <th class="px-4 py-2 border text-left">نام محصول</th>
         <th class="px-4 py-2 border text-left">تأمین‌کننده</th>
+        <th class="px-4 py-2 border text-left">قیمت تأمین‌کننده</th> <!-- ستون جدید -->
         <th class="px-4 py-2 border text-left">لینک</th>
         <th class="px-4 py-2 border text-left">قیمت فروش</th>
         <th class="px-4 py-2 border text-left">تخفیف</th>
@@ -34,6 +18,7 @@
       <tr class="hover:bg-gray-50">
         <td>{{ item.variant.product.name }}</td>
         <td>{{ item.supplier.name }}</td>
+        <td>{{ item.price|default_if_none:"-"|intcomma }} تومان</td> <!-- قیمت تامین کننده -->
         <td>
           <a href="{{ item.url }}" target="_blank" class="text-blue-600 hover:underline">مشاهده</a>
         </td>
@@ -54,17 +39,14 @@
       </tr>
       {% else %}
       <tr class="hover:bg-gray-50">
-        <td colspan="3" class="text-center text-gray-400">واریانت ندارد</td>
-        <td colspan="3">{{ item.last_checked|date:"Y-m-d H:i" }}</td>
-        <td class="text-center">---</td>
+        <td colspan="8" class="text-center text-gray-400">واریانت ندارد</td>
       </tr>
       {% endif %}
       {% empty %}
       <tr>
-        <td colspan="7" class="text-center text-gray-500">هیچ محصولی یافت نشد.</td>
+        <td colspan="8" class="text-center text-gray-500">هیچ محصولی یافت نشد.</td>
       </tr>
       {% endfor %}
     </tbody>
   </table>
 </div>
-{% endblock %}
