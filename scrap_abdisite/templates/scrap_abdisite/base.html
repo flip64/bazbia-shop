@@ -73,7 +73,7 @@
     </style>
 </head>
 <body>
-
+{% load humanize %}
 <div class="navbar">
     <a href="{% url 'scrap_abdisite:product_price_list' %}">🏠 لینک‌های من</a>
     {% if user.is_authenticated %}
