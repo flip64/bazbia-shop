@@ -47,39 +47,42 @@ def product_price_list(request):
     return render(request, "scrap_abdisite/watched_urls.html", {"products": watched})
 
 
+from django.shortcuts import get_object_or_404, redirect
+from django.contrib import messages
+from django.views.decorators.http import require_POST
+from products.models import ProductVariant
+
+
 
 @require_POST
 def watched_urls_update(request, variant_id):
     """
-    بروزرسانی قیمت فروش و تخفیف محصول (بازبیا)
+    بروزرسانی قیمت با تخفیف محصول
+    - price اصلی بدون تغییر
+    - discount_price قیمت نهایی با تخفیف است
     """
     variant = get_object_or_404(ProductVariant, id=variant_id)
 
+    discount_price = request.POST.get('discount_price')
+
     try:
-        sale_price = request.POST.get('sale_price')
-        discount = request.POST.get('discount', 0)
-
-        if sale_price:
-            sale_price = int(sale_price)
+        if discount_price:
+            discount_price = int(discount_price)
+            if discount_price < 0:
+                messages.error(request, "قیمت وارد شده معتبر نیست.")
+                return redirect('scrap_abdisite:product_price_list')
         else:
-            sale_price = None
-        discount = int(discount)
-
-        if (sale_price is not None and sale_price < 0) or not (0 <= discount <= 100):
-            messages.error(request, "مقادیر وارد شده معتبر نیستند.")
-            return redirect('scrap_abdisite:product_price_list')
-
+            discount_price = None  # اگر خالی بود، می‌توانیم null ذخیره کنیم
     except ValueError:
-        messages.error(request, "مقادیر وارد شده معتبر نیستند.")
+        messages.error(request, "قیمت وارد شده معتبر نیست.")
         return redirect('scrap_abdisite:product_price_list')
 
-    variant.sale_price = sale_price
-    variant.discount = discount
+    variant.discount_price = discount_price
     variant.save()
 
     messages.success(
         request,
-        f"قیمت و تخفیف محصول {variant.product.name} با موفقیت بروزرسانی شد."
+        f"قیمت با تخفیف محصول {variant.product.name} با موفقیت بروزرسانی شد."
     )
     return redirect('scrap_abdisite:product_price_list')
 
