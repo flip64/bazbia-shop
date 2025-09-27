@@ -69,15 +69,14 @@ def watched_urls_update(request, variant_id):
 
     except ValueError:
         messages.error(request, "مقادیر وارد شده معتبر نیستند.")
-        return redirect('product_price_list')
+        redirect('scrap_abdisite:product_price_list')
 
     variant.sale_price = sale_price
     variant.discount = discount
     variant.save()
 
     messages.success(request, f"قیمت و تخفیف محصول {variant.product.name} با موفقیت بروزرسانی شد.")
-    return redirect('product_price_list')
-
+    redirect('scrap_abdisite:product_price_list')
 
 
 
