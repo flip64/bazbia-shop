@@ -1,31 +1,70 @@
-<form method="post" action="{% url 'scrap_abdisite:watched_urls_update' item.variant.id %}">
-  {% csrf_token %}
-  <tr class="hover:bg-gray-50">
-    <td class="px-4 py-2 border">{{ item.variant.product.name }}</td>
-    <td class="px-4 py-2 border">
-      <a href="{{ item.url }}" target="_blank" class="text-blue-600 hover:underline">مشاهده</a>
-    </td>
-    <td class="px-4 py-2 border">{{ item.price }} تومان</td>
+{% extends 'scrap_abdisite/base.html' %}
 
-    <!-- قیمت اصلی -->
-    <td class="px-4 py-2 border">
-      <input type="number" name="price" 
-             value="{{ item.variant.price|default_if_none:'' }}" 
-             class="w-full border rounded px-2 py-1">
-    </td>
+{% block content %}
+<h2 class="text-2xl font-bold mb-6">مدیریت قیمت محصولات</h2>
 
-    <!-- قیمت با تخفیف -->
-    <td class="px-4 py-2 border">
-      <input type="number" name="discount_price" 
-             value="{{ item.variant.discount_price|default_if_none:'' }}" 
-             class="w-full border rounded px-2 py-1">
-    </td>
+{% if messages %}
+<div class="mb-4">
+  {% for message in messages %}
+    <div class="p-3 rounded mb-2
+      {% if message.tags == 'success' %}bg-green-100 text-green-800{% endif %}
+      {% if message.tags == 'error' %}bg-red-100 text-red-800{% endif %}">
+      {{ message }}
+    </div>
+  {% endfor %}
+</div>
+{% endif %}
 
-    <td class="px-4 py-2 border">{{ item.last_checked|date:"Y-m-d H:i" }}</td>
-    <td class="px-4 py-2 border text-center">
-      <button type="submit" class="bg-green-500 hover:bg-green-600 text-white px-3 py-1 rounded">
-        ذخیره
-      </button>
-    </td>
-  </tr>
-</form>
+<div class="overflow-x-auto">
+  <table class="min-w-full border border-gray-200 shadow-md rounded-lg">
+    <thead class="bg-gray-100">
+      <tr>
+        <th class="px-4 py-2 border text-left">نام محصول</th>
+        <th class="px-4 py-2 border text-left">تأمین‌کننده</th>
+        <th class="px-4 py-2 border text-left">لینک</th>
+        <th class="px-4 py-2 border text-left">قیمت فروش</th>
+        <th class="px-4 py-2 border text-left">تخفیف</th>
+        <th class="px-4 py-2 border text-left">آخرین بروزرسانی</th>
+        <th class="px-4 py-2 border text-center">عملیات</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for item in products %}
+      {% if item.variant %}
+      <tr class="hover:bg-gray-50">
+        <td>{{ item.variant.product.name }}</td>
+        <td>{{ item.supplier.name }}</td>
+        <td>
+          <a href="{{ item.url }}" target="_blank" class="text-blue-600 hover:underline">مشاهده</a>
+        </td>
+        <form method="post" action="{% url 'scrap_abdisite:watched_urls_update' item.id %}">
+          {% csrf_token %}
+          <td>
+            <input type="number" name="price" value="{{ item.variant.price|default_if_none:'' }}" class="w-full border rounded px-2 py-1">
+          </td>
+          <td>
+            <input type="number" name="discount_price" value="{{ item.variant.discount_price|default_if_none:'' }}" min="0" max="{{ item.variant.price }}" class="w-full border rounded px-2 py-1">
+          </td>
+          <td>{{ item.last_checked|date:"Y-m-d H:i" }}</td>
+          <td class="text-center">
+            <button type="submit" class="bg-green-500 hover:bg-green-600 text-white px-3 py-1 rounded">ذخیره</button>
+            <a href="{% url 'scrap_abdisite:watched_urls_delete' item.id %}" class="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded ml-1">حذف</a>
+          </td>
+        </form>
+      </tr>
+      {% else %}
+      <tr class="hover:bg-gray-50">
+        <td colspan="3" class="text-center text-gray-400">واریانت ندارد</td>
+        <td colspan="3">{{ item.last_checked|date:"Y-m-d H:i" }}</td>
+        <td class="text-center">---</td>
+      </tr>
+      {% endif %}
+      {% empty %}
+      <tr>
+        <td colspan="7" class="text-center text-gray-500">هیچ محصولی یافت نشد.</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}
