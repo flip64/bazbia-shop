@@ -93,19 +93,32 @@ class NewProductsAPIView(generics.ListAPIView):
 
 
 # -----------------------------
-
-# List Products By Category
+# List Products By Category (including all descendants)
 # -----------------------------
 class ProductListCategoryAPIView(generics.ListAPIView):
     serializer_class = ProductListSerializer
     pagination_class = CustomCategoryPagination
 
+    def get_category_and_descendants_ids(self, category):
+        """دریافت id دسته اصلی و تمام زیرشاخه‌ها به صورت بازگشتی"""
+        ids = [category.id]
+        for child in category.subcategories.all():
+            ids.extend(self.get_category_and_descendants_ids(child))
+        return ids
+
     def get_queryset(self):
         category_slug = self.kwargs.get("slug")
         queryset = Product.objects.filter(is_active=True)
+
         if category_slug:
-            queryset = queryset.filter(category__slug=category_slug)
-        return queryset
+            try:
+                category = Category.objects.get(slug=category_slug)
+                category_ids = self.get_category_and_descendants_ids(category)
+                queryset = queryset.filter(category_id__in=category_ids)
+            except Category.DoesNotExist:
+                queryset = Product.objects.none()
+
+        return queryset.distinct()
 
     def list(self, request, *args, **kwargs):
         queryset = self.get_queryset()
@@ -120,6 +133,8 @@ class ProductListCategoryAPIView(generics.ListAPIView):
             "count": queryset.count(),
             "data": serializer.data
         })
+
+
 
 
 # -----------------------------
