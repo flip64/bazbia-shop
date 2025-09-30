@@ -66,6 +66,7 @@ def fetche_products_list():
     products = []
     total_count = 0
 
+    # اگر نیاز به اسکرپ نیست، آخرین فایل رو برگردون
     if not is_need_scrap():
         last_file = get_last_file()
         if last_file:
@@ -175,24 +176,31 @@ def fetche_products_list():
             page += 1
             time.sleep(1)
 
-    # ذخیره فایل
-    timestamp = datetime.now().strftime("%Y%m%d_%H%M")
-    filename = f"raw_{timestamp}_{total_count}.json"
-    file_path = os.path.join(OUTPUT_DIR, filename)
+    # ذخیره فایل فقط اگر محصولی جمع‌آوری شد
+    if products:
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M")
+        filename = f"raw_{timestamp}_{total_count}.json"
+        file_path = os.path.join(OUTPUT_DIR, filename)
 
-    with open(file_path, "w", encoding="utf-8") as f:
-        json.dump(products, f, ensure_ascii=False, indent=2)
+        with open(file_path, "w", encoding="utf-8") as f:
+            json.dump(products, f, ensure_ascii=False, indent=2)
 
-    print("=" * 60)
-    print(f"✅ فایل «{file_path}» با {total_count} محصول ذخیره شد.")
+        print("=" * 60)
+        print(f"✅ فایل «{file_path}» با {total_count} محصول ذخیره شد.")
+    else:
+        file_path = None
+        print("❌ اسکرپینگ ناموفق بود یا هیچ محصولی یافت نشد. فایل خام ذخیره نشد.")
 
     return products, file_path
+
 
 # -------------------------------
 # اجرای مستقیم تابع اصلی
 # -------------------------------
-
 if __name__ == "__main__":
     products, file_path = fetche_products_list()
     print(f"\n📝 تعداد کل محصولات: {len(products)}")
-    print(f"🗂️ مسیر فایل ذخیره‌شده: {file_path}")
+    if file_path:
+        print(f"🗂️ مسیر فایل ذخیره‌شده: {file_path}")
+    else:
+        print("⚠️ هیچ فایلی ذخیره نشد.")
