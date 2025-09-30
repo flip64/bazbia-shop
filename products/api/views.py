@@ -147,6 +147,21 @@ def list_categories(request):
 
 
 # -----------------------------
+# List Children of a Category
+# -----------------------------
+@api_view(['GET'])
+def category_children(request, slug):
+    try:
+        parent = Category.objects.get(slug=slug)
+    except Category.DoesNotExist:
+        return Response({"error": "دسته‌بندی یافت نشد"}, status=404)
+
+    children = parent.subcategories.all().values('id', 'name', 'slug')
+    return Response(list(children))
+
+
+
+# -----------------------------
 # Import Categories from JSON
 # -----------------------------
 @csrf_exempt
