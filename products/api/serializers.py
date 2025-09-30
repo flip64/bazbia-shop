@@ -134,10 +134,10 @@ class ProductVideoSerializer(serializers.ModelSerializer):
         fields = ['video', 'caption']
 
 
-class ProductVariantSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = ProductVariant
-        fields = ['id', 'sku', 'price', 'discount_price', 'stock']
+#class ProductVariantSerializer(serializers.ModelSerializer):
+#    class Meta:
+#        model = ProductVariant
+#        fields = ['id', 'sku', 'price', 'discount_price', 'stock']
 
 
 class ProductListSerializer(serializers.ModelSerializer):
