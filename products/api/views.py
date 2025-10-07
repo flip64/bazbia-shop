@@ -95,12 +95,14 @@ class NewProductsAPIView(generics.ListAPIView):
 # -----------------------------
 # List Products By Category (including all descendants)
 # -----------------------------
+from django.db.models import Prefetch
+
 class ProductListCategoryAPIView(generics.ListAPIView):
     serializer_class = ProductListSerializer
     pagination_class = CustomCategoryPagination
 
     def get_category_and_descendants_ids(self, category):
-        """دریافت id دسته اصلی و تمام زیرشاخه‌ها به صورت بازگشتی"""
+        """بازگشتی: گرفتن id دسته اصلی و همه زیرشاخه‌ها"""
         ids = [category.id]
         for child in category.subcategories.all():
             ids.extend(self.get_category_and_descendants_ids(child))
@@ -114,27 +116,39 @@ class ProductListCategoryAPIView(generics.ListAPIView):
             try:
                 category = Category.objects.get(slug=category_slug)
                 category_ids = self.get_category_and_descendants_ids(category)
-                queryset = queryset.filter(category_id__in=category_ids)
+                # استفاده از prefetch برای کاهش کوئری‌ها
+                queryset = queryset.filter(category_id__in=category_ids).prefetch_related(
+                    'variants', 'images', 'variants__attributes', 'tags', 'specifications'
+                )
             except Category.DoesNotExist:
                 queryset = Product.objects.none()
 
         return queryset.distinct()
 
     def list(self, request, *args, **kwargs):
+        category_slug = self.kwargs.get("slug")
+        try:
+            category = Category.objects.get(slug=category_slug)
+        except Category.DoesNotExist:
+            return Response({"error": "دسته‌بندی یافت نشد"}, status=404)
+
+        # زیر‌دسته‌های مستقیم
+        subcategories = category.subcategories.all().values('id', 'name', 'slug')
+
         queryset = self.get_queryset()
         page = self.paginate_queryset(queryset)
         if page is not None:
             serializer = self.get_serializer(page, many=True, context={'request': request})
-            return self.get_paginated_response(serializer.data)
+            return self.get_paginated_response({
+                "subcategories": list(subcategories),
+                "data": serializer.data
+            })
 
         serializer = self.get_serializer(queryset, many=True, context={'request': request})
         return Response({
-            "success": True,
-            "count": queryset.count(),
+            "subcategories": list(subcategories),
             "data": serializer.data
         })
-
-
 
 
 # -----------------------------
