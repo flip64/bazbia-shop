@@ -74,14 +74,24 @@ class ProductSerializer(serializers.ModelSerializer):
 class CategorySerializer(serializers.ModelSerializer):
     subcategories = serializers.SerializerMethodField()
     parent_id = serializers.IntegerField(source='parent.id', read_only=True)
+    image = serializers.SerializerMethodField()  # ← این اضافه شد
 
     class Meta:
         model = Category
         fields = ['id', 'name', 'slug', 'image', 'parent_id', 'subcategories']
 
-    def get_subcategories(self, obj):
-        return CategorySerializer(obj.subcategories.all(), many=True).data
+    def get_image(self, obj):
+        request = self.context.get('request')
+        if obj.image and request:
+            return request.build_absolute_uri(obj.image.url)
+        elif obj.image:
+            # fallback وقتی request نداریم
+            from django.conf import settings
+            return f"{settings.BASE_URL}{obj.image.url}"
+        return None
 
+    def get_subcategories(self, obj):
+        return CategorySerializer(obj.subcategories.all(), many=True, context=self.context).data
 
 class SpecialProductSerializer(serializers.ModelSerializer):
     name = serializers.CharField(source='product.name')
