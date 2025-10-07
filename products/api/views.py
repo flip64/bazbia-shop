@@ -163,6 +163,9 @@ class NewProductsAPIView(generics.ListAPIView):
 # -----------------------------
 # List Products By Category (including all descendants)
 # -----------------------------
+# -----------------------------
+# List Products By Category (including all descendants)
+# -----------------------------
 class ProductListCategoryAPIView(generics.ListAPIView):
     serializer_class = ProductListSerializer
     pagination_class = CustomCategoryPagination
@@ -192,11 +195,22 @@ class ProductListCategoryAPIView(generics.ListAPIView):
         category_slug = self.kwargs.get("slug")
         subcategories = []
 
-        # فقط زیر دسته‌های مستقیم
         if category_slug:
             try:
                 category = Category.objects.get(slug=category_slug)
-                subcategories = list(category.subcategories.values("id", "name", "slug","image"))
+                subcats = category.subcategories.all()
+                subcategories = [
+                    {
+                        "id": c.id,
+                        "name": c.name,
+                        "slug": c.slug,
+                        "image": (
+                            request.build_absolute_uri(c.image.url)
+                            if c.image else None
+                        )
+                    }
+                    for c in subcats
+                ]
             except Category.DoesNotExist:
                 pass
 
@@ -211,13 +225,10 @@ class ProductListCategoryAPIView(generics.ListAPIView):
             serializer = self.get_serializer(queryset, many=True, context={'request': request})
             response_data = {"count": queryset.count(), "data": serializer.data}
 
-        # اضافه کردن فیلد subcategories در همان سطح
         response_data["success"] = True
         response_data["subcategories"] = subcategories
 
         return Response(response_data)
-
-
 
 
 # -----------------------------
