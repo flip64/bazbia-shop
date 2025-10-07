@@ -188,14 +188,12 @@ class NewProductsAPIView(generics.ListAPIView):
 # -----------------------------
 # List Products By Category (including all descendants)
 # -----------------------------
-from django.db.models import Prefetch
-
 class ProductListCategoryAPIView(generics.ListAPIView):
     serializer_class = ProductListSerializer
     pagination_class = CustomCategoryPagination
 
     def get_category_and_descendants_ids(self, category):
-        """بازگشتی: گرفتن id دسته اصلی و همه زیرشاخه‌ها"""
+        """دریافت id دسته اصلی و تمام زیرشاخه‌ها به صورت بازگشتی"""
         ids = [category.id]
         for child in category.subcategories.all():
             ids.extend(self.get_category_and_descendants_ids(child))
@@ -209,10 +207,7 @@ class ProductListCategoryAPIView(generics.ListAPIView):
             try:
                 category = Category.objects.get(slug=category_slug)
                 category_ids = self.get_category_and_descendants_ids(category)
-                # استفاده از prefetch برای کاهش کوئری‌ها
-                queryset = queryset.filter(category_id__in=category_ids).prefetch_related(
-                    'variants', 'images', 'variants__attributes', 'tags', 'specifications'
-                )
+                queryset = queryset.filter(category_id__in=category_ids)
             except Category.DoesNotExist:
                 queryset = Product.objects.none()
 
@@ -220,28 +215,34 @@ class ProductListCategoryAPIView(generics.ListAPIView):
 
     def list(self, request, *args, **kwargs):
         category_slug = self.kwargs.get("slug")
-        try:
-            category = Category.objects.get(slug=category_slug)
-        except Category.DoesNotExist:
-            return Response({"error": "دسته‌بندی یافت نشد"}, status=404)
+        subcategories = []
 
-        # زیر‌دسته‌های مستقیم
-        subcategories = category.subcategories.all().values('id', 'name', 'slug')
+        # فقط زیر دسته‌های مستقیم
+        if category_slug:
+            try:
+                category = Category.objects.get(slug=category_slug)
+                subcategories = list(category.subcategories.values("id", "name", "slug"))
+            except Category.DoesNotExist:
+                pass
 
         queryset = self.get_queryset()
         page = self.paginate_queryset(queryset)
+
         if page is not None:
             serializer = self.get_serializer(page, many=True, context={'request': request})
-            return self.get_paginated_response({
-                "subcategories": list(subcategories),
-                "data": serializer.data
-            })
+            paginated_response = self.get_paginated_response(serializer.data)
+            response_data = paginated_response.data
+        else:
+            serializer = self.get_serializer(queryset, many=True, context={'request': request})
+            response_data = {"count": queryset.count(), "data": serializer.data}
 
-        serializer = self.get_serializer(queryset, many=True, context={'request': request})
-        return Response({
-            "subcategories": list(subcategories),
-            "data": serializer.data
-        })
+        # اضافه کردن فیلد subcategories در همان سطح
+        response_data["success"] = True
+        response_data["subcategories"] = subcategories
+
+        return Response(response_data)
+
+
 
 
 # -----------------------------
