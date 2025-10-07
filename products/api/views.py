@@ -196,7 +196,7 @@ class ProductListCategoryAPIView(generics.ListAPIView):
         if category_slug:
             try:
                 category = Category.objects.get(slug=category_slug)
-                subcategories = list(category.subcategories.values("id", "name", "slug"))
+                subcategories = list(category.subcategories.values("id", "name", "slug","image"))
             except Category.DoesNotExist:
                 pass
 
