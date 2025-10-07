@@ -64,7 +64,7 @@ class ProductDetailAPIView(generics.RetrieveAPIView):
 # List All Categories
 # -----------------------------
 class CategoryListAPIView(generics.ListAPIView):
-    queryset = Category.objects.all()
+    queryset = Category.objects.filter(parent__isnull=True)  # فقط دسته‌های اصلی
     serializer_class = CategorySerializer
 
 
