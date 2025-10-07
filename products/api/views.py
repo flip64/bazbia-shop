@@ -91,24 +91,6 @@ class NewProductsAPIView(generics.ListAPIView):
         return queryset[:30]
 
 
-from rest_framework import generics, status
-from rest_framework.views import APIView
-from rest_framework.decorators import api_view
-from rest_framework.response import Response
-from django.http import JsonResponse, HttpResponseBadRequest
-from django.views.decorators.csrf import csrf_exempt
-from django.db import transaction
-import json
-
-from products.models import Product, Category, SpecialProduct
-from products.api.serializers import (
-    ProductSerializer,
-    ProductDetailSerializer,
-    SpecialProductSerializer,
-    CategorySerializer,
-    ProductListSerializer
-)
-from products.api.pagination import CustomCategoryPagination
 
 
 # -----------------------------
@@ -152,13 +134,6 @@ class ProductDetailAPIView(generics.RetrieveAPIView):
                 'message': 'محصول یافت نشد'
             }, status=status.HTTP_404_NOT_FOUND)
 
-
-# -----------------------------
-# List All Categories
-# -----------------------------
-class CategoryListAPIView(generics.ListAPIView):
-    queryset = Category.objects.all()
-    serializer_class = CategorySerializer
 
 
 # -----------------------------
