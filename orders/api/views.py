@@ -81,34 +81,53 @@ class CartView(APIView):
         return CartManager(request)
 
     def get(self, request):
-        cart_manager = self.get_cart_manager(request)
-        items = []
+    cart_manager = self.get_cart_manager(request)
+    items = []
 
-        for item in cart_manager.items():
-            variant = getattr(item, "variant", None)
-            product = getattr(variant, "product", None)
+    for item in cart_manager.items():
+        variant = getattr(item, "variant", None)
+        product = getattr(variant, "product", None)
 
-            # تعیین تصویر
+        if not variant or not product:
+            continue
+
+        image_url = None
+        try:
+            # 🖼️ 1️⃣ ابتدا سعی کن عکس اصلی واریانت را بگیری
+            variant_main_image = variant.images.filter(is_main=True).first()
+            if variant_main_image and variant_main_image.image:
+                image_url = variant_main_image.image.url
+
+            # 🖼️ 2️⃣ اگر نداشت، از عکس اصلی محصول بگیر
+            if not image_url:
+                product_main_image = product.images.filter(is_main=True).first()
+                if product_main_image and product_main_image.image:
+                    image_url = product_main_image.image.url
+
+            # 🖼️ 3️⃣ اگر هنوز هیچ عکسی نیست، اولین تصویر موجود از محصول را بگیر
+            if not image_url and product.images.exists():
+                first_image = product.images.first()
+                if first_image.image:
+                    image_url = first_image.image.url
+
+        except Exception as e:
             image_url = None
-            if getattr(variant, "image", None):
-                image_url = variant.image.url
-            elif getattr(product, "main_image", None):
-                image_url = product.main_image.url
 
-            items.append({
-                "id": item.id,
-                "variant": variant.id if variant else None,
-                "product_name": str(variant) if variant else None,
-                "quantity": item.quantity,
-                "price": item.price(),
-                "total_price": item.total_price(),
-                "image": image_url,
-            })
-
-        return Response({
-            "items": items,
-            "total_price": cart_manager.total_price(),
+        items.append({
+            "id": item.id,
+            "variant": variant.id,
+            "product_name": str(variant),
+            "quantity": item.quantity,
+            "price": item.price(),
+            "total_price": item.total_price(),
+            "image": request.build_absolute_uri(image_url) if image_url else None,
         })
+
+    return Response({
+        "items": items,
+        "total_price": cart_manager.total_price(),
+    })
+    
 
     def post(self, request):
         variant_id = request.data.get("variant_id")
