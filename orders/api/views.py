@@ -11,6 +11,9 @@ from products.api.serializers import ProductListSerializer
 from products.api.pagination import CustomCategoryPagination
 
 
+# ==============================
+# 🔥 بهترین فروش‌های هفته
+# ==============================
 class WeeklyBestSellersAPIView(generics.ListAPIView):
     serializer_class = ProductListSerializer
     pagination_class = CustomCategoryPagination
@@ -38,8 +41,9 @@ class WeeklyBestSellersAPIView(generics.ListAPIView):
         else:
             products = Product.objects.filter(is_active=True).order_by("-created_at")
 
+        # تبدیل timezone برای created_at
         for p in products:
-            if timezone.is_aware(p.created_at):
+            if getattr(p, 'created_at', None) and timezone.is_aware(p.created_at):
                 p.created_at = timezone.localtime(p.created_at)
 
         return products
@@ -68,6 +72,9 @@ class WeeklyBestSellersAPIView(generics.ListAPIView):
             }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
+# ==============================
+# 🛒 سبد خرید
+# ==============================
 class CartView(APIView):
     """
     مدیریت کامل سبد خرید:
@@ -80,6 +87,23 @@ class CartView(APIView):
     def get_cart_manager(self, request):
         return CartManager(request)
 
+    # ==========================
+    # 🔹 گرفتن URL تصویر واریانت/محصول
+    # ==========================
+    def get_image_url(self, variant, product):
+        try:
+            main_image = variant.images.filter(is_main=True).first()
+            if not main_image:
+                main_image = product.images.filter(is_main=True).first()
+            if not main_image and product.images.exists():
+                main_image = product.images.first()
+            return main_image.image.url if main_image else None
+        except Exception:
+            return None
+
+    # ==========================
+    # 🔹 GET آیتم‌ها
+    # ==========================
     def get(self, request):
         cart_manager = self.get_cart_manager(request)
         items = []
@@ -91,80 +115,74 @@ class CartView(APIView):
             if not variant or not product:
                 continue
 
-            image_url = None
-            try:
-                # 🖼️ 1️⃣ ابتدا سعی کن عکس اصلی واریانت را بگیری
-                variant_main_image = variant.images.filter(is_main=True).first()
-                if variant_main_image and variant_main_image.image:
-                    image_url = variant_main_image.image.url
+            image_url = self.get_image_url(variant, product)
 
-                # 🖼️ 2️⃣ اگر نداشت، از عکس اصلی محصول بگیر
-                if not image_url:
-                    product_main_image = product.images.filter(is_main=True).first()
-                    if product_main_image and product_main_image.image:
-                        image_url = product_main_image.image.url
-
-                # 🖼️ 3️⃣ اگر هنوز هیچ عکسی نیست، اولین تصویر موجود از محصول را بگیر
-                if not image_url and product.images.exists():
-                    first_image = product.images.first()
-                    if first_image.image:
-                        image_url = first_image.image.url
-
-            except Exception:
-                image_url = None
+            # ترکیب نام محصول + attributes
+            variant_attributes = ", ".join([str(av) for av in variant.attributes.all()])
+            product_name = f"{product.name} ({variant_attributes})" if variant_attributes else product.name
 
             items.append({
                 "id": item.id,
                 "variant": variant.id,
-                "product_name": str(variant),
+                "product_name": product_name,
                 "quantity": item.quantity,
                 "price": item.price(),
-                "total_price": item.total_price(),
+                "total_price": item.total_price,
                 "image": request.build_absolute_uri(image_url) if image_url else None,
             })
 
         return Response({
+            "success": True,
             "items": items,
             "total_price": cart_manager.total_price(),
         })
 
+    # ==========================
+    # 🔹 افزودن محصول
+    # ==========================
     def post(self, request):
         variant_id = request.data.get("variant_id")
-        quantity = int(request.data.get("quantity", 1))
+        try:
+            quantity = int(request.data.get("quantity", 1))
+        except ValueError:
+            return Response({"success": False, "error": "quantity باید عدد باشد"}, status=status.HTTP_400_BAD_REQUEST)
 
         if not variant_id:
-            return Response(
-                {"error": "variant_id الزامی است"},
-                status=status.HTTP_400_BAD_REQUEST
-            )
+            return Response({"success": False, "error": "variant_id الزامی است"}, status=status.HTTP_400_BAD_REQUEST)
 
         cart_manager = self.get_cart_manager(request)
         cart_manager.add(variant_id, quantity)
 
-        return Response({"message": "محصول به سبد اضافه شد"}, status=status.HTTP_201_CREATED)
+        return Response({"success": True, "message": "محصول به سبد اضافه شد"}, status=status.HTTP_201_CREATED)
 
+    # ==========================
+    # 🔹 بروزرسانی تعداد
+    # ==========================
     def patch(self, request):
         variant_id = request.data.get("variant_id")
-        quantity = int(request.data.get("quantity", 1))
+        try:
+            quantity = int(request.data.get("quantity", 1))
+        except ValueError:
+            return Response({"success": False, "error": "quantity باید عدد باشد"}, status=status.HTTP_400_BAD_REQUEST)
 
         if not variant_id:
-            return Response(
-                {"error": "variant_id الزامی است"},
-                status=status.HTTP_400_BAD_REQUEST
-            )
+            return Response({"success": False, "error": "variant_id الزامی است"}, status=status.HTTP_400_BAD_REQUEST)
 
         cart_manager = self.get_cart_manager(request)
         cart_manager.update(variant_id, quantity)
 
-        return Response({"message": "سبد بروزرسانی شد"}, status=status.HTTP_200_OK)
+        return Response({"success": True, "message": "سبد بروزرسانی شد"}, status=status.HTTP_200_OK)
 
+    # ==========================
+    # 🔹 حذف محصول یا خالی کردن سبد
+    # ==========================
     def delete(self, request):
         variant_id = request.data.get("variant_id")
         cart_manager = self.get_cart_manager(request)
 
         if variant_id:
             cart_manager.remove(variant_id)
-            return Response({"message": "آیتم حذف شد"}, status=status.HTTP_200_OK)
+            return Response({"success": True, "message": "آیتم حذف شد"}, status=status.HTTP_200_OK)
         else:
             cart_manager.clear()
-            return Response({"message": "سبد خرید خالی شد"}, status=status.HTTP_200_OK)
+            return Response({"success": True, "message": "سبد خرید خالی شد"}, status=status.HTTP_200_OK)
