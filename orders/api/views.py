@@ -89,14 +89,20 @@ class CartView(APIView):
     def get(self, request):
         cart_manager = self.get_cart_manager(request)
         items = [
-            {
-                "id": item.id,
-                "variant": item.variant.id,
-                "product_name": str(item.variant),
-                "quantity": item.quantity,
-                "price": item.price(),
-                "total_price": item.total_price(),
-            }
+    {
+        "id": item.id,
+        "variant": item.variant.id,
+        "product_name": str(item.variant),
+        "quantity": item.quantity,
+        "price": item.price(),
+        "total_price": item.total_price(),
+        "image": (
+            item.variant.image.url if getattr(item.variant, "image", None)
+            else getattr(item.variant.product.main_image, "url", None)
+        ),
+    }
+    for item in cart_manager.items()
+        ]
             for item in cart_manager.items()
         ]
         return Response({
