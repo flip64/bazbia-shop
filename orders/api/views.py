@@ -118,7 +118,7 @@ class CartView(APIView):
                 "variant": variant.id,
                 "product_name": str(variant),
                 "quantity": item.quantity,
-                "price": item.price(),
+                "price": item.discount_price(),
                 "total_price": item.total_price(),
                 "image": request.build_absolute_uri(image_url) if image_url else None,
             })
