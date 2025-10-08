@@ -10,8 +10,8 @@ from products.models import Product
 from products.api.serializers import ProductListSerializer
 from products.api.pagination import CustomCategoryPagination  # فرض می‌کنیم pagination مشترک دارید
 
-class WeeklyBestSellersAPIView(generics.ListAPIView):
 
+class WeeklyBestSellersAPIView(generics.ListAPIView):
     serializer_class = ProductListSerializer
     pagination_class = CustomCategoryPagination  # استفاده از pagination مشترک
 
@@ -19,10 +19,9 @@ class WeeklyBestSellersAPIView(generics.ListAPIView):
         today = timezone.now().date()
         week_ago = today - timedelta(days=7)
 
-        # آمار فروش هفته اخیر
         sales_qs = (
             SalesSummary.objects
-            .filter(created_at__date__range=(week_ago, today))  
+            .filter(created_at__date__range=(week_ago, today))
             .values("product_id")
             .annotate(total_sold=Sum("total_quantity"))
             .order_by("-total_sold")
@@ -31,17 +30,14 @@ class WeeklyBestSellersAPIView(generics.ListAPIView):
         product_ids = [s["product_id"] for s in sales_qs]
 
         if product_ids:
-            # مرتب‌سازی محصولات بر اساس total_sold
             preserved_order = Case(
                 *[When(id=pid, then=pos) for pos, pid in enumerate(product_ids)],
                 output_field=IntegerField()
             )
             products = Product.objects.filter(id__in=product_ids).order_by(preserved_order)
         else:
-            # اگر فروش هفته اخیر نبود، محصولات جدید فعال را جایگزین کن
             products = Product.objects.filter(is_active=True).order_by("-created_at")
 
-        # تبدیل همه تاریخ‌ها به timezone لوکال
         for p in products:
             if timezone.is_aware(p.created_at):
                 p.created_at = timezone.localtime(p.created_at)
@@ -52,7 +48,7 @@ class WeeklyBestSellersAPIView(generics.ListAPIView):
         try:
             queryset = self.get_queryset()
             page = self.paginate_queryset(queryset)
-            
+
             if page is not None:
                 serializer = self.get_serializer(page, many=True, context={'request': request})
                 return self.get_paginated_response(serializer.data)
@@ -63,15 +59,13 @@ class WeeklyBestSellersAPIView(generics.ListAPIView):
                 "count": queryset.count(),
                 "data": serializer.data
             })
-            
+
         except Exception as e:
             return Response({
                 "success": False,
                 "message": "خطا در دریافت اطلاعات",
                 "error": str(e)
             }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-        
-
 
 
 class CartView(APIView):
@@ -89,20 +83,20 @@ class CartView(APIView):
     def get(self, request):
         cart_manager = self.get_cart_manager(request)
         items = [
-    {
-        "id": item.id,
-        "variant": item.variant.id,
-        "product_name": str(item.variant),
-        "quantity": item.quantity,
-        "price": item.price(),
-        "total_price": item.total_price(),
-        "image": (
-            item.variant.image.url if getattr(item.variant, "image", None)
-            else getattr(item.variant.product.main_image, "url", None)
-        ),
-    }
-    for item in cart_manager.items()
-        ]
+            {
+                "id": item.id,
+                "variant": item.variant.id,
+                "product_name": str(item.variant),
+                "quantity": item.quantity,
+                "price": item.price(),
+                "total_price": item.total_price(),
+                "image": (
+                    item.variant.image.url if getattr(item.variant, "image", None)
+                    else getattr(getattr(item.variant, "product", None), "main_image", None).url
+                    if getattr(getattr(item.variant, "product", None), "main_image", None)
+                    else None
+                ),
+            }
             for item in cart_manager.items()
         ]
         return Response({
@@ -135,10 +129,6 @@ class CartView(APIView):
         return Response({"message": "سبد بروزرسانی شد"}, status=status.HTTP_200_OK)
 
     def delete(self, request):
-        """
-        اگر variant_id ارسال شد → حذف یک آیتم
-        اگر ارسال نشد → خالی کردن کل سبد
-        """
         variant_id = request.data.get("variant_id")
         cart_manager = self.get_cart_manager(request)
 
