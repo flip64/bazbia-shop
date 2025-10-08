@@ -147,10 +147,12 @@ class ProductVariant(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-      attrs = ", ".join([f"{attr.attribute.name}: {attr.value}" for attr in self.attributes.all()])
-      return f"{self.product.name} ({attrs})"
-
-
+      try:
+         attrs = ", ".join([f"{attr.attribute.name}: {attr.value}" for attr in self.attributes.all()])
+         return f"{self.product.name} ({attrs})" if attrs else self.product.name
+      except:
+         # زمانی که database هنوز آماده نیست یا migration در حال اجراست
+         return self.product.name
 
 
 
