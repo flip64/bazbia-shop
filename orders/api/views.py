@@ -8,12 +8,12 @@ from django.db.models import Sum, Case, When, IntegerField
 from orders.models import SalesSummary
 from products.models import Product
 from products.api.serializers import ProductListSerializer
-from products.api.pagination import CustomCategoryPagination  # فرض می‌کنیم pagination مشترک دارید
+from products.api.pagination import CustomCategoryPagination
 
 
 class WeeklyBestSellersAPIView(generics.ListAPIView):
     serializer_class = ProductListSerializer
-    pagination_class = CustomCategoryPagination  # استفاده از pagination مشترک
+    pagination_class = CustomCategoryPagination
 
     def get_queryset(self):
         today = timezone.now().date()
@@ -82,23 +82,29 @@ class CartView(APIView):
 
     def get(self, request):
         cart_manager = self.get_cart_manager(request)
-        items = [
-            {
+        items = []
+
+        for item in cart_manager.items():
+            variant = getattr(item, "variant", None)
+            product = getattr(variant, "product", None)
+
+            # تعیین تصویر
+            image_url = None
+            if getattr(variant, "image", None):
+                image_url = variant.image.url
+            elif getattr(product, "main_image", None):
+                image_url = product.main_image.url
+
+            items.append({
                 "id": item.id,
-                "variant": item.variant.id,
-                "product_name": str(item.variant),
+                "variant": variant.id if variant else None,
+                "product_name": str(variant) if variant else None,
                 "quantity": item.quantity,
                 "price": item.price(),
                 "total_price": item.total_price(),
-                "image": (
-                    item.variant.image.url if getattr(item.variant, "image", None)
-                    else getattr(getattr(item.variant, "product", None), "main_image", None).url
-                    if getattr(getattr(item.variant, "product", None), "main_image", None)
-                    else None
-                ),
-            }
-            for item in cart_manager.items()
-        ]
+                "image": image_url,
+            })
+
         return Response({
             "items": items,
             "total_price": cart_manager.total_price(),
