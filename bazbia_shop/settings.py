@@ -12,6 +12,8 @@ https://docs.djangoproject.com/en/5.0/ref/settings/
 import os
 from pathlib import Path
 from dotenv import load_dotenv
+from datetime import timedelta
+
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -266,6 +268,16 @@ REST_FRAMEWORK = {
     ),
 }
 
+
+
+
+SIMPLE_JWT = {
+    "ACCESS_TOKEN_LIFETIME": timedelta(hours=1),  # مدت اعتبار توکن ورود
+    "REFRESH_TOKEN_LIFETIME": timedelta(days=7),  # مدت اعتبار توکن تمدید
+    "ROTATE_REFRESH_TOKENS": True,
+    "BLACKLIST_AFTER_ROTATION": True,
+    "AUTH_HEADER_TYPES": ("Bearer",),
+}
 
 CORS_ALLOW_ALL_ORIGINS = True  # فقط در حالت توسعه (برای production باید محدود بشه)
 
