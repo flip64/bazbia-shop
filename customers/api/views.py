@@ -70,9 +70,11 @@ class SendOtpView(APIView):
             print(f"OTP for {phone}: {code}")
 
             return Response({
+                "code":str(code),
                 "message": "کد تایید ارسال شد",
                 "session_id": str(otp.session_id)  # برای امنیت می‌تونی session_id برگردونی
             }, status=status.HTTP_200_OK)
+            
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
