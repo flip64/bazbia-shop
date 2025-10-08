@@ -42,9 +42,13 @@ class AttributeAdmin(admin.ModelAdmin):
 
 @admin.register(AttributeValue)
 class AttributeValueAdmin(admin.ModelAdmin):
-    list_display = ('value', 'attribute')
+    list_display = ('value', 'attribute_name')
     search_fields = ('value', 'attribute__name')
     list_filter = ('attribute',)
+
+    def attribute_name(self, obj):
+        return obj.attribute.name
+    attribute_name.short_description = 'Attribute'
 
 # ===========================
 # ProductVariant Admin
