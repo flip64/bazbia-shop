@@ -147,8 +147,8 @@ class ProductVariant(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-    attrs = ", ".join([f"{attr.attribute.name}: {attr.value}" for attr in self.attributes.all()])
-    return f"{self.product.name} ({attrs})"
+      attrs = ", ".join([f"{attr.attribute.name}: {attr.value}" for attr in self.attributes.all()])
+      return f"{self.product.name} ({attrs})"
 
 
 
