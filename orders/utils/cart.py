@@ -1,43 +1,102 @@
-def items(self):
-    items_list = []
+from django.conf import settings
+from orders.models import Cart, CartItem
+from products.models import ProductVariant
+from django.core.exceptions import ValidationError
 
-    for item in self.cart.items.select_related("variant", "variant__product").prefetch_related("variant__images"):
-        variant = item.variant
-        product = variant.product
+class CartManager:
+def init(self, request):
+self.request = request
+self.user = request.user if request.user.is_authenticated else None
 
-        # قیمت با تخفیف
-        price = variant.get_price()
+# اگر session_key نداریم، بسازیم  
+    session_key = self.request.session.session_key  
+    if not session_key:  
+        self.request.session.save()  
+        session_key = self.request.session.session_key  
+    self.session_key = session_key  
 
-        # پیدا کردن تصویر مناسب
-        image_url = None
-        try:
-            # 1️⃣ تصویر اصلی واریانت
-            variant_main_image = variant.images.filter(is_main=True).first()
-            if variant_main_image and variant_main_image.image:
-                image_url = variant_main_image.image.url
+    # گرفتن یا ساخت سبد  
+    self.cart = self.get_or_create_cart()  
 
-            # 2️⃣ اگر نبود، تصویر اصلی محصول
-            if not image_url:
-                product_main_image = product.images.filter(is_main=True).first()
-                if product_main_image and product_main_image.image:
-                    image_url = product_main_image.image.url
+def get_or_create_cart(self):  
+    if self.user:  
+        cart, _ = Cart.objects.get_or_create(user=self.user)  
+    else:  
+        cart, _ = Cart.objects.get_or_create(  
+            session_key=self.session_key,  
+            user__isnull=True  
+        )  
+    return cart  
 
-            # 3️⃣ اگر هنوز هیچ تصویری نیست، اولین تصویر موجود
-            if not image_url and product.images.exists():
-                first_image = product.images.first()
-                if first_image.image:
-                    image_url = first_image.image.url
-        except Exception:
-            image_url = None
+def add(self, variant_id, quantity=1):  
+    variant = ProductVariant.objects.get(id=variant_id)  
+    item, created = CartItem.objects.get_or_create(cart=self.cart, variant=variant)  
 
-        items_list.append({
-            "id": item.id,
-            "variant": variant.id,
-            "product_name": str(variant),  # شامل attributes
-            "quantity": item.quantity,
-            "price": price,
-            "total_price": price * item.quantity,
-            "image": self.request.build_absolute_uri(image_url) if image_url else None,
-        })
+    if not created:  
+        new_quantity = item.quantity + quantity  
+    else:  
+        new_quantity = quantity  
 
-    return items_list
+    # بررسی موجودی  
+    if new_quantity > variant.stock:  
+        new_quantity = variant.stock  # محدودیت اعمال می‌کنیم  
+
+    item.quantity = new_quantity  
+    item.save()  
+    return item  
+
+def remove(self, variant_id):  
+    CartItem.objects.filter(cart=self.cart, variant_id=variant_id).delete()  
+
+def update(self, variant_id, quantity):  
+    try:  
+        item = CartItem.objects.get(cart=self.cart, variant_id=variant_id)  
+        if quantity <= 0:  
+            item.delete()  
+        else:  
+            # بررسی موجودی  
+            if quantity > item.variant.stock:  
+                quantity = item.variant.stock  
+            item.quantity = quantity  
+            item.save()  
+    except CartItem.DoesNotExist:  
+        pass  
+
+def clear(self):  
+    self.cart.items.all().delete()  
+
+def items(self):  
+    return self.cart.items.select_related("variant", "variant__product")  
+
+def total_price(self):  
+    return sum(  
+        item.variant.price * item.quantity for item in self.cart.items.all()  
+    )  
+
+def merge_session_cart(self, session_cart_data):  
+    """  
+    ادغام داده‌های سبد session (دیکشنری) با سبد دیتابیس  
+    session_cart_data: dict مانند {'variant_id': {'quantity': x}, ...}  
+    """  
+    for variant_id_str, data in session_cart_data.items():  
+        variant_id = int(variant_id_str)  
+        quantity = data.get("quantity", 0)  
+        if quantity <= 0:  
+            continue  
+        try:  
+            variant = ProductVariant.objects.get(id=variant_id)  
+        except ProductVariant.DoesNotExist:  
+            continue  
+
+        item, created = CartItem.objects.get_or_create(cart=self.cart, variant=variant)  
+        if not created:  
+            new_quantity = item.quantity + quantity  
+        else:  
+            new_quantity = quantity  
+
+        if new_quantity > variant.stock:  
+            new_quantity = variant.stock  
+
+        item.quantity = new_quantity  
+        item.save()
+
