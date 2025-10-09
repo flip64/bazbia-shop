@@ -178,7 +178,7 @@ class ProductImage(models.Model):
 
     # لینک تصویر از تأمین‌کننده
     source_url = models.URLField(
-        blank=True, null=True, unique=True,
+        blank=True, null=True, unique=False,
         help_text='لینک تصویر اصلی از تأمین‌کننده (اختیاری)'
     )
 
