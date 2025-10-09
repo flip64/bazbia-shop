@@ -25,7 +25,30 @@ urlpatterns = [
     
     path('create_product/', views.create_product , name= 'create_product'),
     path('fetch_details_products/',views.fetch_details_products , name= 'fetch_details_products'),
+
     
-    
+    # مشاهده همه تصاویر یک محصول با slug
+    path('product/<slug:slug>/images/', 
+         views.product_images_by_slug, 
+         name='product_images_by_slug'),
+
+    # آپدیت یک تصویر محصول
+    path('product/<slug:slug>/images/<int:image_id>/update/', 
+         views.product_image_update_by_slug, 
+         name='product_image_update_by_slug'),
 
 ]
+
+
+
+
+
+ 
+
+
+
+
+
+
+
+
