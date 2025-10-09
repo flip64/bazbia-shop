@@ -10,7 +10,6 @@ from products.models import ProductVariant, Product, ProductImage
 from django.core.paginator import Paginator
 from django.core.files.storage import default_storage
 
-
 # ===============================
 # 🔹 Utility Function
 # ===============================
@@ -23,36 +22,30 @@ def clean_price_text(price_text):
     cleaned = re.sub(r'[^\d]', '', price_text)
     return int(cleaned) if cleaned.isdigit() else None
 
-
 # ===============================
-# 🔹 Views
+# 🔹 Views - Watched URLs / Price
 # ===============================
-
 def product_price_list(request):
     """
     نمایش لیست لینک‌های پایش شده محصولات
     - امکان جستجو فقط روی نام محصول
-    - نمایش Pagination
+    - Pagination
     """
     query = request.GET.get('q', '')
-
-    # فیلتر روی نام محصول (variant__product__name)
     watched_list = WatchedURL.objects.select_related(
         'variant', 'variant__product', 'supplier'
     )
     if query:
         watched_list = watched_list.filter(variant__product__name__icontains=query)
 
-    # Pagination: هر صفحه 20 رکورد
     paginator = Paginator(watched_list, 20)
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
 
-    context = {
+    return render(request, "scrap_abdisite/watched_urls.html", {
         'page_obj': page_obj,
-        'query': query,  # برای فرم جستجو
-    }
-    return render(request, "scrap_abdisite/watched_urls.html", context)
+        'query': query,
+    })
 
 
 @require_POST
@@ -70,7 +63,6 @@ def watched_urls_update(request, watched_id):
 
         if price:
             variant.price = int(price)
-
         if discount_price:
             dp = int(discount_price)
             if dp > variant.price:
@@ -104,10 +96,10 @@ def delet(request, watched_id):
 def create_product(request):
     user = request.user
     if user.is_authenticated:
-        print("ok for fetch")
         # fetche_products_list()
         # process_latest_file()
         # import_products_from_json(user)
+        pass
     return HttpResponse("Import completed successfully.")
 
 
@@ -135,46 +127,28 @@ def fetch_details_products(request):
 # 🔹 Product Image Management (by slug)
 # ===============================
 @login_required
-def product_images_list(request):
+def product_images_by_slug(request, slug):
     """
-    نمایش لیست همه محصولات دارای تصویر
+    نمایش همه تصاویر یک محصول بر اساس slug
     """
-    query = request.GET.get("q", "")
-    products = Product.objects.filter(images__isnull=False).distinct()
-    if query:
-        products = products.filter(name__icontains=query)
+    product = get_object_or_404(Product, slug=slug)
+    images = product.images.all()
 
-    paginator = Paginator(products, 20)
+    paginator = Paginator(images, 20)
     page_number = request.GET.get("page")
     page_obj = paginator.get_page(page_number)
 
-    context = {
-        "page_obj": page_obj,
-        "query": query,
-    }
-    return render(request, "scrap_abdisite/product_images.html", context)
-
-
-@login_required
-def product_images_by_slug(request, slug):
-    """
-    نمایش تمام تصاویر مربوط به یک محصول خاص (بر اساس slug)
-    """
-    product = get_object_or_404(Product, slug=slug)
-    images = product.images.all()  # فرض بر این است که related_name='images' در ProductImage وجود دارد
-
-    context = {
+    return render(request, "scrap_abdisite/product_images_detail.html", {
         "product": product,
-        "images": images,
-    }
-    return render(request, "scrap_abdisite/product_images_detail.html", context)
+        "page_obj": page_obj,
+    })
 
 
 @login_required
 @require_POST
 def product_image_update_by_slug(request, slug, image_id):
     """
-    آپدیت تصویر محصول بر اساس slug و شناسه تصویر
+    بروزرسانی تصویر محصول بر اساس slug و id تصویر
     """
     product = get_object_or_404(Product, slug=slug)
     image_obj = get_object_or_404(product.images, id=image_id)
