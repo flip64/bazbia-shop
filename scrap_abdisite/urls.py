@@ -7,7 +7,7 @@ urlpatterns = [
     # 🔹 مدیریت لینک‌های پایش شده
     path('watched_urls/', views.product_price_list, name='product_price_list'),
     path('watched_urls/<int:watched_id>/update/', views.watched_urls_update, name='watched_urls_update'),
-    path('watched_urls/<int:watched_id>/delete/', views.delete_watched_url, name='delete_watched_url'),
+    path('watched_urls/<int:watched_id>/delete/', views.delete_watched_url, name='watched_urls_delete'),  # ⚡ تغییر نام
 
     # 🔹 پردازش پس‌زمینه
     path('fetch_details_products/', views.fetch_details_products, name='fetch_details_products'),
