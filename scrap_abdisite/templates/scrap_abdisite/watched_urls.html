@@ -42,7 +42,13 @@
       {% for item in page_obj %}
       {% if item.variant %}
       <tr class="hover:bg-gray-50">
-        <td>{{ item.variant.product.name }}</td>
+        <!-- نام محصول لینک شد به صفحه ویرایش تصویر -->
+        <td>
+          <a href="{% url 'scrap_abdisite:product_images_by_slug' item.variant.product.slug %}" 
+             class="text-blue-600 hover:underline">
+            {{ item.variant.product.name }}
+          </a>
+        </td>
         <td>{{ item.supplier.name }}</td>
         <td>{{ item.price|intcomma }} تومان</td>
         <td>
