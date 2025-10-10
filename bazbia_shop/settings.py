@@ -97,7 +97,6 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'django.middleware.common.CommonMiddleware',
 
 ]
 
@@ -279,6 +278,20 @@ SIMPLE_JWT = {
     "AUTH_HEADER_TYPES": ("Bearer",),
 }
 
-CORS_ALLOW_ALL_ORIGINS = True  # فقط در حالت توسعه (برای production باید محدود بشه)
+# CORS_ALLOW_ALL_ORIGINS = True  # فقط در حالت توسعه (برای production باید محدود بشه)
+
+CORS_ALLOWED_ORIGINS = [
+    "https://bazbia.ir",
+    "https://www.bazbia.ir",
+    "https://backend.bazbia.ir",
+    "http://localhost:3000",  # اگر برای توسعه در Vite تست می‌کنی
+]
+
+CSRF_TRUSTED_ORIGINS = [
+    "https://bazbia.ir",
+    "https://www.bazbia.ir",
+    "https://backend.bazbia.ir",
+    "http://localhost:3000",
+]
 
  
