@@ -270,7 +270,7 @@ SIMPLE_JWT = {
     "AUTH_HEADER_TYPES": ("Bearer",),
 }
 
-# CORS_ALLOW_ALL_ORIGINS = True  # فقط در حالت توسعه (برای production باید محدود بشه)
+CORS_ALLOW_ALL_ORIGINS = True  # فقط در حالت توسعه (برای production باید محدود بشه)
 
 CORS_ALLOWED_ORIGINS = [
     "https://bazbia.ir",
