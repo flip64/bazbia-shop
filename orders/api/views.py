@@ -74,21 +74,24 @@ class WeeklyBestSellersAPIView(generics.ListAPIView):
 # ===========================
 # Cart API
 # ===========================
-class CartView(APIView):
+    from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework import status
+from orders.utils.cart import CartManager
+
+class CartAPIView(APIView):
     """
     مدیریت کامل سبد خرید:
-    - GET: نمایش آیتم‌ها
-    - POST: افزودن آیتم
-    - PATCH: بروزرسانی تعداد
-    - DELETE: حذف آیتم یا خالی کردن سبد
+    GET: مشاهده سبد
+    POST: افزودن آیتم
+    PATCH: بروزرسانی تعداد
+    DELETE: حذف آیتم یا خالی کردن سبد
     """
 
     def get_cart_manager(self, request):
         return CartManager(request)
 
-    # -------------------------
     # نمایش سبد
-    # -------------------------
     def get(self, request):
         cart_manager = self.get_cart_manager(request)
         items = []
@@ -97,18 +100,14 @@ class CartView(APIView):
             variant = item.variant
             product = variant.product
 
-            # انتخاب تصویر مناسب
             image_url = None
-            variant_main_image = variant.images.filter(is_main=True).first()
-            if variant_main_image and variant_main_image.image:
-                image_url = variant_main_image.image.url
+            main_image = variant.images.filter(is_main=True).first()
+            if main_image:
+                image_url = main_image.image.url
             elif product.images.filter(is_main=True).exists():
                 image_url = product.images.filter(is_main=True).first().image.url
-            elif product.images.exists():
-                image_url = product.images.first().image.url
 
-            price = variant.discount_price or variant.price  # استفاده از قیمت تخفیف
-
+            price = variant.discount_price or variant.price
             items.append({
                 "id": item.id,
                 "variant": variant.id,
@@ -124,39 +123,29 @@ class CartView(APIView):
             "total_price": cart_manager.total_price(),
         })
 
-    # -------------------------
-    # افزودن به سبد
-    # -------------------------
+    # افزودن آیتم
     def post(self, request):
         variant_id = request.data.get("variant_id")
         quantity = int(request.data.get("quantity", 1))
-
         if not variant_id:
             return Response({"error": "variant_id الزامی است"}, status=status.HTTP_400_BAD_REQUEST)
 
         cart_manager = self.get_cart_manager(request)
         cart_manager.add(variant_id, quantity)
-
         return Response({"message": "محصول به سبد اضافه شد"}, status=status.HTTP_201_CREATED)
 
-    # -------------------------
     # بروزرسانی تعداد
-    # -------------------------
     def patch(self, request):
         variant_id = request.data.get("variant_id")
         quantity = int(request.data.get("quantity", 1))
-
         if not variant_id:
             return Response({"error": "variant_id الزامی است"}, status=status.HTTP_400_BAD_REQUEST)
 
         cart_manager = self.get_cart_manager(request)
         cart_manager.update(variant_id, quantity)
-
         return Response({"message": "سبد بروزرسانی شد"}, status=status.HTTP_200_OK)
 
-    # -------------------------
     # حذف آیتم یا خالی کردن سبد
-    # -------------------------
     def delete(self, request):
         variant_id = request.data.get("variant_id")
         cart_manager = self.get_cart_manager(request)
