@@ -174,14 +174,6 @@ else:
 
 
 
-
-
-CSRF_TRUSTED_ORIGINS = [
-    "https://bazbia2.runflare.run",
-    "https://bazbia.com",
-]
-
-
 # Password validation
 # https://docs.djangoproject.com/en/5.0/ref/settings/#auth-password-validators
 
