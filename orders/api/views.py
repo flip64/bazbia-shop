@@ -76,7 +76,7 @@ class WeeklyBestSellersAPIView(generics.ListAPIView):
 # ===========================
 # Cart API
 # ===========================
-class CartAPIView(APIView):
+class CartView(APIView):
     """
     مدیریت کامل سبد خرید:
     GET: مشاهده سبد
