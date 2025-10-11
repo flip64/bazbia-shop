@@ -1,7 +1,7 @@
+# orders/api/views.py
 from rest_framework import generics, status
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from orders.utils.cart import CartManager
 from datetime import timedelta
 from django.utils import timezone
 from django.db.models import Sum, Case, When, IntegerField
@@ -9,7 +9,9 @@ from orders.models import SalesSummary
 from products.models import Product
 from products.api.serializers import ProductListSerializer
 from products.api.pagination import CustomCategoryPagination
-
+from orders.utils.cart import CartManager
+from django.contrib.auth.signals import user_logged_in
+from django.dispatch import receiver
 
 # ===========================
 # Weekly Best Sellers API
@@ -74,11 +76,6 @@ class WeeklyBestSellersAPIView(generics.ListAPIView):
 # ===========================
 # Cart API
 # ===========================
-    from rest_framework.views import APIView
-from rest_framework.response import Response
-from rest_framework import status
-from orders.utils.cart import CartManager
-
 class CartAPIView(APIView):
     """
     مدیریت کامل سبد خرید:
@@ -102,10 +99,12 @@ class CartAPIView(APIView):
 
             image_url = None
             main_image = variant.images.filter(is_main=True).first()
-            if main_image:
+            if main_image and main_image.image:
                 image_url = main_image.image.url
             elif product.images.filter(is_main=True).exists():
                 image_url = product.images.filter(is_main=True).first().image.url
+            elif product.images.exists():
+                image_url = product.images.first().image.url
 
             price = variant.discount_price or variant.price
             items.append({
@@ -127,23 +126,53 @@ class CartAPIView(APIView):
     def post(self, request):
         variant_id = request.data.get("variant_id")
         quantity = int(request.data.get("quantity", 1))
+
         if not variant_id:
             return Response({"error": "variant_id الزامی است"}, status=status.HTTP_400_BAD_REQUEST)
 
         cart_manager = self.get_cart_manager(request)
-        cart_manager.add(variant_id, quantity)
-        return Response({"message": "محصول به سبد اضافه شد"}, status=status.HTTP_201_CREATED)
+
+        # بررسی موجودی
+        variant_obj = cart_manager.cart.items.filter(variant_id=variant_id).first()
+        if variant_obj and quantity > variant_obj.variant.stock:
+            return Response({"error": "مقدار درخواستی بیشتر از موجودی است"}, status=status.HTTP_400_BAD_REQUEST)
+
+        item = cart_manager.add(variant_id, quantity)
+
+        return Response({
+            "message": "محصول به سبد اضافه شد",
+            "item": {
+                "id": item.id,
+                "variant": item.variant.id,
+                "quantity": item.quantity,
+                "price": item.variant.discount_price or item.variant.price,
+                "total_price": (item.variant.discount_price or item.variant.price) * item.quantity,
+            }
+        }, status=status.HTTP_201_CREATED)
 
     # بروزرسانی تعداد
     def patch(self, request):
         variant_id = request.data.get("variant_id")
         quantity = int(request.data.get("quantity", 1))
+
         if not variant_id:
             return Response({"error": "variant_id الزامی است"}, status=status.HTTP_400_BAD_REQUEST)
 
         cart_manager = self.get_cart_manager(request)
+        variant_obj = cart_manager.cart.items.filter(variant_id=variant_id).first()
+
+        if variant_obj and quantity > variant_obj.variant.stock:
+            return Response({"error": "مقدار درخواستی بیشتر از موجودی است"}, status=status.HTTP_400_BAD_REQUEST)
+
         cart_manager.update(variant_id, quantity)
-        return Response({"message": "سبد بروزرسانی شد"}, status=status.HTTP_200_OK)
+
+        return Response({
+            "message": "سبد بروزرسانی شد",
+            "item": {
+                "variant": variant_id,
+                "quantity": quantity
+            }
+        }, status=status.HTTP_200_OK)
 
     # حذف آیتم یا خالی کردن سبد
     def delete(self, request):
@@ -156,3 +185,21 @@ class CartAPIView(APIView):
         else:
             cart_manager.clear()
             return Response({"message": "سبد خرید خالی شد"}, status=status.HTTP_200_OK)
+
+
+# ============================
+# ادغام سبد خرید مهمان با کاربر لاگین شده
+# ============================
+@receiver(user_logged_in)
+def merge_cart_on_login(sender, user, request, **kwargs):
+    """
+    اگر کاربر مهمان سبد داشته باشد و لاگین کند،
+    سبد session با سبد کاربر ادغام می‌شود.
+    """
+    session_cart = request.session.get("cart", {})
+    if not session_cart:
+        return
+
+    cart_manager = CartManager(request)
+    cart_manager.merge_session_cart(session_cart)
+    request.session["cart"] = {}  # پاک کردن سبد session پس از ادغام
