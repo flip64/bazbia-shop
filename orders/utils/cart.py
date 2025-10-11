@@ -1,22 +1,19 @@
-from django.conf import settings
+from datetime import timedelta
+from django.utils import timezone
 from orders.models import Cart, CartItem
 from products.models import ProductVariant
-from django.core.exceptions import ValidationError
 
 class CartManager:
     def __init__(self, request):
         self.request = request
         self.user = request.user if request.user.is_authenticated else None
-
-        # اگر session_key نداریم، بسازیم
-        session_key = self.request.session.session_key
-        if not session_key:
-            self.request.session.save()
-            session_key = self.request.session.session_key
-        self.session_key = session_key
-
-        # گرفتن یا ساخت سبد
+        self.session_key = self.get_session_key()
         self.cart = self.get_or_create_cart()
+
+    def get_session_key(self):
+        if not self.request.session.session_key:
+            self.request.session.save()
+        return self.request.session.session_key
 
     def get_or_create_cart(self):
         if self.user:
@@ -30,23 +27,22 @@ class CartManager:
 
     def add(self, variant_id, quantity=1):
         variant = ProductVariant.objects.get(id=variant_id)
+
+        # محدودیت موجودی
+        if quantity > variant.stock:
+            quantity = variant.stock
+
         item, created = CartItem.objects.get_or_create(cart=self.cart, variant=variant)
-
         if not created:
-            new_quantity = item.quantity + quantity
+            new_qty = item.quantity + quantity
+            if new_qty > variant.stock:
+                new_qty = variant.stock
+            item.quantity = new_qty
         else:
-            new_quantity = quantity
+            item.quantity = quantity
 
-        # بررسی موجودی
-        if new_quantity > variant.stock:
-            new_quantity = variant.stock
-
-        item.quantity = new_quantity
         item.save()
         return item
-
-    def remove(self, variant_id):
-        CartItem.objects.filter(cart=self.cart, variant_id=variant_id).delete()
 
     def update(self, variant_id, quantity):
         try:
@@ -60,6 +56,9 @@ class CartManager:
                 item.save()
         except CartItem.DoesNotExist:
             pass
+
+    def remove(self, variant_id):
+        CartItem.objects.filter(cart=self.cart, variant_id=variant_id).delete()
 
     def clear(self):
         self.cart.items.all().delete()
@@ -75,14 +74,15 @@ class CartManager:
 
     def merge_session_cart(self, session_cart_data):
         """
-        ادغام داده‌های سبد session (دیکشنری) با سبد دیتابیس
-        session_cart_data: dict مانند {'variant_id': {'quantity': x}, ...}
+        ادغام سبد session با سبد کاربر لاگین‌شده
+        session_cart_data: dict {variant_id: {"quantity": x}}
         """
         for variant_id_str, data in session_cart_data.items():
             variant_id = int(variant_id_str)
             quantity = data.get("quantity", 0)
             if quantity <= 0:
                 continue
+
             try:
                 variant = ProductVariant.objects.get(id=variant_id)
             except ProductVariant.DoesNotExist:
@@ -90,12 +90,12 @@ class CartManager:
 
             item, created = CartItem.objects.get_or_create(cart=self.cart, variant=variant)
             if not created:
-                new_quantity = item.quantity + quantity
+                new_qty = item.quantity + quantity
+                if new_qty > variant.stock:
+                    new_qty = variant.stock
+                item.quantity = new_qty
             else:
-                new_quantity = quantity
-
-            if new_quantity > variant.stock:
-                new_quantity = variant.stock
-
-            item.quantity = new_quantity
+                if quantity > variant.stock:
+                    quantity = variant.stock
+                item.quantity = quantity
             item.save()
