@@ -5,13 +5,28 @@ from rest_framework.views import APIView
 from datetime import timedelta
 from django.utils import timezone
 from django.db.models import Sum, Case, When, IntegerField
-from orders.models import SalesSummary
-from products.models import Product
+from products.models import Product,ProductVariant
 from products.api.serializers import ProductListSerializer
 from products.api.pagination import CustomCategoryPagination
 from orders.utils.cart import CartManager
 from django.contrib.auth.signals import user_logged_in
 from django.dispatch import receiver
+from rest_framework.permissions import IsAuthenticated, AllowAny
+from django.shortcuts import get_object_or_404
+from django.db import transaction
+from orders.models import Cart, CartItem, Order, OrderItem,SalesSummary
+from orders.api.serializers import (
+    CartSerializer,
+    CartItemSerializer,
+    CartItemInputSerializer,
+    OrderSerializer
+)
+
+
+
+
+
+
 
 # ===========================
 # Weekly Best Sellers API
@@ -72,23 +87,6 @@ class WeeklyBestSellersAPIView(generics.ListAPIView):
                 "error": str(e)
             }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
-
-# ==============================
-# 📦 views.py — ماژول سفارش و سبد خرید
-# ==============================
-from rest_framework import generics, status
-from rest_framework.response import Response
-from rest_framework.permissions import IsAuthenticated, AllowAny
-from django.shortcuts import get_object_or_404
-from django.db import transaction
-from .models import Cart, CartItem, Order, OrderItem
-from .serializers import (
-    CartSerializer,
-    CartItemSerializer,
-    CartItemInputSerializer,
-    OrderSerializer
-)
-from products.models import ProductVariant  # فرض بر اینکه مدل واریانت اینجاست
 
 
 # ==============================
