@@ -73,133 +73,199 @@ class WeeklyBestSellersAPIView(generics.ListAPIView):
             }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
-# ===========================
-# Cart API
-# ===========================
-class CartView(APIView):
-    """
-    مدیریت کامل سبد خرید:
-    GET: مشاهده سبد
-    POST: افزودن آیتم
-    PATCH: بروزرسانی تعداد
-    DELETE: حذف آیتم یا خالی کردن سبد
-    """
+# ==============================
+# 📦 views.py — ماژول سفارش و سبد خرید
+# ==============================
+from rest_framework import generics, status
+from rest_framework.response import Response
+from rest_framework.permissions import IsAuthenticated, AllowAny
+from django.shortcuts import get_object_or_404
+from django.db import transaction
+from .models import Cart, CartItem, Order, OrderItem
+from .serializers import (
+    CartSerializer,
+    CartItemSerializer,
+    CartItemInputSerializer,
+    OrderSerializer
+)
+from products.models import ProductVariant  # فرض بر اینکه مدل واریانت اینجاست
 
-    def get_cart_manager(self, request):
-        return CartManager(request)
 
-    # نمایش سبد
-    def get(self, request):
-        cart_manager = self.get_cart_manager(request)
-        items = []
+# ==============================
+# 🎯 Helper Function
+# ==============================
+def get_user_cart(request):
+    """دریافت یا ایجاد سبد خرید برای کاربر یا سشن مهمان"""
+    if request.user.is_authenticated:
+        cart, _ = Cart.objects.get_or_create(user=request.user)
+    else:
+        session_key = request.session.session_key or request.session.create()
+        cart, _ = Cart.objects.get_or_create(session_key=session_key)
+    return cart
 
-        for item in cart_manager.items():
-            variant = item.variant
-            product = variant.product
 
-            image_url = None
-            main_image = variant.images.filter(is_main=True).first()
-            if main_image and main_image.image:
-                image_url = main_image.image.url
-            elif product.images.filter(is_main=True).exists():
-                image_url = product.images.filter(is_main=True).first().image.url
-            elif product.images.exists():
-                image_url = product.images.first().image.url
+# ==============================
+# 🛒 1. مشاهده سبد خرید
+# ==============================
+class CartView(generics.RetrieveAPIView):
+    serializer_class = CartSerializer
+    permission_classes = [AllowAny]
 
-            price = variant.discount_price or variant.price
-            items.append({
-                "id": item.id,
-                "variant": variant.id,
-                "product_name": str(variant),
-                "quantity": item.quantity,
-                "price": price,
-                "total_price": price * item.quantity,
-                "image": request.build_absolute_uri(image_url) if image_url else None,
-            })
+    def get_object(self):
+        return get_user_cart(self.request)
+
+
+# ==============================
+# ➕ 2. افزودن آیتم به سبد خرید
+# ==============================
+class AddToCartView(generics.GenericAPIView):
+    serializer_class = CartItemInputSerializer
+    permission_classes = [AllowAny]
+
+    def post(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        variant_id = serializer.validated_data['variant_id']
+        quantity = serializer.validated_data['quantity']
+
+        cart = get_user_cart(request)
+        variant = get_object_or_404(ProductVariant, id=variant_id)
+
+        cart_item, created = CartItem.objects.get_or_create(
+            cart=cart,
+            variant=variant,
+            defaults={'quantity': quantity}
+        )
+
+        if not created:
+            cart_item.quantity += quantity
+            cart_item.save()
 
         return Response({
-            "items": items,
-            "total_price": cart_manager.total_price(),
-        })
-
-    # افزودن آیتم
-    def post(self, request):
-        variant_id = request.data.get("variant_id")
-        quantity = int(request.data.get("quantity", 1))
-
-        if not variant_id:
-            return Response({"error": "variant_id الزامی است"}, status=status.HTTP_400_BAD_REQUEST)
-
-        cart_manager = self.get_cart_manager(request)
-
-        # بررسی موجودی
-        variant_obj = cart_manager.cart.items.filter(variant_id=variant_id).first()
-        if variant_obj and quantity > variant_obj.variant.stock:
-            return Response({"error": "مقدار درخواستی بیشتر از موجودی است"}, status=status.HTTP_400_BAD_REQUEST)
-
-        item = cart_manager.add(variant_id, quantity)
-
-        return Response({
-            "message": "محصول به سبد اضافه شد",
-            "item": {
-                "id": item.id,
-                "variant": item.variant.id,
-                "quantity": item.quantity,
-                "price": item.variant.discount_price or item.variant.price,
-                "total_price": (item.variant.discount_price or item.variant.price) * item.quantity,
-            }
+            "message": "آیتم با موفقیت به سبد خرید افزوده شد.",
+            "item": CartItemSerializer(cart_item, context={'request': request}).data
         }, status=status.HTTP_201_CREATED)
 
-    # بروزرسانی تعداد
-    def patch(self, request):
-        variant_id = request.data.get("variant_id")
-        quantity = int(request.data.get("quantity", 1))
 
-        if not variant_id:
-            return Response({"error": "variant_id الزامی است"}, status=status.HTTP_400_BAD_REQUEST)
+# ==============================
+# ✏️ 3. بروزرسانی آیتم سبد خرید
+# ==============================
+class UpdateCartItemView(generics.GenericAPIView):
+    serializer_class = CartItemInputSerializer
+    permission_classes = [AllowAny]
 
-        cart_manager = self.get_cart_manager(request)
-        variant_obj = cart_manager.cart.items.filter(variant_id=variant_id).first()
+    def put(self, request, pk):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        quantity = serializer.validated_data['quantity']
 
-        if variant_obj and quantity > variant_obj.variant.stock:
-            return Response({"error": "مقدار درخواستی بیشتر از موجودی است"}, status=status.HTTP_400_BAD_REQUEST)
+        cart = get_user_cart(request)
+        cart_item = get_object_or_404(CartItem, id=pk, cart=cart)
 
-        cart_manager.update(variant_id, quantity)
+        cart_item.quantity = quantity
+        cart_item.save()
 
         return Response({
-            "message": "سبد بروزرسانی شد",
-            "item": {
-                "variant": variant_id,
-                "quantity": quantity
-            }
-        }, status=status.HTTP_200_OK)
+            "message": "تعداد آیتم بروزرسانی شد.",
+            "item": CartItemSerializer(cart_item, context={'request': request}).data
+        })
 
-    # حذف آیتم یا خالی کردن سبد
+
+# ==============================
+# ❌ 4. حذف آیتم از سبد خرید
+# ==============================
+class RemoveCartItemView(generics.DestroyAPIView):
+    permission_classes = [AllowAny]
+
+    def delete(self, request, pk):
+        cart = get_user_cart(request)
+        cart_item = get_object_or_404(CartItem, id=pk, cart=cart)
+        cart_item.delete()
+        return Response({"message": "آیتم از سبد خرید حذف شد."}, status=status.HTTP_204_NO_CONTENT)
+
+
+# ==============================
+# 🧹 5. خالی کردن کل سبد خرید
+# ==============================
+class ClearCartView(generics.GenericAPIView):
+    permission_classes = [AllowAny]
+
     def delete(self, request):
-        variant_id = request.data.get("variant_id")
-        cart_manager = self.get_cart_manager(request)
-
-        if variant_id:
-            cart_manager.remove(variant_id)
-            return Response({"message": "آیتم حذف شد"}, status=status.HTTP_200_OK)
-        else:
-            cart_manager.clear()
-            return Response({"message": "سبد خرید خالی شد"}, status=status.HTTP_200_OK)
+        cart = get_user_cart(request)
+        cart.items.all().delete()
+        return Response({"message": "سبد خرید با موفقیت خالی شد."})
 
 
-# ============================
-# ادغام سبد خرید مهمان با کاربر لاگین شده
-# ============================
-@receiver(user_logged_in)
-def merge_cart_on_login(sender, user, request, **kwargs):
-    """
-    اگر کاربر مهمان سبد داشته باشد و لاگین کند،
-    سبد session با سبد کاربر ادغام می‌شود.
-    """
-    session_cart = request.session.get("cart", {})
-    if not session_cart:
-        return
+# ==============================
+# 🧾 6. ایجاد سفارش از سبد خرید
+# ==============================
+class CreateOrderView(generics.GenericAPIView):
+    permission_classes = [IsAuthenticated]
 
-    cart_manager = CartManager(request)
-    cart_manager.merge_session_cart(session_cart)
-    request.session["cart"] = {}  # پاک کردن سبد session پس از ادغام
+    @transaction.atomic
+    def post(self, request):
+        cart = get_user_cart(request)
+        if not cart.items.exists():
+            return Response({"error": "سبد خرید خالی است."}, status=status.HTTP_400_BAD_REQUEST)
+
+        # ایجاد سفارش
+        order = Order.objects.create(user=request.user, status='pending')
+
+        # انتقال آیتم‌ها از سبد به سفارش
+        for item in cart.items.all():
+            OrderItem.objects.create(
+                order=order,
+                variant=item.variant,
+                quantity=item.quantity,
+                price=item.variant.discount_price or item.variant.price
+            )
+
+        # خالی کردن سبد
+        cart.items.all().delete()
+
+        return Response({
+            "message": "سفارش با موفقیت ثبت شد.",
+            "order": OrderSerializer(order, context={'request': request}).data
+        }, status=status.HTTP_201_CREATED)
+
+
+# ==============================
+# 📋 7. مشاهده لیست سفارش‌های کاربر
+# ==============================
+class OrderListView(generics.ListAPIView):
+    serializer_class = OrderSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        return Order.objects.filter(user=self.request.user).order_by('-created_at')
+
+
+# ==============================
+# 🔍 8. مشاهده جزئیات سفارش خاص
+# ==============================
+class OrderDetailView(generics.RetrieveAPIView):
+    serializer_class = OrderSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        return Order.objects.filter(user=self.request.user)
+
+
+# ==============================
+# 🚫 9. لغو سفارش (در حالت pending)
+# ==============================
+class CancelOrderView(generics.GenericAPIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, pk):
+        order = get_object_or_404(Order, id=pk, user=request.user)
+        if order.status != 'pending':
+            return Response({"error": "این سفارش دیگر قابل لغو نیست."}, status=status.HTTP_400_BAD_REQUEST)
+
+        order.status = 'cancelled'
+        order.save()
+
+        return Response({
+            "message": "سفارش لغو شد.",
+            "order": OrderSerializer(order, context={'request': request}).data
+        })
