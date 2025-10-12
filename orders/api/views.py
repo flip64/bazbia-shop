@@ -92,16 +92,26 @@ class WeeklyBestSellersAPIView(generics.ListAPIView):
 # ==============================
 # 🎯 Helper Function
 # ==============================
+
 def get_user_cart(request):
-    """دریافت یا ایجاد سبد خرید برای کاربر یا سشن مهمان"""
+    """دریافت یا ایجاد سبد خرید برای کاربر یا سشن مهمان بدون خطای MultipleObjectsReturned"""
     if request.user.is_authenticated:
-        cart, _ = Cart.objects.get_or_create(user=request.user)
+        # اگر چند Cart با همان کاربر وجود دارد، بقیه را پاک می‌کنیم
+        carts = Cart.objects.filter(user=request.user)
+        if carts.exists():
+            cart = carts.first()
+            carts.exclude(id=cart.id).delete()
+        else:
+            cart = Cart.objects.create(user=request.user)
     else:
         session_key = request.session.session_key or request.session.create()
-        cart, _ = Cart.objects.get_or_create(session_key=session_key)
+        carts = Cart.objects.filter(session_key=session_key)
+        if carts.exists():
+            cart = carts.first()
+            carts.exclude(id=cart.id).delete()
+        else:
+            cart = Cart.objects.create(session_key=session_key)
     return cart
-
-
 # ==============================
 # 🛒 1. مشاهده سبد خرید
 # ==============================
