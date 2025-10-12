@@ -23,4 +23,4 @@ def view_user_cart(request, user_id):
         'cart_items': cart_items,
         'total': total
     }
-    return render(request, 'view_cart.html', context)
+    return render(request, 'orders/view_cart.html', context)
