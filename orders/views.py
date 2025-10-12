@@ -25,4 +25,4 @@ def select_user_cart(request):
         'cart_items': cart_items,
         'total': total
     }
-    return render(request, 'select_user_cart.html', context)
+    return render(request, 'orders/select_user_cart.html', context)
