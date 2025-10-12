@@ -30,7 +30,9 @@ urlpatterns = [
     path('scrap_abdisite/', include('scrap_abdisite.urls', namespace='scrap_abdisite')),
     path('schema/', include(('schema_viewer.urls', 'schema_page'), namespace='schema_page')),
     path('accounts/', include(('core.urls', 'core'), namespace='core')),# آدرس‌های مربوط به login/signup
+    path('orders/', include(('orders.urls', 'orders'), namespace='orders')),# آدرس‌های مربوط به orders
 
+    
 
 
    
