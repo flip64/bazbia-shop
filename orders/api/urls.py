@@ -1,5 +1,5 @@
 from django.urls import path
-from orders.api import view
+from orders.api import views
 
 urlpatterns = [
     path("weeklyBestSellers/", views.WeeklyBestSellersAPIView.as_view(), name="weekly-best-sellers"),
