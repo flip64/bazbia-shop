@@ -49,6 +49,7 @@
       {% for item in page_obj %}
       {% if item.variant %}
       <tr class="hover:bg-gray-50">
+        <!-- نام محصول -->
         <td>
           <a
             href="{% url 'scrap_abdisite:product_images_by_slug' item.variant.product.slug %}"
@@ -62,9 +63,9 @@
         <td class="text-center">
           <button
             type="button"
-            class="toggle-btn px-3 py-1 rounded text-white font-semibold transition-all duration-200
+            class="toggle-btn px-3 py-1 rounded text-white
               {% if item.variant.product.is_active %}
-                bg-blue-600 hover:bg-blue-700
+                bg-green-500 hover:bg-green-600
               {% else %}
                 bg-gray-400 hover:bg-gray-500
               {% endif %}"
@@ -74,46 +75,93 @@
           </button>
         </td>
 
+        <!-- قیمت تأمین‌کننده -->
         <td>{{ item.price|intcomma }} تومان</td>
+
+        <!-- لینک محصول -->
         <td>
-          <a href="{{ item.url }}" target="_blank" class="text-blue-600 hover:underline">مشاهده</a>
+          <a
+            href="{{ item.url }}"
+            target="_blank"
+            class="text-blue-600 hover:underline"
+          >
+            مشاهده
+          </a>
         </td>
 
-        <form method="post" action="{% url 'scrap_abdisite:watched_urls_update' item.id %}">
+        <!-- فرم ویرایش قیمت -->
+        <form
+          method="post"
+          action="{% url 'scrap_abdisite:watched_urls_update' item.id %}"
+        >
           {% csrf_token %}
           <td>
-            <input type="number" name="price" value="{{ item.variant.price|default_if_none:'' }}" class="w-full border rounded px-2 py-1">
+            <input
+              type="number"
+              name="price"
+              value="{{ item.variant.price|default_if_none:'' }}"
+              class="w-full border rounded px-2 py-1"
+            />
           </td>
           <td>
-            <input type="number" name="discount_price" value="{{ item.variant.discount_price|default_if_none:'' }}" min="0" max="{{ item.variant.price }}" class="w-full border rounded px-2 py-1">
+            <input
+              type="number"
+              name="discount_price"
+              value="{{ item.variant.discount_price|default_if_none:'' }}"
+              min="0"
+              max="{{ item.variant.price }}"
+              class="w-full border rounded px-2 py-1"
+            />
           </td>
           <td>{{ item.last_checked|date:"Y-m-d H:i" }}</td>
           <td class="text-center">
-            <button type="submit" class="bg-green-500 hover:bg-green-600 text-white px-3 py-1 rounded">ذخیره</button>
-            <a href="{% url 'scrap_abdisite:watched_urls_delete' item.id %}" class="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded ml-1">حذف</a>
+            <button
+              type="submit"
+              class="bg-green-500 hover:bg-green-600 text-white px-3 py-1 rounded"
+            >
+              ذخیره
+            </button>
+            <a
+              href="{% url 'scrap_abdisite:watched_urls_delete' item.id %}"
+              class="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded ml-1"
+            >
+              حذف
+            </a>
           </td>
         </form>
       </tr>
       {% endif %}
       {% empty %}
       <tr>
-        <td colspan="8" class="text-center text-gray-500">هیچ محصولی یافت نشد.</td>
+        <td colspan="8" class="text-center text-gray-500">
+          هیچ محصولی یافت نشد.
+        </td>
       </tr>
       {% endfor %}
     </tbody>
   </table>
 </div>
 
+{# Pagination #}
 <div class="mt-4 flex justify-center items-center gap-2">
   {% if page_obj.has_previous %}
-  <a href="?q={{ query }}&page={{ page_obj.previous_page_number }}" class="px-3 py-1 border rounded hover:bg-gray-100">صفحه قبل</a>
+  <a
+    href="?q={{ query }}&page={{ page_obj.previous_page_number }}"
+    class="px-3 py-1 border rounded hover:bg-gray-100"
+    >صفحه قبل</a
+  >
   {% endif %}
   <span>صفحه {{ page_obj.number }} از {{ page_obj.paginator.num_pages }}</span>
   {% if page_obj.has_next %}
-  <a href="?q={{ query }}&page={{ page_obj.next_page_number }}" class="px-3 py-1 border rounded hover:bg-gray-100">صفحه بعد</a>
+  <a
+    href="?q={{ query }}&page={{ page_obj.next_page_number }}"
+    class="px-3 py-1 border rounded hover:bg-gray-100"
+    >صفحه بعد</a
+  >
   {% endif %}
 </div>
 
+{# --- اسکریپت AJAX برای دکمه فعال/غیرفعال --- #}
 <script>
 function getCookie(name) {
   let cookieValue = null;
@@ -149,17 +197,20 @@ document.querySelectorAll(".toggle-btn").forEach((btn) => {
           if (data.is_active) {
             this.textContent = "فعال";
             this.classList.remove("bg-gray-400", "hover:bg-gray-500");
-            this.classList.add("bg-blue-600", "hover:bg-blue-700");
+            this.classList.add("bg-green-500", "hover:bg-green-600");
           } else {
             this.textContent = "غیرفعال";
-            this.classList.remove("bg-blue-600", "hover:bg-blue-700");
+            this.classList.remove("bg-green-500", "hover:bg-green-600");
             this.classList.add("bg-gray-400", "hover:bg-gray-500");
           }
         } else {
           alert("❌ خطا در تغییر وضعیت محصول");
         }
       })
-      .catch(() => alert("⚠️ خطا در ارتباط با سرور"));
+      .catch((err) => {
+        console.error(err);
+        alert("⚠️ ارتباط با سرور برقرار نشد");
+      });
   });
 });
 </script>
