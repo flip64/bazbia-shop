@@ -146,9 +146,14 @@ def import_products():
                         'base_price': supplier_price * Decimal("1.2") if supplier_price > 0 else Decimal("0"),
                         'category': category,
                         'description': item.get('description') or '',
-                        'is_active': True
+                        # is_active حذف شد تا بعد از ایجاد تنظیم شود
                     }
                 )
+
+                # ---------- فقط محصول جدید غیرفعال شود ----------
+                if created:
+                    product.is_active = False
+                    product.save()
 
                 # ---------- واریانت ----------
                 variant = product.variants.first()
@@ -175,19 +180,15 @@ def import_products():
                         defaults={"url": product_link, "price": supplier_price}
                     )
 
-                    # اگر تازه ساخته شد یا تاریخچه خالی است، رکورد PriceHistory اضافه کن
                     if created_w or not watched.history.exists():
                         PriceHistory.objects.create(watched_url=watched, price=supplier_price)
                         logger.info(f"📌 PriceHistory اولیه برای {variant.sku} ثبت شد.")
-
-                    # اگر قیمت تغییر کرده، PriceHistory جدید بساز و WatchedURL را بروزرسانی کن
                     elif watched.price != supplier_price:
                         PriceHistory.objects.create(watched_url=watched, price=supplier_price)
                         watched.price = supplier_price
                         watched.save()
                         logger.info(f"🔔 قیمت تغییر کرد برای {variant.sku}: {supplier_price} ریال ثبت شد.")
 
-                    # بروزرسانی موجودی
                     if 'quantity' in item and item['quantity'] is not None:
                         variant.stock = item['quantity']
                         variant.save()
