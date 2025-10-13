@@ -8,7 +8,8 @@ urlpatterns = [
     path('watched_urls/', views.product_price_list, name='product_price_list'),
     path('watched_urls/<int:watched_id>/update/', views.watched_urls_update, name='watched_urls_update'),
     path('watched_urls/<int:watched_id>/delete/', views.delete_watched_url, name='watched_urls_delete'),  # ⚡ تغییر نام
-
+  
+    path("toggle-product/<int:product_id>/", views.toggle_product_status, name="toggle_product_status"),
     # 🔹 پردازش پس‌زمینه
     path('fetch_details_products/', views.fetch_details_products, name='fetch_details_products'),
 
