@@ -29,8 +29,12 @@ STATICFILES_DIRS = [
 ]
 
 # مسیر ذخیره‌سازی فایل‌های استاتیک جمع‌آوری‌شده
-STATIC_URL = '/static/'
 
+STATIC_URL = '/static/'
+STATICFILES_DIRS = [
+    BASE_DIR / "static",
+]
+STATIC_ROOT = BASE_DIR / "staticfiles"
 
 
 MEDIA_URL = '/media/'
