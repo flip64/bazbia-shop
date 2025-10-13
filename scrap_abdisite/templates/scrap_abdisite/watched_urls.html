@@ -49,7 +49,24 @@
             {{ item.variant.product.name }}
           </a>
         </td>
-        <td>{{ item.supplier.name }}</td>
+        <td class="text-center">
+         <button 
+           type="button"
+            class="toggle-btn px-3 py-1 rounded text-white 
+           {% if item.variant.product.is_active %}
+              bg-green-500 hover:bg-green-600
+           {% else %}
+              bg-gray-400 hover:bg-gray-500
+           {% endif %}"
+    data-id="{{ item.variant.product.id }}"
+  >
+    {% if item.variant.product.is_active %}فعال{% else %}غیرفعال{% endif %}
+  </button>
+</td>
+
+
+
+        
         <td>{{ item.price|intcomma }} تومان</td>
         <td>
           <a href="{{ item.url }}" target="_blank" class="text-blue-600 hover:underline">مشاهده</a>
