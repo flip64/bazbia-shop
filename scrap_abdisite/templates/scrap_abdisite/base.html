@@ -85,5 +85,37 @@
     {% block content %}{% endblock %}
 </div>
 
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+  document.querySelectorAll(".toggle-btn").forEach(btn => {
+    btn.addEventListener("click", function() {
+      const productId = this.dataset.id;
+      fetch(`/toggle-product/${productId}/`, {
+        method: "POST",
+        headers: {
+          "X-CSRFToken": document.querySelector('[name=csrfmiddlewaretoken]').value
+        }
+      })
+      .then(res => res.json())
+      .then(data => {
+        if (data.status === "ok") {
+          if (data.is_active) {
+            this.textContent = "فعال";
+            this.classList.remove("bg-gray-400", "hover:bg-gray-500");
+            this.classList.add("bg-green-500", "hover:bg-green-600");
+          } else {
+            this.textContent = "غیرفعال";
+            this.classList.remove("bg-green-500", "hover:bg-green-600");
+            this.classList.add("bg-gray-400", "hover:bg-gray-500");
+          }
+        }
+      });
+    });
+  });
+});
+</script>
+
+
+    
 </body>
 </html>
