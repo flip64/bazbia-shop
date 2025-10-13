@@ -10,6 +10,29 @@ import re
 
 from scrap_abdisite.models import WatchedURL
 from products.models import Product, ProductVariant
+
+ 
+
+
+@login_required
+@require_POST
+def toggle_product_status(request, product_id):
+    """
+    فعال یا غیرفعال کردن محصول با کلیک روی دکمه در جدول
+    """
+    product = get_object_or_404(Product, id=product_id)
+    product.is_active = not product.is_active
+    product.save(update_fields=["is_active"])
+    return JsonResponse({
+        "status": "ok",
+        "is_active": product.is_active
+    })
+
+
+
+
+
+
 # ProductImage از مدل product استفاده می‌شود: product.images.all()
 
 # ===============================
