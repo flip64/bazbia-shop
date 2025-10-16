@@ -146,7 +146,6 @@ def import_products():
                         'base_price': supplier_price * Decimal("1.2") if supplier_price > 0 else Decimal("0"),
                         'category': category,
                         'description': item.get('description') or '',
-                        # is_active حذف شد تا بعد از ایجاد تنظیم شود
                     }
                 )
 
@@ -155,8 +154,9 @@ def import_products():
                     product.is_active = False
                     product.save()
 
-                # ---------- واریانت ----------
+                # ---------- واریانت (بخش اصلاح‌شده) ----------
                 variant = product.variants.first()
+
                 if not variant:
                     sku_base = f"{product.slug}-default"
                     sku = sku_base
@@ -168,8 +168,22 @@ def import_products():
                         product=product,
                         sku=sku,
                         price=supplier_price * Decimal("1.2"),  # ۲۰٪ سود
-                        stock=item.get('quantity', 0)
+                        stock=item.get('quantity', 0) or 0
                     )
+                else:
+                    # ✅ به‌روزرسانی موجودی و قیمت حتی اگر واریانت از قبل وجود دارد
+                    if 'quantity' in item and item['quantity'] is not None:
+                        new_stock = item['quantity']
+                        if variant.stock != new_stock:
+                            logger.info(f"📦 تغییر موجودی برای {variant.sku}: {variant.stock} → {new_stock}")
+                            variant.stock = new_stock
+
+                    new_price = supplier_price * Decimal("1.2")
+                    if variant.price != new_price:
+                        logger.info(f"💰 تغییر قیمت واریانت {variant.sku}: {variant.price} → {new_price}")
+                        variant.price = new_price
+
+                    variant.save()
 
                 # ---------- مدیریت WatchedURL و PriceHistory ----------
                 if variant and product_link:
