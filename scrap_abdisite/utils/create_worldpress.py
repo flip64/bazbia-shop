@@ -48,52 +48,76 @@ tag_cache = {}
 def get_or_create_category(slug, name):
     if slug in category_cache:
         return category_cache[slug]
-    response = requests.get(url_categories, auth=(consumer_key, consumer_secret), params={"slug": slug})
-    data = response.json()
-    if data:
-        category_cache[slug] = data[0]['id']
-        return data[0]['id']
-    payload = {"name": name, "slug": slug}
-    resp_create = requests.post(url_categories, auth=(consumer_key, consumer_secret), json=payload)
-    if resp_create.status_code in [200, 201]:
+    
+    try:
+        response = requests.get(url_categories, auth=(consumer_key, consumer_secret), params={"slug": slug})
+        response.raise_for_status()
+        data = response.json()
+        
+        if data:
+            category_cache[slug] = data[0]['id']
+            return data[0]['id']
+            
+        payload = {"name": name, "slug": slug}
+        resp_create = requests.post(url_categories, auth=(consumer_key, consumer_secret), json=payload)
+        resp_create.raise_for_status()
+        
         category_id = resp_create.json()['id']
         category_cache[slug] = category_id
         print(f"دسته‌بندی '{name}' ساخته شد.")
         return category_id
-    else:
-        print("خطا در ساخت دسته‌بندی:", resp_create.text)
+        
+    except requests.exceptions.RequestException as e:
+        print(f"خطا در ساخت یا دریافت دسته‌بندی '{name}': {e}")
         return None
 
 def get_or_create_tag(name):
     if name in tag_cache:
         return tag_cache[name]
-    response = requests.get(url_tags, auth=(consumer_key, consumer_secret), params={"search": name})
-    data = response.json()
-    if data:
-        tag_cache[name] = data[0]['id']
-        return data[0]['id']
-    payload = {"name": name}
-    resp_create = requests.post(url_tags, auth=(consumer_key, consumer_secret), json=payload)
-    if resp_create.status_code in [200, 201]:
+    
+    try:
+        response = requests.get(url_tags, auth=(consumer_key, consumer_secret), params={"search": name})
+        response.raise_for_status()
+        data = response.json()
+        
+        if data:
+            tag_cache[name] = data[0]['id']
+            return data[0]['id']
+            
+        payload = {"name": name}
+        resp_create = requests.post(url_tags, auth=(consumer_key, consumer_secret), json=payload)
+        resp_create.raise_for_status()
+        
         tag_id = resp_create.json()['id']
         tag_cache[name] = tag_id
         print(f"تگ '{name}' ساخته شد.")
         return tag_id
-    else:
-        print("خطا در ساخت تگ:", resp_create.text)
+        
+    except requests.exceptions.RequestException as e:
+        print(f"خطا در ساخت یا دریافت تگ '{name}': {e}")
         return None
 
 def get_all_products():
     products = {}
     page = 1
     while True:
-        response = requests.get(url_products, auth=(consumer_key, consumer_secret), params={"per_page": 100, "page": page})
-        data = response.json()
-        if not data:
+        try:
+            response = requests.get(url_products, auth=(consumer_key, consumer_secret), 
+                                  params={"per_page": 100, "page": page})
+            response.raise_for_status()
+            data = response.json()
+            
+            if not data:
+                break
+                
+            for p in data:
+                products[p['slug']] = p
+            page += 1
+            
+        except requests.exceptions.RequestException as e:
+            print(f"خطا در دریافت محصولات: {e}")
             break
-        for p in data:
-            products[p['slug']] = p
-        page += 1
+            
     print(f"{len(products)} محصول موجود در ووکامرس دریافت شد.")
     return products
 
@@ -109,10 +133,16 @@ for product in daily_products:
     slug = product.get("slug")
     name = product.get("name", "نام ندارد")
     
+    if not slug:
+        print(f"رد کردن محصول '{name}' به دلیل نداشتن slug.")
+        continue
+    
     # دسته‌بندی
     category_slug = product.get("category", "uncategorized")
-    category_name = product.get("tags", [category_slug])[0]
+    tags_list = product.get("tags", [])
+    category_name = tags_list[0] if tags_list else category_slug
     category_id = get_or_create_category(category_slug, category_name)
+    
     if category_id is None:
         print(f"رد کردن محصول '{name}' به دلیل مشکل دسته‌بندی.")
         continue
@@ -120,39 +150,59 @@ for product in daily_products:
     # تگ‌ها
     tag_ids = []
     for tag_name in product.get("tags", []):
-        tag_id = get_or_create_tag(tag_name)
-        if tag_id:
-            tag_ids.append({"id": tag_id})
+        if tag_name:  # بررسی وجود مقدار
+            tag_id = get_or_create_tag(tag_name)
+            if tag_id:
+                tag_ids.append({"id": tag_id})
 
     # ویژگی‌ها
     attributes = []
     for spec in product.get("specifications", []):
-        attributes.append({
-            "name": spec.split(":")[0] if ":" in spec else "مشخصه",
-            "options": [spec.split(":",1)[1].strip()] if ":" in spec else [spec],
-            "visible": True,
-            "variation": False
-        })
+        if spec and ":" in spec:
+            attr_name = spec.split(":")[0].strip()
+            attr_value = spec.split(":", 1)[1].strip()
+            attributes.append({
+                "name": attr_name,
+                "options": [attr_value],
+                "visible": True,
+                "variation": False
+            })
+    
     for feature in product.get("features", []):
-        attributes.append({
-            "name": feature.split(":")[0] if ":" in feature else "ویژگی",
-            "options": [feature.split(":",1)[1].strip()] if ":" in feature else [feature],
-            "visible": True,
-            "variation": False
-        })
+        if feature and ":" in feature:
+            attr_name = feature.split(":")[0].strip()
+            attr_value = feature.split(":", 1)[1].strip()
+            attributes.append({
+                "name": attr_name,
+                "options": [attr_value],
+                "visible": True,
+                "variation": False
+            })
 
     # داده محصول
     product_data = {
         "name": name,
+        "slug": slug,
         "type": "simple",
         "regular_price": str(product.get("price", 0)),
         "description": product.get("description", ""),
+        "short_description": product.get("short_description", ""),
         "categories": [{"id": category_id}],
         "tags": tag_ids,
         "attributes": attributes,
-        "images": [{"src": img} for img in product.get("images", [])]
+        "images": [{"src": img} for img in product.get("images", []) if img]
     }
 
+    # مدیریت موجودی
+    quantity = product.get("quantity")
+    if quantity is not None:
+        product_data["manage_stock"] = True
+        product_data["stock_quantity"] = quantity
+    else:
+        product_data["manage_stock"] = False
+        product_data["stock_status"] = "instock"
+
+    # متادیتا
     if product.get("product_link"):
         product_data["meta_data"] = [{"key": "original_link", "value": product["product_link"]}]
 
@@ -160,47 +210,68 @@ for product in daily_products:
     if slug in existing_products:
         existing_id = existing_products[slug]['id']
         existing_price = existing_products[slug].get('regular_price', "")
-        existing_stock = existing_products[slug].get('stock_quantity', None)
+        existing_stock = existing_products[slug].get('stock_quantity')
 
-        price_changed = str(product.get("price", 0)) != existing_price
-        stock_changed = product.get("quantity") is not None and product.get("quantity") != existing_stock
+        price_changed = str(product.get("price", 0)) != str(existing_price)
+        stock_changed = quantity != existing_stock
 
         if price_changed or stock_changed:
-            if product.get("quantity") is not None:
-                product_data["stock_quantity"] = product["quantity"]
-            response = requests.put(f"{url_products}/{existing_id}", auth=(consumer_key, consumer_secret), json=product_data)
-            status = "updated" if response.status_code == 200 else "error"
-            print(f"محصول '{name}' بروزرسانی شد." if status=="updated" else f"خطا در بروزرسانی '{name}': {response.text}")
+            try:
+                response = requests.put(f"{url_products}/{existing_id}", 
+                                      auth=(consumer_key, consumer_secret), 
+                                      json=product_data)
+                response.raise_for_status()
+                status = "updated"
+                print(f"محصول '{name}' بروزرسانی شد.")
+            except requests.exceptions.RequestException as e:
+                status = "error"
+                print(f"خطا در بروزرسانی '{name}': {e}")
         else:
             status = "no_change"
             print(f"محصول '{name}' تغییری نکرد، بروزرسانی لازم نیست.")
+            
         log_rows.append({
             "slug": slug,
             "name": name,
             "old_price": existing_price,
             "new_price": product.get("price", 0),
             "old_stock": existing_stock,
-            "new_stock": product.get("quantity"),
+            "new_stock": quantity,
             "status": status
         })
     else:
-        response = requests.post(url_products, auth=(consumer_key, consumer_secret), json=product_data)
-        status = "added" if response.status_code == 201 else "error"
-        print(f"محصول '{name}' اضافه شد!" if status=="added" else f"خطا در اضافه کردن '{name}': {response.text}")
+        try:
+            response = requests.post(url_products, 
+                                   auth=(consumer_key, consumer_secret), 
+                                   json=product_data)
+            response.raise_for_status()
+            status = "added"
+            print(f"محصول '{name}' اضافه شد!")
+        except requests.exceptions.RequestException as e:
+            status = "error"
+            print(f"خطا در اضافه کردن '{name}': {e}")
+            
         log_rows.append({
             "slug": slug,
             "name": name,
             "old_price": "",
             "new_price": product.get("price", 0),
             "old_stock": "",
-            "new_stock": product.get("quantity"),
+            "new_stock": quantity,
             "status": status
         })
 
 # ---------- نوشتن لاگ ----------
-with open(log_file, "w", newline="", encoding="utf-8") as f:
-    writer = csv.DictWriter(f, fieldnames=log_fields)
-    writer.writeheader()
-    writer.writerows(log_rows)
+if log_rows:
+    try:
+        with open(log_file, "w", newline="", encoding="utf-8") as f:
+            writer = csv.DictWriter(f, fieldnames=log_fields)
+            writer.writeheader()
+            writer.writerows(log_rows)
+        print(f"لاگ پردازش در فایل {log_file} ذخیره شد.")
+    except Exception as e:
+        print(f"خطا در نوشتن فایل لاگ: {e}")
+else:
+    print("هیچ داده‌ای برای ذخیره در لاگ وجود ندارد.")
 
-print(f"لاگ پردازش در فایل {log_file} ذخیره شد.")
+print("پردازش محصولات کامل شد.")
