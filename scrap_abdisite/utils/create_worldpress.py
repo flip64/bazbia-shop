@@ -7,17 +7,11 @@ import csv
 from datetime import datetime
 
 # ---------- مسیرهای نسبی ----------
-script_dir = os.path.dirname(__file__)  # مسیر اسکریپت فعلی
+script_dir = os.path.dirname(__file__)
 
-# JSON ها: یک پوشه عقب -> data/edited
 folder_path = os.path.abspath(os.path.join(script_dir, "..", "data", "edited"))
-
-# لاگ‌ها: یک پوشه عقب -> data/logs
 log_folder = os.path.abspath(os.path.join(script_dir, "..", "logs"))
 os.makedirs(log_folder, exist_ok=True)
-
-print("مسیر پوشه JSON ها:", folder_path)
-print("مسیر پوشه لاگ:", log_folder)
 
 # ---------- اطلاعات API ووکامرس ----------
 url_products = "https://bazbia.ir/wp-json/wc/v3/products"
@@ -29,16 +23,13 @@ consumer_secret = "cs_cc2026350c028fe1b3a9204195ad963b37c4d265"
 # ---------- پیدا کردن آخرین فایل ----------
 files = glob.glob(os.path.join(folder_path, "edited_*.json"))
 if not files:
-    print("هیچ فایل JSON پیدا نشد!")
     exit()
 
 files.sort()
 latest_file = files[-1]
-print("آخرین فایل پیدا شده:", latest_file)
 
 with open(latest_file, "r", encoding="utf-8") as f:
     daily_products = json.load(f)
-
 
 # ---------- توابع کمکی ----------
 category_cache = {}
@@ -63,11 +54,9 @@ def get_or_create_category(slug, name):
         
         category_id = resp_create.json()['id']
         category_cache[slug] = category_id
-        print(f"دسته‌بندی '{name}' ساخته شد.")
         return category_id
         
-    except requests.exceptions.RequestException as e:
-        print(f"خطا در ساخت یا دریافت دسته‌بندی '{name}': {e}")
+    except requests.exceptions.RequestException:
         return None
 
 def get_or_create_tag(name):
@@ -89,11 +78,9 @@ def get_or_create_tag(name):
         
         tag_id = resp_create.json()['id']
         tag_cache[name] = tag_id
-        print(f"تگ '{name}' ساخته شد.")
         return tag_id
         
-    except requests.exceptions.RequestException as e:
-        print(f"خطا در ساخت یا دریافت تگ '{name}': {e}")
+    except requests.exceptions.RequestException:
         return None
 
 def get_all_products():
@@ -113,11 +100,9 @@ def get_all_products():
                 products[p['slug']] = p
             page += 1
             
-        except requests.exceptions.RequestException as e:
-            print(f"خطا در دریافت محصولات: {e}")
+        except requests.exceptions.RequestException:
             break
             
-    print(f"{len(products)} محصول موجود در ووکامرس دریافت شد.")
     return products
 
 # ---------- آماده سازی لاگ ----------
@@ -133,7 +118,15 @@ for product in daily_products:
     name = product.get("name", "نام ندارد")
     
     if not slug:
-        print(f"رد کردن محصول '{name}' به دلیل نداشتن slug.")
+        log_rows.append({
+            "slug": "",
+            "name": name,
+            "old_price": "",
+            "new_price": "",
+            "old_stock": "",
+            "new_stock": "",
+            "status": "skipped_no_slug"
+        })
         continue
     
     # دسته‌بندی
@@ -143,13 +136,21 @@ for product in daily_products:
     category_id = get_or_create_category(category_slug, category_name)
     
     if category_id is None:
-        print(f"رد کردن محصول '{name}' به دلیل مشکل دسته‌بندی.")
+        log_rows.append({
+            "slug": slug,
+            "name": name,
+            "old_price": "",
+            "new_price": "",
+            "old_stock": "",
+            "new_stock": "",
+            "status": "skipped_category_error"
+        })
         continue
 
     # تگ‌ها
     tag_ids = []
     for tag_name in product.get("tags", []):
-        if tag_name:  # بررسی وجود مقدار
+        if tag_name:
             tag_id = get_or_create_tag(tag_name)
             if tag_id:
                 tag_ids.append({"id": tag_id})
@@ -221,13 +222,10 @@ for product in daily_products:
                                       json=product_data)
                 response.raise_for_status()
                 status = "updated"
-                print(f"محصول '{name}' بروزرسانی شد.")
-            except requests.exceptions.RequestException as e:
+            except requests.exceptions.RequestException:
                 status = "error"
-                print(f"خطا در بروزرسانی '{name}': {e}")
         else:
             status = "no_change"
-            print(f"محصول '{name}' تغییری نکرد، بروزرسانی لازم نیست.")
             
         log_rows.append({
             "slug": slug,
@@ -245,10 +243,8 @@ for product in daily_products:
                                    json=product_data)
             response.raise_for_status()
             status = "added"
-            print(f"محصول '{name}' اضافه شد!")
-        except requests.exceptions.RequestException as e:
+        except requests.exceptions.RequestException:
             status = "error"
-            print(f"خطا در اضافه کردن '{name}': {e}")
             
         log_rows.append({
             "slug": slug,
@@ -267,10 +263,5 @@ if log_rows:
             writer = csv.DictWriter(f, fieldnames=log_fields)
             writer.writeheader()
             writer.writerows(log_rows)
-        print(f"لاگ پردازش در فایل {log_file} ذخیره شد.")
-    except Exception as e:
-        print(f"خطا در نوشتن فایل لاگ: {e}")
-else:
-    print("هیچ داده‌ای برای ذخیره در لاگ وجود ندارد.")
-
-print("پردازش محصولات کامل شد.")
+    except Exception:
+        pass
