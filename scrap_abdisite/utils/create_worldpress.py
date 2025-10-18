@@ -39,7 +39,6 @@ print("آخرین فایل پیدا شده:", latest_file)
 with open(latest_file, "r", encoding="utf-8") as f:
     daily_products = json.load(f)
 
-print(f"{len(daily_products)} محصول برای پردازش در فایل {latest_file} پیدا شد.")
 
 # ---------- توابع کمکی ----------
 category_cache = {}
