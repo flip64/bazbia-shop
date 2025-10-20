@@ -160,10 +160,7 @@ class NewProductsAPIView(generics.ListAPIView):
 
 
 
-# -----------------------------
-# List Products By Category (including all descendants)
-# -----------------------------
-# -----------------------------
+#---------++--------------------
 # List Products By Category (including all descendants)
 # -----------------------------
 class ProductListCategoryAPIView(generics.ListAPIView):
@@ -384,3 +381,60 @@ def import_categories(request):
         create_or_get_category(cat_item)
 
     return JsonResponse({"status": "done", "created": created})
+
+
+# -----------------------------
+# List Full Products with Complete Details
+# -----------------------------
+class FullProductListAPIView(generics.ListAPIView):
+    """
+    نمایش همه محصولات با جزئیات کامل
+    شامل تصاویر، ویدئوها، واریانت‌ها، مشخصات و تگ‌ها
+    """
+    serializer_class = ProductDetailSerializer
+    pagination_class = CustomCategoryPagination
+
+    def get_queryset(self):
+        """
+        اگر slug دسته‌بندی داده شده باشد، فقط محصولات آن دسته و زیرشاخه‌ها را برمی‌گرداند
+        """
+        category_slug = self.kwargs.get("slug")
+        queryset = Product.objects.filter(is_active=True)
+
+        if category_slug:
+            try:
+                category = Category.objects.get(slug=category_slug)
+                # گرفتن دسته و تمام زیرشاخه‌ها
+                def get_descendant_ids(cat):
+                    ids = [cat.id]
+                    for child in cat.subcategories.all():
+                        ids.extend(get_descendant_ids(child))
+                    return ids
+
+                category_ids = get_descendant_ids(category)
+                queryset = queryset.filter(category_id__in=category_ids)
+            except Category.DoesNotExist:
+                queryset = Product.objects.none()
+
+        return queryset.distinct()
+
+    def list(self, request, *args, **kwargs):
+        """
+        بازگردانی پاسخ با صفحه‌بندی و جزئیات کامل
+        """
+        queryset = self.get_queryset()
+        page = self.paginate_queryset(queryset)
+
+        if page is not None:
+            serializer = self.get_serializer(page, many=True, context={'request': request})
+            paginated_response = self.get_paginated_response(serializer.data)
+            response_data = paginated_response.data
+        else:
+            serializer = self.get_serializer(queryset, many=True, context={'request': request})
+            response_data = {"count": queryset.count(), "results": serializer.data}
+
+        # موفقیت آمیز بودن درخواست
+        response_data["success"] = True
+
+        return Response(response_data)
+
