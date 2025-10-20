@@ -7,8 +7,12 @@ urlpatterns = [
     path('', views.ProductListAPIView.as_view(), name='product-list'),
 
     # لیست کامل محصولات با جزئیات
-    path('full-products/', views.FullProductListAPIView.as_view(), name='full-product-list'),
+    path('full-products/', views.ProductFullListAPIView.as_view(), name='product-full-list'),
 
+
+
+
+    
     # مسیرهای دسته‌بندی
     path('categories/', views.CategoryListAPIView.as_view(), name='category-list'),
     path('categories/<slug:slug>/', views.ProductListCategoryAPIView.as_view(), name='list_categories_api'),
