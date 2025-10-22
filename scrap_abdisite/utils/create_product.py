@@ -172,11 +172,15 @@ def import_products():
                     )
                 else:
                     # ✅ به‌روزرسانی موجودی و قیمت حتی اگر واریانت از قبل وجود دارد
-                    if 'quantity' in item and item['quantity'] is not None:
-                        new_stock = item['quantity']
-                        if variant.stock != new_stock:
-                            logger.info(f"📦 تغییر موجودی برای {variant.sku}: {variant.stock} → {new_stock}")
-                            variant.stock = new_stock
+                    # ---------- بروزرسانی موجودی ----------
+                    if 'quantity' in item:
+                      new_stock = item['quantity'] if item['quantity'] is not None else 0
+                    else:
+                    ‌. new_stock = 0
+
+if variant.stock != new_stock:
+    logger.info(f"📦 تغییر موجودی برای {variant.sku}: {variant.stock} → {new_stock}")
+    variant.stock = new_stock
 
                     new_price = supplier_price * Decimal("1.2")
                     if variant.price != new_price:
