@@ -6,7 +6,7 @@ import sys
 import glob
 import json
 import time
-from decimal import Decimal
+from decimal import Decimal, ROUND_HALF_UP
 from urllib.parse import urlparse
 import requests
 import logging
@@ -19,7 +19,7 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-# ---------- مسیر پروژه و sys.path ----------
+# ---------- مسیر پروژه ----------
 current_file_dir = os.path.dirname(os.path.abspath(__file__))
 project_root = os.path.abspath(os.path.join(current_file_dir, "../../"))
 if project_root not in sys.path:
@@ -149,14 +149,12 @@ def import_products():
                     }
                 )
 
-                # ---------- فقط محصول جدید غیرفعال شود ----------
                 if created:
                     product.is_active = False
                     product.save()
 
                 # ---------- واریانت ----------
                 variant = product.variants.first()
-
                 if not variant:
                     sku_base = f"{product.slug}-default"
                     sku = sku_base
@@ -167,24 +165,23 @@ def import_products():
                     variant = ProductVariant.objects.create(
                         product=product,
                         sku=sku,
-                        price=supplier_price * Decimal("1.2"),  # ۲۰٪ سود
+                        purchase_price=supplier_price,
+                        profit_percent=20.0,
                         stock=item.get('quantity', 0) or 0
                     )
-                else:
-                    # ✅ به‌روزرسانی موجودی و قیمت (اصلاح‌شده)
-                    if 'quantity' in item:
-                        new_stock = item['quantity'] if item['quantity'] is not None else 0
-                    else:
-                        new_stock = 0
 
+                else:
+                    # ---------- بروزرسانی موجودی ----------
+                    new_stock = item.get('quantity', 0) or 0
                     if variant.stock != new_stock:
                         logger.info(f"📦 تغییر موجودی برای {variant.sku}: {variant.stock} → {new_stock}")
                         variant.stock = new_stock
 
-                    new_price = supplier_price * Decimal("1.2")
-                    if variant.price != new_price:
-                        logger.info(f"💰 تغییر قیمت واریانت {variant.sku}: {variant.price} → {new_price}")
-                        variant.price = new_price
+                    # ---------- بروزرسانی قیمت بر اساس purchase_price و درصد سود ----------
+                    if supplier_price > 0:
+                        variant.purchase_price = supplier_price
+                        calculated_price = (variant.purchase_price * (Decimal(1) + variant.profit_percent / Decimal(100)))
+                        variant.price = calculated_price.quantize(Decimal('100'), rounding=ROUND_HALF_UP)
 
                     variant.save()
 
@@ -205,13 +202,6 @@ def import_products():
                         watched.price = supplier_price
                         watched.save()
                         logger.info(f"🔔 قیمت تغییر کرد برای {variant.sku}: {supplier_price} ریال ثبت شد.")
-
-                    # ✅ بروزرسانی نهایی موجودی (اصلاح‌شده)
-                    if 'quantity' in item:
-                        variant.stock = item['quantity'] if item['quantity'] is not None else 0
-                    else:
-                        variant.stock = 0
-                    variant.save()
 
                 # ---------- تگ‌ها ----------
                 for tag_name in item.get('tags') or []:
