@@ -1,13 +1,12 @@
 from django.shortcuts import render, get_object_or_404
 from django.utils import timezone
 from datetime import timedelta
-from .models import WatchedURL, PriceHistory
+from ..models import WatchedURL, PriceHistory
 
 def price_history_view(request, watched_id):
     watched = get_object_or_404(WatchedURL, id=watched_id)
 
-    # فیلتر تاریخ
-    filter_type = request.GET.get('filter', 'week')  # week | month | custom
+    filter_type = request.GET.get('filter', 'week')
     start_date = None
     end_date = None
 
