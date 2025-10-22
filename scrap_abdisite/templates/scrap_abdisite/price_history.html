@@ -1,0 +1,52 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="fa">
+<head>
+    <meta charset="UTF-8">
+    <title>تغییرات قیمت {{ watched.product.name }}</title>
+    <style>
+        body { font-family: sans-serif; direction: rtl; background: #fafafa; margin: 20px; }
+        .filter-form { background: #fff; padding: 15px; border-radius: 10px; margin-bottom: 20px; }
+        table { width: 100%; border-collapse: collapse; background: #fff; border-radius: 10px; overflow: hidden; }
+        th, td { padding: 10px; border-bottom: 1px solid #eee; text-align: center; }
+        th { background: #f0f0f0; }
+        .btn { padding: 8px 15px; background: #3498db; color: white; border: none; border-radius: 5px; cursor: pointer; }
+        .btn:hover { background: #2980b9; }
+    </style>
+</head>
+<body>
+    <h2>📈 تغییرات قیمت {{ watched.product.name }} ({{ watched.supplier.name }})</h2>
+
+    <form method="get" class="filter-form">
+        <label><input type="radio" name="filter" value="week" {% if filter_type == 'week' %}checked{% endif %}> هفته اخیر</label>
+        <label><input type="radio" name="filter" value="month" {% if filter_type == 'month' %}checked{% endif %}> ماه اخیر</label>
+        <label><input type="radio" name="filter" value="custom" {% if filter_type == 'custom' %}checked{% endif %}> بازه دلخواه</label>
+
+        <div style="margin-top:10px;">
+            <label>از: <input type="date" name="start" value="{{ start_date|date:'Y-m-d' }}"></label>
+            <label>تا: <input type="date" name="end" value="{{ end_date|date:'Y-m-d' }}"></label>
+        </div>
+
+        <button type="submit" class="btn">اعمال فیلتر</button>
+    </form>
+
+    <table>
+        <thead>
+            <tr>
+                <th>تاریخ ثبت</th>
+                <th>قیمت (ریال)</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for p in prices %}
+            <tr>
+                <td>{{ p.checked_at|date:"Y/m/d H:i" }}</td>
+                <td>{{ p.price|intcomma }}</td>
+            </tr>
+        {% empty %}
+            <tr><td colspan="2">📭 داده‌ای در این بازه وجود ندارد.</td></tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</body>
+</html>
