@@ -13,6 +13,17 @@ import os
 from pathlib import Path
 from dotenv import load_dotenv
 from datetime import timedelta
+from django.db import connection
+from django.db.utils import OperationalError
+
+
+
+def keep_db_alive():
+    try:
+        if not connection.is_usable():
+            connection.connect()
+    except OperationalError:
+        connection.connect()
 
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -162,6 +173,10 @@ elif db_engine == "mysql":
             'PORT': os.environ.get("MYSQL_PORT", "3306"),
             'OPTIONS': {
                 'charset': 'utf8mb4',
+                'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",
+                'connect_timeout': 30,
+                'autocommit': True,
+
             },
         }
     }
