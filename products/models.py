@@ -218,6 +218,31 @@ class SpecialProduct(models.Model):
 # ==============================
 class ProductVariantImage(models.Model):
     variant = models.ForeignKey(
-        ProductVariant, on_delete=models.CASCADE, related_name='images', help_text="واریانت مرتبط با تصویر"
+        ProductVariant, on_delete=models.CASCADE, related_name='images',
+        help_text="واریانت مرتبط با تصویر"
     )
-    image = models.ImageField(upload_to='variant_images/', blank=True, null=True, help
+    image = models.ImageField(
+        upload_to='variant_images/',
+        blank=True, null=True,
+        help_text="فایل تصویر واریانت"
+    )
+    source_url = models.URLField(
+        blank=True, null=True,
+        help_text="لینک تصویر اصلی واریانت از تأمین‌کننده (اختیاری)"
+    )
+    alt_text = models.CharField(
+        max_length=255,
+        blank=True, null=True,
+        help_text="متن جایگزین تصویر برای SEO"
+    )
+    is_main = models.BooleanField(
+        default=False,
+        help_text="آیا این تصویر به عنوان تصویر اصلی واریانت استفاده شود؟"
+    )
+    created_at = models.DateTimeField(
+        auto_now_add=True,
+        help_text="تاریخ ایجاد تصویر واریانت"
+    )
+
+    def __str__(self):
+        return f"Image of {self.variant.product.name} - {self.variant.sku} - {self.source_url or 'No URL'}"
