@@ -154,7 +154,7 @@ def import_products():
                     product.is_active = False
                     product.save()
 
-                # ---------- واریانت (بخش اصلاح‌شده) ----------
+                # ---------- واریانت ----------
                 variant = product.variants.first()
 
                 if not variant:
@@ -171,16 +171,15 @@ def import_products():
                         stock=item.get('quantity', 0) or 0
                     )
                 else:
-                    # ✅ به‌روزرسانی موجودی و قیمت حتی اگر واریانت از قبل وجود دارد
-                    # ---------- بروزرسانی موجودی ----------
+                    # ✅ به‌روزرسانی موجودی و قیمت (اصلاح‌شده)
                     if 'quantity' in item:
-                      new_stock = item['quantity'] if item['quantity'] is not None else 0
+                        new_stock = item['quantity'] if item['quantity'] is not None else 0
                     else:
-                    ‌. new_stock = 0
+                        new_stock = 0
 
-if variant.stock != new_stock:
-    logger.info(f"📦 تغییر موجودی برای {variant.sku}: {variant.stock} → {new_stock}")
-    variant.stock = new_stock
+                    if variant.stock != new_stock:
+                        logger.info(f"📦 تغییر موجودی برای {variant.sku}: {variant.stock} → {new_stock}")
+                        variant.stock = new_stock
 
                     new_price = supplier_price * Decimal("1.2")
                     if variant.price != new_price:
@@ -207,9 +206,12 @@ if variant.stock != new_stock:
                         watched.save()
                         logger.info(f"🔔 قیمت تغییر کرد برای {variant.sku}: {supplier_price} ریال ثبت شد.")
 
-                    if 'quantity' in item and item['quantity'] is not None:
-                        variant.stock = item['quantity']
-                        variant.save()
+                    # ✅ بروزرسانی نهایی موجودی (اصلاح‌شده)
+                    if 'quantity' in item:
+                        variant.stock = item['quantity'] if item['quantity'] is not None else 0
+                    else:
+                        variant.stock = 0
+                    variant.save()
 
                 # ---------- تگ‌ها ----------
                 for tag_name in item.get('tags') or []:
