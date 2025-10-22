@@ -1,6 +1,6 @@
 from django.urls import path
 from . import views
-from scrap_abdisite.views.price_historry_view import price_history_view
+from scrap_abdisite.views.price_history_view import price_history_view
 
 app_name = "scrap_abdisite"
 
