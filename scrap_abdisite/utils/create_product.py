@@ -156,19 +156,25 @@ def import_products():
                 # ---------- واریانت ----------
                 variant = product.variants.first()
                 if not variant:
-                    sku_base = f"{product.slug}-default"
-                    sku = sku_base
-                    counter = 1
-                    while ProductVariant.objects.filter(sku=sku).exists():
-                        sku = f"{sku_base}-{counter}"
-                        counter += 1
-                    variant = ProductVariant.objects.create(
-                        product=product,
-                        sku=sku,
-                        purchase_price=supplier_price,
-                        profit_percent=20.0,
-                        stock=item.get('quantity', 0) or 0
-                    )
+                   sku_base = f"{product.slug}-default"
+                   sku = sku_base
+                   counter = 1
+                   while ProductVariant.objects.filter(sku=sku).exists():
+                    sku = f"{sku_base}-{counter}"
+                    counter += 1
+
+                   # ✅ محاسبه قیمت از purchase_price و profit_percent
+                   calculated_price = supplier_price * (Decimal(1) + Decimal(20) / Decimal(100))
+                   calculated_price = calculated_price.quantize(Decimal('100'), rounding=ROUND_HALF_UP)
+
+                   variant = ProductVariant.objects.create( 
+                    product=product,
+                    sku=sku,
+                    purchase_price=supplier_price,
+                    profit_percent=20.0,
+                    price=calculated_price,  # 🔹 مقداردهی الزامی برای جلوگیری از Null
+                    stock=item.get('quantity', 0) or 0
+                      )
 
                 else:
                     # ---------- بروزرسانی موجودی ----------
