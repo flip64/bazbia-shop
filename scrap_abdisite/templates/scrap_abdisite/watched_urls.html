@@ -76,7 +76,22 @@
         </td>
 
         <!-- قیمت تأمین‌کننده -->
-        <td>{{ item.price|intcomma }} تومان</td>
+        
+        
+        
+        <td>
+                    <a
+            href="{% url 'scrap_abdisite:watched_urls_history' item.id %}"
+            class="text-blue-600 hover:underline"
+          >
+            {{ item.price|intcomma }} تومان
+          </a>
+          
+          
+          
+                  
+        
+        </td>
 
         <!-- لینک محصول -->
         <td>

@@ -36,4 +36,4 @@ def price_history_view(request, watched_id):
         'start_date': start_date,
         'end_date': end_date,
     }
-    return render(request, 'price_history.html', context)
+    return render(request, 'scrap_abdisite/price_history.html', context)
