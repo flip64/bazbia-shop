@@ -12,25 +12,26 @@ def watched_urls_update(request, watched_id):
         return redirect("scrap_abdisite:product_price_list")
 
     try:
-        # دریافت داده‌های فرم
+        # 🟢 دریافت داده‌های فرم
         price_input = request.POST.get('price')
         discount_price_input = request.POST.get('discount_price')
         profit_percent_input = request.POST.get('profit_percent')
 
-        # بروزرسانی درصد سود
+        # 🟢 اگر درصد سود وارد شده، ذخیره شود
         if profit_percent_input:
             try:
                 variant.profit_percent = Decimal(profit_percent_input)
-            except:
+            except Exception:
                 messages.error(request, "ورودی درصد سود معتبر نیست.")
                 return redirect("scrap_abdisite:product_price_list")
 
-        # بروزرسانی قیمت فروش بر اساس purchase_price و profit_percent
+        # 🟢 محاسبه قیمت فروش بر اساس قیمت خرید + درصد سود
         if variant.purchase_price is not None and variant.profit_percent is not None:
             final_price = variant.purchase_price * (Decimal(1) + variant.profit_percent / Decimal(100))
-            variant.price = final_price.quantize(Decimal('100'), rounding=ROUND_HALF_UP)
+            # گرد کردن به نزدیک‌ترین عدد صحیح (مثلاً 12499 ← 12500)
+            variant.price = final_price.quantize(Decimal('1'), rounding=ROUND_HALF_UP)
 
-        # اگر کاربر قیمت را دستی وارد کرده باشد، آن را هم اعمال کن
+        # 🟢 اگر قیمت دستی وارد شده، جایگزین شود
         if price_input:
             try:
                 variant.price = int(price_input)
@@ -38,7 +39,7 @@ def watched_urls_update(request, watched_id):
                 messages.error(request, "ورودی قیمت معتبر نیست.")
                 return redirect("scrap_abdisite:product_price_list")
 
-        # بروزرسانی قیمت تخفیف
+        # 🟢 بروزرسانی قیمت تخفیف
         if discount_price_input:
             try:
                 dp = int(discount_price_input)
@@ -52,10 +53,16 @@ def watched_urls_update(request, watched_id):
         else:
             variant.discount_price = None
 
+        # 🟢 ذخیره نهایی تغییرات
         variant.save()
-        messages.success(request, f"✅ قیمت و درصد سود '{variant.product.name}' بروزرسانی شد.")
+
+        messages.success(
+            request,
+            f"✅ قیمت و درصد سود محصول «{variant.product.name}» بروزرسانی شد. "
+            f"(قیمت جدید: {variant.price:,} تومان)"
+        )
 
     except Exception as e:
-        messages.error(request, f"خطا در بروزرسانی: {e}")
+        messages.error(request, f"⚠️ خطا در بروزرسانی: {e}")
 
     return redirect("scrap_abdisite:product_price_list")
