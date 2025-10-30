@@ -40,6 +40,7 @@
         <th class="px-4 py-2 border text-left">قیمت تأمین‌کننده</th>
         <th class="px-4 py-2 border text-left">لینک</th>
         <th class="px-4 py-2 border text-left">قیمت فروش</th>
+        <th class="px-4 py-2 border text-left">درصد سود</th> {# ستون جدید #}
         <th class="px-4 py-2 border text-left">تخفیف</th>
         <th class="px-4 py-2 border text-left">آخرین بروزرسانی</th>
         <th class="px-4 py-2 border text-center">عملیات</th>
@@ -76,21 +77,13 @@
         </td>
 
         <!-- قیمت تأمین‌کننده -->
-        
-        
-        
         <td>
-                    <a
+          <a
             href="{% url 'scrap_abdisite:watched_urls_history' item.id %}"
             class="text-blue-600 hover:underline"
           >
             {{ item.price|intcomma }} تومان
           </a>
-          
-          
-          
-                  
-        
         </td>
 
         <!-- لینک محصول -->
@@ -104,7 +97,7 @@
           </a>
         </td>
 
-        <!-- فرم ویرایش قیمت -->
+        <!-- فرم ویرایش قیمت و درصد سود -->
         <form
           method="post"
           action="{% url 'scrap_abdisite:watched_urls_update' item.id %}"
@@ -121,10 +114,17 @@
           <td>
             <input
               type="number"
+              name="profit_percent"
+              value="{{ item.variant.profit_percent|default_if_none:20 }}"
+              step="0.01"
+              class="w-full border rounded px-2 py-1"
+            />
+          </td>
+          <td>
+            <input
+              type="number"
               name="discount_price"
               value="{{ item.variant.discount_price|default_if_none:'' }}"
-              
-              
               class="w-full border rounded px-2 py-1"
             />
           </td>
@@ -148,7 +148,7 @@
       {% endif %}
       {% empty %}
       <tr>
-        <td colspan="8" class="text-center text-gray-500">
+        <td colspan="9" class="text-center text-gray-500">
           هیچ محصولی یافت نشد.
         </td>
       </tr>
