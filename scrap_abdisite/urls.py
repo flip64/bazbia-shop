@@ -1,7 +1,7 @@
 from django.urls import path
 from scrap_abdisite.views  import views
 from scrap_abdisite.views.price_history_view import price_history_view
-from scrap_abdisite.views import watched_urls_update
+from scrap_abdisite.views.watched_urls_update import watched_urls_update
 app_name = "scrap_abdisite"
 
 urlpatterns = [
