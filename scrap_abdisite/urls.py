@@ -1,13 +1,13 @@
 from django.urls import path
 from scrap_abdisite.views  import views
 from scrap_abdisite.views.price_history_view import price_history_view
-
+from scrap_abdisite.views import watched_urls_update
 app_name = "scrap_abdisite"
 
 urlpatterns = [
     # 🔹 مدیریت لینک‌های پایش شده
     path('watched_urls/', views.product_price_list, name='product_price_list'),
-    path('watched_urls/<int:watched_id>/update/', views.watched_urls_update, name='watched_urls_update'),
+    path('watched_urls/<int:watched_id>/update/', watched_urls_update, name='watched_urls_update'),
     path('watched_urls/<int:watched_id>/delete/', views.delete_watched_url, name='watched_urls_delete'),
   
     path("toggle-product/<int:product_id>/", views.toggle_product_status, name="toggle_product_status"),
