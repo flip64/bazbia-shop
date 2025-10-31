@@ -2,6 +2,7 @@ from django.urls import path
 from scrap_abdisite.views  import views
 from scrap_abdisite.views.price_history_view import price_history_view
 from scrap_abdisite.views.watched_urls_update import watched_urls_update
+from scrap_abdisite.views.report_change_price_view import price_change_report
 app_name = "scrap_abdisite"
 
 urlpatterns = [
@@ -23,4 +24,9 @@ urlpatterns = [
 
     # 🔹 تغییرات قیمت
     path('watched_urls/<int:watched_id>/history/', price_history_view, name='watched_urls_history'),
+
+    path('price-change/', price_change_report, name='price_change_report'),
+
+
+
 ]

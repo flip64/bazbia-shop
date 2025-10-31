@@ -10,6 +10,7 @@ from scrap_abdisite.models import WatchedURL,PriceHistory
 @admin.register(WatchedURL)
 class WatchedURLAdmin(admin.ModelAdmin):
     list_display = (
+        'id',
         'product_name',      # از property product استفاده می‌کنیم
         'variant_sku',       # SKU واریانت
         'supplier_name',     # نام تأمین‌کننده

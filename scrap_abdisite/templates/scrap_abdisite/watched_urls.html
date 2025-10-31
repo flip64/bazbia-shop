@@ -1,182 +1,150 @@
 {% extends 'scrap_abdisite/base.html' %}
+{% load humanize %}
 
 {% block content %}
-{% load humanize %}
-<h2 class="text-2xl font-bold mb-6">مدیریت قیمت محصولات</h2>
+<div class="p-6 bg-white shadow rounded-lg">
+  <h2 class="text-2xl font-bold mb-6 text-gray-800 flex items-center gap-2">
+    🛠️ مدیریت قیمت محصولات
+  </h2>
 
-{# پیام‌های سیستم #}
-{% if messages %}
-<div class="mb-4">
-  {% for message in messages %}
-    <div class="p-3 rounded mb-2
-      {% if message.tags == 'success' %}bg-green-100 text-green-800{% endif %}
-      {% if message.tags == 'error' %}bg-red-100 text-red-800{% endif %}">
-      {{ message }}
-    </div>
-  {% endfor %}
-</div>
-{% endif %}
+  {# پیام‌های سیستم #}
+  {% if messages %}
+  <div class="mb-4 space-y-2">
+    {% for message in messages %}
+      <div class="p-3 rounded text-sm font-medium
+        {% if message.tags == 'success' %}
+          bg-green-100 text-green-700 border border-green-300
+        {% elif message.tags == 'error' %}
+          bg-red-100 text-red-700 border border-red-300
+        {% endif %}
+      ">
+        {{ message }}
+      </div>
+    {% endfor %}
+  </div>
+  {% endif %}
 
-{# فرم جستجو #}
-<form method="get" class="mb-4 flex gap-2">
-  <input
-    type="text"
-    name="q"
-    value="{{ query }}"
-    placeholder="جستجوی محصول"
-    class="border rounded px-3 py-1 w-64"
-  />
-  <button type="submit" class="bg-blue-500 text-white px-3 py-1 rounded">
-    جستجو
-  </button>
-</form>
+  {# فرم جستجو #}
+  <form method="get" class="mb-6 flex flex-wrap items-center gap-3">
+    <input
+      type="text"
+      name="q"
+      value="{{ query }}"
+      placeholder="🔍 جستجوی محصول..."
+      class="border rounded-lg px-3 py-2 w-64 focus:ring-2 focus:ring-blue-400 focus:outline-none"
+    />
+    <button type="submit" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg shadow">
+      جستجو
+    </button>
+  </form>
 
-<div class="overflow-x-auto">
-  <table class="min-w-full border border-gray-200 shadow-md rounded-lg">
-    <thead class="bg-gray-100">
-      <tr>
-        <th class="px-4 py-2 border text-left">نام محصول</th>
-        <th class="px-4 py-2 border text-center">وضعیت</th>
-        <th class="px-4 py-2 border text-left">قیمت تأمین‌کننده</th>
-        <th class="px-4 py-2 border text-left">لینک</th>
-        <th class="px-4 py-2 border text-left">قیمت فروش</th>
-        <th class="px-4 py-2 border text-left">درصد سود</th> {# ستون جدید #}
-        <th class="px-4 py-2 border text-left">تخفیف</th>
-        <th class="px-4 py-2 border text-left">آخرین بروزرسانی</th>
-        <th class="px-4 py-2 border text-center">عملیات</th>
-      </tr>
-    </thead>
-    <tbody>
-      {% for item in page_obj %}
-      {% if item.variant %}
-      <tr class="hover:bg-gray-50">
-        <!-- نام محصول -->
-        <td>
-          <a
-            href="{% url 'scrap_abdisite:product_images_by_slug' item.variant.product.slug %}"
-            class="text-blue-600 hover:underline"
-          >
-            {{ item.variant.product.name }}
-          </a>
-        </td>
-
-        <!-- دکمه فعال/غیرفعال -->
-        <td class="text-center">
-          <button
-            type="button"
-            class="toggle-btn px-3 py-1 rounded text-white
-              {% if item.variant.product.is_active %}
-                bg-green-500 hover:bg-green-600
-              {% else %}
-                bg-gray-400 hover:bg-gray-500
-              {% endif %}"
-            data-id="{{ item.variant.product.id }}"
-          >
-            {% if item.variant.product.is_active %}فعال{% else %}غیرفعال{% endif %}
-          </button>
-        </td>
-
-        <!-- قیمت تأمین‌کننده -->
-        <td>
-          <a
-            href="{% url 'scrap_abdisite:watched_urls_history' item.id %}"
-            class="text-blue-600 hover:underline"
-          >
-            {{ item.price|intcomma }} تومان
-          </a>
-        </td>
-
-        <!-- لینک محصول -->
-        <td>
-          <a
-            href="{{ item.url }}"
-            target="_blank"
-            class="text-blue-600 hover:underline"
-          >
-            مشاهده
-          </a>
-        </td>
-
-        <!-- فرم ویرایش قیمت و درصد سود -->
-        <form
-          method="post"
-          action="{% url 'scrap_abdisite:watched_urls_update' item.id %}"
-        >
-          {% csrf_token %}
-          <td>
-            <input
-              type="number"
-              name="price"
-              value="{{ item.variant.price|default_if_none:'' }}"
-              class="w-full border rounded px-2 py-1"
-            />
-          </td>
-          <td>
-            <input
-              type="number"
-              name="profit_percent"
-              value="{{ item.variant.profit_percent|default_if_none:20 }}"
-              step="0.01"
-              class="w-full border rounded px-2 py-1"
-            />
-          </td>
-          <td>
-            <input
-              type="number"
-              name="discount_price"
-              value="{{ item.variant.discount_price|default_if_none:'' }}"
-              class="w-full border rounded px-2 py-1"
-            />
-          </td>
-          <td>{{ item.last_checked|date:"Y-m-d H:i" }}</td>
-          <td class="text-center">
-            <button
-              type="submit"
-              class="bg-green-500 hover:bg-green-600 text-white px-3 py-1 rounded"
-            >
-              ذخیره
-            </button>
-            <a
-              href="{% url 'scrap_abdisite:watched_urls_delete' item.id %}"
-              class="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded ml-1"
-            >
-              حذف
+  <div class="overflow-x-auto rounded-lg border border-gray-200 shadow-sm">
+    <table class="min-w-full text-sm text-gray-800">
+      <thead class="bg-gray-50 text-gray-600 uppercase text-xs">
+        <tr>
+          <th class="px-4 py-3 border">نام محصول</th>
+          <th class="px-4 py-3 border text-center">وضعیت</th>
+          <th class="px-4 py-3 border text-center">قیمت تأمین‌کننده</th>
+          <th class="px-4 py-3 border text-center">لینک</th>
+          <th class="px-4 py-3 border text-center">قیمت فروش</th>
+          <th class="px-4 py-3 border text-center">درصد سود</th>
+          <th class="px-4 py-3 border text-center">تخفیف</th>
+          <th class="px-4 py-3 border text-center">آخرین بروزرسانی</th>
+          <th class="px-4 py-3 border text-center">عملیات</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for item in page_obj %}
+        {% if item.variant %}
+        <tr class="hover:bg-blue-50 transition">
+          <td class="px-3 py-2 border">
+            <a href="{% url 'scrap_abdisite:product_images_by_slug' item.variant.product.slug %}"
+               class="text-blue-600 hover:underline font-medium">
+              {{ item.variant.product.name }}
             </a>
           </td>
-        </form>
-      </tr>
-      {% endif %}
-      {% empty %}
-      <tr>
-        <td colspan="9" class="text-center text-gray-500">
-          هیچ محصولی یافت نشد.
-        </td>
-      </tr>
-      {% endfor %}
-    </tbody>
-  </table>
+
+          <td class="text-center border">
+            <button
+              type="button"
+              class="toggle-btn px-3 py-1 rounded text-white text-xs font-medium transition
+                {% if item.variant.product.is_active %}
+                  bg-green-500 hover:bg-green-600
+                {% else %}
+                  bg-gray-400 hover:bg-gray-500
+                {% endif %}"
+              data-id="{{ item.variant.product.id }}"
+            >
+              {% if item.variant.product.is_active %}فعال{% else %}غیرفعال{% endif %}
+            </button>
+          </td>
+
+          <td class="px-3 py-2 border text-center font-semibold text-gray-700">
+            <a href="{% url 'scrap_abdisite:watched_urls_history' item.id %}" class="hover:text-blue-600">
+              {{ item.price|intcomma }} تومان
+            </a>
+          </td>
+
+          <td class="px-3 py-2 border text-center">
+            <a href="{{ item.url }}" target="_blank" class="text-blue-500 hover:underline">مشاهده</a>
+          </td>
+
+          <form method="post" action="{% url 'scrap_abdisite:watched_urls_update' item.id %}" class="contents">
+            {% csrf_token %}
+            <td class="px-3 py-2 border">
+              <input type="number" name="price"
+                     value="{{ item.variant.price|default_if_none:'' }}"
+                     class="w-28 text-center border rounded-lg px-2 py-1 focus:ring-2 focus:ring-blue-300 focus:outline-none" />
+            </td>
+            <td class="px-3 py-2 border">
+              <input type="number" name="profit_percent"
+                     value="{{ item.variant.profit_percent|default_if_none:20 }}"
+                     step="0.01"
+                     class="w-20 text-center border rounded-lg px-2 py-1 focus:ring-2 focus:ring-green-300 focus:outline-none" />
+            </td>
+            <td class="px-3 py-2 border">
+              <input type="number" name="discount_price"
+                     value="{{ item.variant.discount_price|default_if_none:'' }}"
+                     class="w-24 text-center border rounded-lg px-2 py-1 focus:ring-2 focus:ring-yellow-300 focus:outline-none" />
+            </td>
+            <td class="px-3 py-2 border text-xs text-gray-500 text-center">{{ item.last_checked|date:"Y-m-d H:i" }}</td>
+            <td class="px-3 py-2 border text-center">
+              <button type="submit"
+                      class="bg-green-500 hover:bg-green-600 text-white text-xs px-3 py-1 rounded-md shadow">
+                💾 ذخیره
+              </button>
+              <a href="{% url 'scrap_abdisite:watched_urls_delete' item.id %}"
+                 class="bg-red-500 hover:bg-red-600 text-white text-xs px-3 py-1 rounded-md ml-1 shadow">
+                🗑 حذف
+              </a>
+            </td>
+          </form>
+        </tr>
+        {% endif %}
+        {% empty %}
+        <tr>
+          <td colspan="9" class="text-center py-5 text-gray-400">هیچ محصولی یافت نشد.</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  {# Pagination #}
+  <div class="mt-6 flex justify-center items-center gap-3 text-sm">
+    {% if page_obj.has_previous %}
+    <a href="?q={{ query }}&page={{ page_obj.previous_page_number }}"
+       class="px-3 py-1 border rounded hover:bg-gray-100">صفحه قبل</a>
+    {% endif %}
+    <span class="text-gray-600">صفحه {{ page_obj.number }} از {{ page_obj.paginator.num_pages }}</span>
+    {% if page_obj.has_next %}
+    <a href="?q={{ query }}&page={{ page_obj.next_page_number }}"
+       class="px-3 py-1 border rounded hover:bg-gray-100">صفحه بعد</a>
+    {% endif %}
+  </div>
 </div>
 
-{# Pagination #}
-<div class="mt-4 flex justify-center items-center gap-2">
-  {% if page_obj.has_previous %}
-  <a
-    href="?q={{ query }}&page={{ page_obj.previous_page_number }}"
-    class="px-3 py-1 border rounded hover:bg-gray-100"
-    >صفحه قبل</a
-  >
-  {% endif %}
-  <span>صفحه {{ page_obj.number }} از {{ page_obj.paginator.num_pages }}</span>
-  {% if page_obj.has_next %}
-  <a
-    href="?q={{ query }}&page={{ page_obj.next_page_number }}"
-    class="px-3 py-1 border rounded hover:bg-gray-100"
-    >صفحه بعد</a
-  >
-  {% endif %}
-</div>
-
-{# --- اسکریپت AJAX برای دکمه فعال/غیرفعال --- #}
+{# --- اسکریپت فعال/غیرفعال --- #}
 <script>
 function getCookie(name) {
   let cookieValue = null;
@@ -211,23 +179,43 @@ document.querySelectorAll(".toggle-btn").forEach((btn) => {
         if (data.status === "ok") {
           if (data.is_active) {
             this.textContent = "فعال";
-            this.classList.remove("bg-gray-400", "hover:bg-gray-500");
-            this.classList.add("bg-green-500", "hover:bg-green-600");
+            this.classList.replace("bg-gray-400", "bg-green-500");
           } else {
             this.textContent = "غیرفعال";
-            this.classList.remove("bg-green-500", "hover:bg-green-600");
-            this.classList.add("bg-gray-400", "hover:bg-gray-500");
+            this.classList.replace("bg-green-500", "bg-gray-400");
           }
         } else {
           alert("❌ خطا در تغییر وضعیت محصول");
         }
       })
-      .catch((err) => {
-        console.error(err);
-        alert("⚠️ ارتباط با سرور برقرار نشد");
-      });
+      .catch(() => alert("⚠️ ارتباط با سرور برقرار نشد"));
+  });
+});
+
+{# --- اسکریپت تغییر آنی درصد سود و قیمت --- #}
+document.querySelectorAll('tr').forEach(row => {
+  const supplierText = row.querySelector('td:nth-child(3) a')?.textContent || '';
+  const supplierPrice = parseFloat(supplierText.replace(/[^\d]/g, ''));
+  const priceInput = row.querySelector('input[name="price"]');
+  const profitInput = row.querySelector('input[name="profit_percent"]');
+
+  if (!priceInput || !profitInput || !supplierPrice) return;
+
+  priceInput.addEventListener('input', () => {
+    const salePrice = parseFloat(priceInput.value);
+    if (!isNaN(salePrice) && supplierPrice > 0) {
+      const profit = ((salePrice - supplierPrice) / supplierPrice) * 100;
+      profitInput.value = profit.toFixed(2);
+    }
+  });
+
+  profitInput.addEventListener('input', () => {
+    const profitPercent = parseFloat(profitInput.value);
+    if (!isNaN(profitPercent)) {
+      const newSalePrice = supplierPrice * (1 + profitPercent / 100);
+      priceInput.value = Math.round(newSalePrice);
+    }
   });
 });
 </script>
-
 {% endblock %}

@@ -60,7 +60,7 @@ def product_price_list(request):
     """
     query = request.GET.get('q', '')
     watched_list = WatchedURL.objects.select_related('variant', 'variant__product', 'supplier')
-
+    print(watched_list[0].variant.price)
     if query:
         watched_list = watched_list.filter(variant__product__name__icontains=query)
 
@@ -74,38 +74,6 @@ def product_price_list(request):
     })
 
 
-@require_POST
-def watched_urls_update(request, watched_id):
-    watched = get_object_or_404(WatchedURL, id=watched_id)
-    variant = watched.variant
-
-    if not variant:
-        messages.error(request, "این لینک واریانت ندارد.")
-        return redirect("scrap_abdisite:product_price_list")
-
-    try:
-        price = request.POST.get('price')
-        discount_price = request.POST.get('discount_price')
-
-        if price:
-            variant.price = int(price)
-
-        if discount_price:
-            dp = int(discount_price)
-            if dp > variant.price:
-                messages.error(request, "قیمت تخفیف نمی‌تواند بیشتر از قیمت اصلی باشد.")
-                return redirect("scrap_abdisite:product_price_list")
-            variant.discount_price = dp
-        else:
-            variant.discount_price = None
-
-        variant.save()
-        messages.success(request, f"✅ قیمت‌های '{variant.product.name}' بروزرسانی شد.")
-
-    except ValueError:
-        messages.error(request, "ورودی معتبر نیست.")
-
-    return redirect("scrap_abdisite:product_price_list")
 
 
 @login_required

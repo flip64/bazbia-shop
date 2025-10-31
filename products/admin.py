@@ -55,7 +55,7 @@ class AttributeValueAdmin(admin.ModelAdmin):
 # ===========================
 @admin.register(ProductVariant)
 class ProductVariantAdmin(admin.ModelAdmin):
-    list_display = ('product', 'sku', 'get_attributes', 'stock', 'low_stock_threshold', 'price', 'discount_price')
+    list_display = ('id' , 'product', 'sku', 'get_attributes', 'stock', 'low_stock_threshold', 'price', 'discount_price')
     search_fields = ('product__name', 'sku')
     list_filter = ('product',)
     filter_horizontal = ('attributes',)
