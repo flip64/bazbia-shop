@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 from decimal import Decimal, ROUND_HALF_UP
 from django.shortcuts import get_object_or_404, redirect
 from django.contrib import messages
