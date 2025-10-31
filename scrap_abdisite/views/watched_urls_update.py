@@ -32,7 +32,6 @@ def watched_urls_update(request, watched_id):
             if variant.purchase_price is not None:
                 final_price = variant.purchase_price * (Decimal(1) + profit_percent / Decimal(100))
                 variant.price = final_price.quantize(Decimal("1"), rounding=ROUND_HALF_UP)
-                print(variant.price)
 
         # 🟢 اگر قیمت دستی وارد شده، جایگزین کن (در اولویت بالاتر از درصد سود)
         if price_input:
