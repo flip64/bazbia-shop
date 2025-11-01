@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 from django.shortcuts import render, redirect, get_object_or_404
 from django.http import JsonResponse, HttpResponse
 from django.contrib import messages
@@ -10,16 +11,13 @@ import re
 
 from scrap_abdisite.models import WatchedURL
 from products.models import Product, ProductVariant
-
- 
+from django.core.cache import cache
 
 
 @login_required
 @require_POST
 def toggle_product_status(request, product_id):
-    """
-    فعال یا غیرفعال کردن محصول با کلیک روی دکمه در جدول
-    """
+    """فعال یا غیرفعال کردن محصول با کلیک روی دکمه در جدول"""
     product = get_object_or_404(Product, id=product_id)
     product.is_active = not product.is_active
     product.save(update_fields=["is_active"])
@@ -29,19 +27,11 @@ def toggle_product_status(request, product_id):
     })
 
 
-
-
-
-
-# ProductImage از مدل product استفاده می‌شود: product.images.all()
-
 # ===============================
-# 🔹 Utility Function
+# Utility Function
 # ===============================
 def clean_price_text(price_text):
-    """
-    تبدیل قیمت مثل "850,000 ریال" یا "۱۲۳٬۰۰۰ تومان" به عدد صحیح
-    """
+    """تبدیل قیمت مانند '850,000 ریال' یا '۱۲۳٬۰۰۰ تومان' به عدد صحیح"""
     if not price_text:
         return None
     cleaned = re.sub(r"[^\d]", "", str(price_text))
@@ -52,15 +42,14 @@ def clean_price_text(price_text):
 
 
 # ===============================
-# 🔹 Views - Watched URLs / Price
+# Views - Watched URLs / Price
 # ===============================
 def product_price_list(request):
-    """
-    نمایش لیست لینک‌های پایش شده محصولات با قابلیت جستجو و صفحه‌بندی
-    """
+    """نمایش لیست لینک‌های پایش شده محصولات با قابلیت جستجو و صفحه‌بندی"""
     query = request.GET.get('q', '')
     watched_list = WatchedURL.objects.select_related('variant', 'variant__product', 'supplier')
-    print(watched_list[0].variant.price)
+    
+
     if query:
         watched_list = watched_list.filter(variant__product__name__icontains=query)
 
@@ -74,21 +63,17 @@ def product_price_list(request):
     })
 
 
-
-
 @login_required
 def delete_watched_url(request, watched_id):
-    """
-    حذف رکورد WatchedURL
-    """
+    """حذف رکورد WatchedURL"""
     url = get_object_or_404(WatchedURL, id=watched_id)
     url.delete()
-    messages.success(request, "✅ رکورد با موفقیت حذف شد.")
+    messages.success(request, "رکورد با موفقیت حذف شد.")
     return redirect('scrap_abdisite:product_price_list')
 
 
 # ===============================
-# 🔹 Product Import Views
+# Product Import Views
 # ===============================
 @login_required
 def create_product(request):
@@ -105,14 +90,10 @@ def create_product(request):
 
 
 # ===============================
-# 🔹 Background Script Runner
+# Background Script Runner
 # ===============================
-from django.core.cache import cache
-
 def fetch_details_products(request):
-    """
-    اجرای فرآیند پردازش در پس‌زمینه فقط اگر در حال اجرا نباشد
-    """
+    """اجرای فرآیند پردازش در پس‌زمینه فقط اگر در حال اجرا نباشد"""
     if cache.get("is_running_script"):
         return JsonResponse({"status": "running", "message": "اسکریپت در حال اجراست"})
 
@@ -128,13 +109,11 @@ def fetch_details_products(request):
 
 
 # ===============================
-# 🔹 Product Image Management (by slug)
+# Product Image Management (by slug)
 # ===============================
 @login_required
 def product_images_by_slug(request, slug):
-    """
-    نمایش همه تصاویر یک محصول بر اساس slug
-    """
+    """نمایش همه تصاویر یک محصول بر اساس slug"""
     product = get_object_or_404(Product, slug=slug)
     images = product.images.only("id", "image")
 
@@ -151,10 +130,7 @@ def product_images_by_slug(request, slug):
 @login_required
 @require_POST
 def product_image_update_by_slug(request, slug, image_id):
-    """
-    بروزرسانی تصویر محصول بر اساس slug و id تصویر
-    ✅ بدون ایجاد فایل تکراری (overwrite مستقیم روی فایل قبلی)
-    """
+    """بروزرسانی تصویر محصول بر اساس slug و id تصویر"""
     product = get_object_or_404(Product, slug=slug)
     image_obj = get_object_or_404(product.images, id=image_id)
 
@@ -165,25 +141,25 @@ def product_image_update_by_slug(request, slug, image_id):
 
     old_path = image_obj.image.name
 
-    # 🔹 حذف فایل قبلی اگر وجود دارد
+    # حذف فایل قبلی اگر وجود دارد
     if default_storage.exists(old_path):
         try:
             default_storage.delete(old_path)
         except Exception as e:
-            messages.warning(request, f"⚠️ خطا در حذف فایل قبلی: {e}")
+            messages.warning(request, f"خطا در حذف فایل قبلی: {e}")
 
-    # 🔹 بازنویسی مستقیم (بدون ساخت فایل جدید)
+    # بازنویسی مستقیم (بدون ساخت فایل جدید)
     try:
         with default_storage.open(old_path, "wb") as f:
             for chunk in new_file.chunks():
                 f.write(chunk)
     except Exception as e:
-        messages.error(request, f"❌ خطا در بروزرسانی تصویر: {e}")
+        messages.error(request, f"خطا در بروزرسانی تصویر: {e}")
         return redirect("scrap_abdisite:product_images_by_slug", slug=slug)
 
-    # 🔹 بروزرسانی مسیر در مدل
+    # بروزرسانی مسیر در مدل
     image_obj.image.name = old_path
     image_obj.save(update_fields=["image"])
 
-    messages.success(request, f"✅ تصویر محصول '{product.name}' با موفقیت بروزرسانی شد.")
+    messages.success(request, f"تصویر محصول '{product.name}' با موفقیت بروزرسانی شد.")
     return redirect("scrap_abdisite:product_images_by_slug", slug=slug)

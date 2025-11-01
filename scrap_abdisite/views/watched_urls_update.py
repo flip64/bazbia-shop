@@ -11,7 +11,6 @@ def watched_urls_update(request, watched_id):
     watched = get_object_or_404(WatchedURL, id=watched_id)
     variant = watched.variant
 
-
     if not variant:
         messages.error(request, "این لینک واریانت ندارد.")
         return redirect("scrap_abdisite:product_price_list")
@@ -21,7 +20,7 @@ def watched_urls_update(request, watched_id):
         discount_price_input = request.POST.get("discount_price")
         profit_percent_input = request.POST.get("profit_percent")
 
-        # 🟢 بروزرسانی درصد سود
+        # بروزرسانی درصد سود
         if profit_percent_input:
             try:
                 profit_percent = Decimal(profit_percent_input)
@@ -35,7 +34,7 @@ def watched_urls_update(request, watched_id):
                 final_price = variant.purchase_price * (Decimal(1) + profit_percent / Decimal(100))
                 variant.price = final_price.quantize(Decimal("1"), rounding=ROUND_HALF_UP)
 
-        # 🟢 اگر قیمت دستی وارد شده، جایگزین کن (در اولویت بالاتر از درصد سود)
+        # اگر قیمت دستی وارد شده، جایگزین کن (در اولویت بالاتر از درصد سود)
         if price_input:
             try:
                 variant.price = int(price_input)
@@ -43,7 +42,7 @@ def watched_urls_update(request, watched_id):
                 messages.error(request, "ورودی قیمت معتبر نیست.")
                 return redirect("scrap_abdisite:product_price_list")
 
-        # 🟢 بروزرسانی قیمت تخفیف
+        # بروزرسانی قیمت تخفیف
         if discount_price_input:
             try:
                 discount_price = int(discount_price_input)
@@ -57,16 +56,16 @@ def watched_urls_update(request, watched_id):
         else:
             variant.discount_price = None
 
-        # 🟢 ذخیره تغییرات
+        # ذخیره تغییرات
         variant.save()
 
         messages.success(
             request,
-            f"✅ قیمت محصول «{variant.product.name}» با درصد سود {variant.profit_percent}% بروزرسانی شد. "
+            f"قیمت محصول «{variant.product.name}» با درصد سود {variant.profit_percent}% بروزرسانی شد. "
             f"(قیمت جدید: {variant.price:,} تومان)"
         )
 
     except Exception as e:
-        messages.error(request, f"⚠️ خطا در بروزرسانی: {e}")
+        messages.error(request, f"خطا در بروزرسانی: {e}")
 
     return redirect("scrap_abdisite:product_price_list")
