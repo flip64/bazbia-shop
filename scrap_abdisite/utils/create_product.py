@@ -171,7 +171,7 @@ def import_products():
                     product=product,
                     sku=sku,
                     purchase_price=supplier_price,
-                    profit_percent=20.0,
+                    profit_percent=25.0,
                     price=calculated_price,  # 🔹 مقداردهی الزامی برای جلوگیری از Null
                     stock=item.get('quantity', 0) or 0
                       )
