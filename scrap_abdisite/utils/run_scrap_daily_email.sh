@@ -21,7 +21,7 @@ export PYTHONPATH="$PROJECT_DIR"
 
 for script in \
      "$PROJECT_DIR/scrap_abdisite/utils/fetche_product_list.py" \
-     "$PROJECT_DIR/scrap_abdisite/utils/scrap_abdi_site.py"
+     "$PROJECT_DIR/scrap_abdisite/utils/create_new_prouduct.py"
 do
     python3 "$script" >> "$LOG_FILE" 2>&1
     if [ $? -eq 0 ]; then
