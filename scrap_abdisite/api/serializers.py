@@ -1,7 +1,7 @@
 from rest_framework import serializers
 from scrap_abdisite.models import WatchedURL, PriceHistory
 from products.api.serializers import ProductVariantSerializer
-from suppliers.api.serializers import SupplierSerializer
+
 
 # ==============================
 # Serializer کامل برای PriceHistory
@@ -20,8 +20,6 @@ class WatchedURLSerializer(serializers.ModelSerializer):
     variant = ProductVariantSerializer(read_only=True)
     # اطلاعات محصول از property
     product_name = serializers.CharField(source="product.name", read_only=True)
-    # اطلاعات تأمین‌کننده
-    supplier = SupplierSerializer(read_only=True)
     # تاریخچه قیمت‌ها
     history = PriceHistorySerializer(many=True, read_only=True)
 
@@ -32,7 +30,6 @@ class WatchedURLSerializer(serializers.ModelSerializer):
             "user",
             "variant",
             "product_name",
-            "supplier",
             "url",
             "price",
             "created_at",
