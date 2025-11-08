@@ -2,13 +2,7 @@ from rest_framework import serializers
 from scrap_abdisite.models import WatchedURL, PriceHistory
 from products.api.serializers import ProductVariantSerializer
 
-# ==============================
-# Serializer کامل برای تاریخچه قیمت‌ها
-# ==============================
-class PriceHistorySerializer(serializers.ModelSerializer):
-    class Meta:
-        model = PriceHistory
-        fields = ["id", "price", "checked_at"]
+
 
 # ==============================
 # Serializer کامل برای WatchedURL
@@ -19,8 +13,7 @@ class WatchedURLSerializer(serializers.ModelSerializer):
     # نام محصول با استفاده از property مدل
     product_name = serializers.SerializerMethodField()
     # تاریخچه قیمت‌ها
-    history = PriceHistorySerializer(many=True, read_only=True)
-
+    
     class Meta:
         model = WatchedURL
         fields = [
@@ -32,7 +25,7 @@ class WatchedURLSerializer(serializers.ModelSerializer):
             "price",
             "created_at",
             "last_checked",
-            "history",
+            
         ]
         read_only_fields = ["product_name", "history"]
 
