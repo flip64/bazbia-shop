@@ -42,7 +42,7 @@ urlpatterns = [
     path('api/products/', include('products.api.urls')),
     path('api/orders/', include('orders.api.urls')),
     path('api/customers/', include('customers.api.urls')),
-
+    path('api/scrap_abdisite/',include('scrap_abdisite.api.urls')),
 ]
 
 if settings.DEBUG:
