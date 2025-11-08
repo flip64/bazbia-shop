@@ -19,7 +19,7 @@ class WatchedURLSerializer(serializers.ModelSerializer):
     # اطلاعات واریانت محصول
     variant = ProductVariantSerializer(read_only=True)
     # اطلاعات محصول از property
-    product_name = serializers.CharField(source="product.name", read_only=True)
+    product_name = serializers.CharField(source="variant.product.name", read_only=True)
     # تاریخچه قیمت‌ها
     history = PriceHistorySerializer(many=True, read_only=True)
 
