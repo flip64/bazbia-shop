@@ -8,8 +8,6 @@ from products.api.serializers import ProductVariantSerializer
 # Serializer کامل برای WatchedURL
 # ==============================
 class WatchedURLSerializer(serializers.ModelSerializer):
-    # اطلاعات واریانت محصول
-    variant = ProductVariantSerializer(read_only=True)
     # نام محصول با استفاده از property مدل
     product_name = serializers.SerializerMethodField()
     # تاریخچه قیمت‌ها
@@ -18,8 +16,8 @@ class WatchedURLSerializer(serializers.ModelSerializer):
         model = WatchedURL
         fields = [
             "id",
-            "user",
-            "variant",
+        
+        
             "product_name",
             "url",
             "price",
