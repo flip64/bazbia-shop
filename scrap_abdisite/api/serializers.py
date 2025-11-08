@@ -4,6 +4,15 @@ from products.api.serializers import ProductVariantSerializer
 
 
 
+class WatchedURLUpdatePriceSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = WatchedURL
+        fields = ['price']
+
+
+
+
+
 # ==============================
 # Serializer کامل برای WatchedURL
 # ==============================
