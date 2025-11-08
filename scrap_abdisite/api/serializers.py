@@ -16,7 +16,7 @@ class PriceHistorySerializer(serializers.ModelSerializer):
 class WatchedURLSerializer(serializers.ModelSerializer):
     # اطلاعات واریانت محصول
     variant = ProductVariantSerializer(read_only=True)
-    # نام محصول، اگر واریانت یا محصول None بود "بدون محصول" نمایش داده می‌شود
+    # نام محصول با استفاده از property مدل
     product_name = serializers.SerializerMethodField()
     # تاریخچه قیمت‌ها
     history = PriceHistorySerializer(many=True, read_only=True)
@@ -38,6 +38,7 @@ class WatchedURLSerializer(serializers.ModelSerializer):
 
     # متد برای نام محصول
     def get_product_name(self, obj):
-        if obj.variant and obj.variant.product:
-            return obj.variant.product.name
+        product = getattr(obj, 'product', None)
+        if product:
+            return product.name
         return "بدون محصول"
