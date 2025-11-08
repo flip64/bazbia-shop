@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 import os
 import logging
-from decimal import Decimal, ROUND_HALF_UP
+from decimal import Decimal
 from django.db.models.signals import pre_save, post_save
 from django.dispatch import receiver
 from products.models import ProductVariant
@@ -50,53 +50,21 @@ def calculate_price(sender, instance, **kwargs):
 
 
 # ====================================================
-# 2️⃣ post_save: ثبت تاریخچه و بروزرسانی WooCommerce
+# 2️⃣ post_save: بروزرسانی WooCommerce بدون ثبت تاریخچه
 # ====================================================
 @receiver(post_save, sender=ProductVariant)
-def log_and_update_woocommerce(sender, instance, created, **kwargs):
+def update_woocommerce(sender, instance, created, **kwargs):
     """
-    ثبت PriceChangeLog و بروزرسانی قیمت در WooCommerce
+    بروزرسانی قیمت واریانت در WooCommerce
     """
-    # فقط برای واریانت‌های موجود
-    if created:
-        return
-
     try:
-        old_instance = sender.objects.get(pk=instance.pk)
-    except sender.DoesNotExist:
-        logger.warning(f"واریانت {instance.pk} برای مقایسه یافت نشد.")
-        return
-
-    old_price = old_instance.price or Decimal("0.0")
-    new_price = instance.price or Decimal("0.0")
-
-    # بررسی تغییر قیمت
-    if old_price == new_price:
-        return
-
-    product_name = instance.product.name if instance.product else "نامشخص"
-    logger.info(f"تغییر قیمت تشخیص داده شد برای '{product_name}': {old_price} → {new_price}")
-
-    # ----- ثبت تاریخچه -----
-    try:
-        from products.models import PriceChangeLog
-        PriceChangeLog.objects.create(
-            variant=instance,
-            old_price=old_price,
-            new_price=new_price
-        )
-        logger.info(f"تاریخچه تغییر قیمت برای '{product_name}' ثبت شد.")
-    except Exception as e:
-        logger.exception(f"خطا در ثبت PriceChangeLog برای '{product_name}': {e}")
-
-    # ----- بروزرسانی ووکامرس -----
-    try:
+        product_name = instance.product.name if instance.product else "نامشخص"
         response = wcapi.get("products", params={"search": product_name})
         if response.status_code == 200 and response.json():
             product_id = response.json()[0]["id"]
-            update_response = wcapi.put(f"products/{product_id}", {"regular_price": str(new_price)})
+            update_response = wcapi.put(f"products/{product_id}", {"regular_price": str(instance.price)})
             if update_response.status_code in [200, 201]:
-                logger.info(f"قیمت '{product_name}' در ووکامرس بروزرسانی شد: {new_price}")
+                logger.info(f"قیمت '{product_name}' در ووکامرس بروزرسانی شد: {instance.price}")
             else:
                 logger.error(f"خطا در بروزرسانی قیمت '{product_name}': {update_response.text}")
         else:
