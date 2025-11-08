@@ -2,15 +2,13 @@ from rest_framework import serializers
 from scrap_abdisite.models import WatchedURL, PriceHistory
 from products.api.serializers import ProductVariantSerializer
 
-
 # ==============================
-# Serializer کامل برای PriceHistory
+# Serializer کامل برای تاریخچه قیمت‌ها
 # ==============================
 class PriceHistorySerializer(serializers.ModelSerializer):
     class Meta:
         model = PriceHistory
         fields = ["id", "price", "checked_at"]
-
 
 # ==============================
 # Serializer کامل برای WatchedURL
@@ -18,8 +16,8 @@ class PriceHistorySerializer(serializers.ModelSerializer):
 class WatchedURLSerializer(serializers.ModelSerializer):
     # اطلاعات واریانت محصول
     variant = ProductVariantSerializer(read_only=True)
-    # اطلاعات محصول از property
-    product_name = serializers.CharField(source="variant.product.name", read_only=True)
+    # نام محصول، اگر واریانت یا محصول None بود "بدون محصول" نمایش داده می‌شود
+    product_name = serializers.SerializerMethodField()
     # تاریخچه قیمت‌ها
     history = PriceHistorySerializer(many=True, read_only=True)
 
@@ -37,3 +35,9 @@ class WatchedURLSerializer(serializers.ModelSerializer):
             "history",
         ]
         read_only_fields = ["product_name", "history"]
+
+    # متد برای نام محصول
+    def get_product_name(self, obj):
+        if obj.variant and obj.variant.product:
+            return obj.variant.product.name
+        return "بدون محصول"
