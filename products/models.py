@@ -141,7 +141,7 @@ class ProductVariant(models.Model):
         help_text="قیمت خرید از تأمین‌کننده"
     )
     profit_percent = models.DecimalField(
-        max_digits=5, decimal_places=2, default=20.00,
+        max_digits=5, decimal_places=2, default=30.00,
         help_text="درصد سود محصول بر اساس قیمت خرید"
     )
 
