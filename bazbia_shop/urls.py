@@ -43,6 +43,7 @@ urlpatterns = [
     path('api/orders/', include('orders.api.urls')),
     path('api/customers/', include('customers.api.urls')),
     path('api/scrap_abdisite/',include('scrap_abdisite.api.urls')),
+    path('api/bazbia_packing/',include('bazbia_packing.api.urls'))
 ]
 
 if settings.DEBUG:

@@ -85,6 +85,7 @@ INSTALLED_APPS = [
     'scrap_abdisite',
     'suppliers',
     'schema_viewer',
+    'bazbia_packing',
 
 
 ]
