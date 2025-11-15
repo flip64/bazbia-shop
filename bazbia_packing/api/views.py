@@ -42,7 +42,7 @@ class PackingAPIView(APIView):
 
             # اعمال فیلترها مرحله‌ای
             for f in FILTERS:
-                print(boxes.)
+            
                 boxes = f.filter(boxes, items)
                 if not boxes:
                     return Response(
