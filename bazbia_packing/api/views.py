@@ -15,7 +15,13 @@ from bazbia_packing.filters.trim_largeboxes_filter import TrimLargeBoxesFilter
 from bazbia_packing.models import ShippingBox
 
 # فیلترهای مرحله‌ای
-FILTERS = [OneItemFilter(),VolumeFilter() ,TrimLargeBoxesFilter()]
+FILTERS = [OneItemFilter()
+           ,VolumeFilter() 
+      #     ,TrimLargeBoxesFilter()
+          
+          
+          
+          ]
 
 class PackingAPIView(APIView):
 
