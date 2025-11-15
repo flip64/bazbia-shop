@@ -1,46 +1,50 @@
+import itertools
+
+def max_items_in_box(box_dims, item_dims):
+    """
+    محاسبه بیشترین تعداد آیتمی که در یک جعبه جا می‌شود.
+    """
+    L_box, W_box, H_box = box_dims
+    l_item, w_item, h_item = item_dims
+    rotations = set(itertools.permutations([l_item, w_item, h_item]))
+    max_count = 0
+    for rot in rotations:
+        l, w, h = rot
+        nx = L_box // l
+        ny = W_box // w
+        nz = H_box // h
+        count = nx * ny * nz
+        if count > max_count:
+            max_count = count
+    return max_count
+
+
 class TrimLargeBoxesFilter:
     def filter(self, boxes, items):
-
-        """
-        فیلتر جعبه‌ها بر اساس مکعب فرضی برای بزرگ‌ترین آیتم‌ها
-        و حذف جعبه‌های بزرگتر از کوچک‌ترین جعبه مناسب.
-        """
-
         if not items:
             return boxes
 
-        # 1) بزرگ‌ترین ابعاد هر آیتم
+        # بزرگ‌ترین ابعاد هر آیتم
         max_length = max(i["length"] for i in items)
         max_width  = max(i["width"]  for i in items)
         max_height = max(i["height"] for i in items)
+        count_items = len(items)
 
-        # 2) تعداد مکعب‌ها = تعداد آیتم‌ها
-        count = len(items)
+        # مکعب فرضی
+        cube = (max_length, max_width, max_height)
 
-        # 3) محاسبه حجم کل مکعب‌ها
-        cube_volume = max_length * max_width * max_height * count
-
-        # 4) پیدا کردن جعبه‌هایی که مکعب‌ها در آن‌ها جا می‌شوند
-        valid_boxes = []
-        for box in boxes:
-            box_volume = box["length"] * box["width"] * box["height"]
-            if (box["length"] >= max_length and
-                box["width"]  >= max_width and
-                box["height"] >= max_height):
-                valid_boxes.append(box)
-
-        if not valid_boxes:
-            return []  # هیچ جعبه مناسبی وجود ندارد
-
-        # 5) کوچک‌ترین جعبه مناسب بر اساس حجم
+        # مرتب‌سازی جعبه‌ها بر اساس حجم (کوچک به بزرگ)
         def volume(b):
             return b["length"] * b["width"] * b["height"]
 
-        smallest_box = min(valid_boxes, key=volume)
-        smallest_volume = volume(smallest_box)
+        boxes_sorted = sorted(boxes, key=volume)
 
-        # 6) حذف جعبه‌های بزرگ‌تر
-        filtered_boxes = [b for b in valid_boxes if volume(b) <= smallest_volume]
+        for i, box in enumerate(boxes_sorted):
+            box_dims = (box["length"], box["width"], box["height"])
+            max_fit = max_items_in_box(box_dims, cube)
+            if max_fit >= count_items:
+                # همه جعبه‌های کوچکتر یا خود جعبه در خروجی
+                return boxes_sorted[:i+1]
 
-        return filtered_boxes
-
+        # اگر هیچ جعبه‌ای جا نشد → تمام جعبه‌ها را بده
+        return boxes_sorted
