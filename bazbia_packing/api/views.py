@@ -1,27 +1,11 @@
-# bazbiapacking/views.py
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from bazbia_packing.api.serializers import PackingRequestSerializer
-
-
-# اضافه کردن فیلترها 
-from bazbia_packing.filters.volume_filter import VolumeFilter
-from bazbia_packing.filters.one_item_filter import OneItemFilter
-from bazbia_packing.filters.trim_largeboxes_filter import TrimLargeBoxesFilter
-
-#from bazbia_packing.filters.dimension_filter import DimensionFilter
-#from bazbia_packing.filters.weight_filter import WeightFilter
 from bazbia_packing.models import ShippingBox
 
-# فیلترهای مرحله‌ای
-FILTERS = [OneItemFilter()
-           ,VolumeFilter() 
-      #     ,TrimLargeBoxesFilter()
-          
-          
-          
-          ]
+# تابع فیلتر که جعبه‌های مناسب را برمی‌گرداند
+from bazbia_packing.filters.base_filters import filter_boxes
 
 class PackingAPIView(APIView):
 
@@ -32,7 +16,6 @@ class PackingAPIView(APIView):
 
             # خواندن جعبه‌ها از دیتابیس
             boxes_qs = ShippingBox.objects.filter(carton_type="پست")
-            # تبدیل به دیکشنری برای استفاده در فیلترها
             boxes = [
                 {
                     "name": box.name,
@@ -46,19 +29,18 @@ class PackingAPIView(APIView):
                 for box in boxes_qs
             ]
 
-            # اعمال فیلترها مرحله‌ای
-            for f in FILTERS:
-            
-                boxes = f.filter(boxes, items)
-                if not boxes:
-                    return Response(
-                        {"error": "هیچ جعبه‌ای مناسب نیست."},
-                        status=status.HTTP_400_BAD_REQUEST
-                    )
-                elif len(boxes) == 1:
-                    return Response({"selected_box": boxes[0]})
+            # فراخوانی تابع فیلتر
+            possible_boxes = filter_boxes(boxes, items)
 
-            # اگر چند جعبه مناسب باقی مانده
-            return Response({"possible_boxes": boxes})
+            if not possible_boxes:
+                return Response(
+                    {"error": "هیچ جعبه‌ای مناسب نیست."},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+            elif len(possible_boxes) == 1:
+                return Response({"selected_box": possible_boxes[0]})
+
+            # چند جعبه مناسب باقی مانده
+            return Response({"possible_boxes": possible_boxes})
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
