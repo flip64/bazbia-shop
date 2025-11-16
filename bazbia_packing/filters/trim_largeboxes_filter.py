@@ -32,7 +32,6 @@ class TrimLargeBoxesFilter:
 
         # مکعب فرضی
         cube = (max_length, max_width, max_height)
-
         # مرتب‌سازی جعبه‌ها بر اساس حجم (کوچک به بزرگ)
         def volume(b):
             return b["length"] * b["width"] * b["height"]

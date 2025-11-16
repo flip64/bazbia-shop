@@ -1,3 +1,6 @@
+from bazbia_packing.filters.trim_largeboxes_filter import TrimLargeBoxesFilter  #  
+
+
 class VolumeFilter:
     def filter(self, boxes, items):
         """
@@ -15,4 +18,9 @@ class VolumeFilter:
             if box_volume >= items_volume:
                 filtered.append(box)
 
-        return filtered
+        
+        if len(filtered) == 1:
+          return filtered
+        
+        trimlargeFilterd = TrimLargeBoxesFilter().filter(filtered , items)
+        return trimlargeFilterd

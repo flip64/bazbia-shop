@@ -3,7 +3,8 @@
 from bazbia_packing.filters.one_item_filter import OneItemFilter
 from bazbia_packing.filters.volume_filter import VolumeFilter
 from bazbia_packing.filters.dimension_fit_filter import DimensionFitFilter
-from bazbia_packing.filters.split_items_filter import SplitItemsFilter  # فیلتر جدید
+from bazbia_packing.filters.split_items_filter import SplitItemsFilter  #  
+
 
 EXCLUDED_BOXES = ["box8", "box9"]
 
