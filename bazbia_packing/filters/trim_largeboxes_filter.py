@@ -21,6 +21,24 @@ class TrimLargeBoxesFilter:
 
         return max_count
 
+    def make_hypothetical_cube(self, items):
+        """
+        ساخت مکعب فرضی از مجموعه آیتم‌ها
+        بر اساس مرتب‌سازی ابعاد هر آیتم (بزرگ → کوچک)
+        """
+        if not items:
+            return (0, 0, 0)
+
+        # مرتب کردن ابعاد هر آیتم به صورت بزرگ → کوچک
+        sorted_dims = [sorted([i["length"], i["width"], i["height"]], reverse=True) for i in items]
+
+        # مکعب فرضی: بیشترین عدد از هر بعد
+        length = max(d[0] for d in sorted_dims)
+        width  = max(d[1] for d in sorted_dims)
+        height = max(d[2] for d in sorted_dims)
+
+        return (length, width, height)
+
     def filter(self, boxes, items):
         if not items:
             return boxes
@@ -61,14 +79,9 @@ class TrimLargeBoxesFilter:
         # 🟩 حالت عادی (منطق اصلی فیلتر خودت)
         # -----------------------------------------------------
 
-        # بزرگ‌ترین ابعاد هر آیتم
-        max_length = max(i["length"] for i in items)
-        max_width  = max(i["width"]  for i in items)
-        max_height = max(i["height"] for i in items)
+        # مکعب فرضی با روش جدید
+        cube = self.make_hypothetical_cube(items)
         count_items = len(items)
-
-        # مکعب فرضی
-        cube = (max_length, max_width, max_height)
 
         # مرتب‌سازی جعبه‌ها بر اساس حجم (کوچک → بزرگ)
         def volume(b):
@@ -76,6 +89,7 @@ class TrimLargeBoxesFilter:
 
         boxes_sorted = sorted(boxes, key=volume)
 
+        # کوچک‌ترین جعبه‌ای که مکعب فرضی را جا دهد
         for i, box in enumerate(boxes_sorted):
             box_dims = (box["length"], box["width"], box["height"])
             max_fit = self.max_items_in_box(box_dims, cube)
