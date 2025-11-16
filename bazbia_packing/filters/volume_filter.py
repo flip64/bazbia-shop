@@ -1,6 +1,5 @@
 from bazbia_packing.filters.trim_largeboxes_filter import TrimLargeBoxesFilter  #  
-
-
+from bazbia_packing.filters.fit_byDimensions_filter import FitByDimensionsFilter
 class VolumeFilter:
     def filter(self, boxes, items):
         """
@@ -23,4 +22,5 @@ class VolumeFilter:
           return filtered
         
         trimlargeFilterd = TrimLargeBoxesFilter().filter(filtered , items)
+        fit_byDimensions_filter = FitByDimensionsFilter().filter(trimlargeFilterd,items)
         return trimlargeFilterd
