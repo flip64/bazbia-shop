@@ -23,4 +23,4 @@ class VolumeFilter:
         
         trimlargeFilterd = TrimLargeBoxesFilter().filter(filtered , items)
         fit_byDimensions_filter = FitByDimensionsFilter().filter(trimlargeFilterd,items)
-        return fit_byDimensions_filter
+        return trimlargeFilterd
