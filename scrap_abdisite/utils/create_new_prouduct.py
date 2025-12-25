@@ -246,7 +246,7 @@ def process_item(item, supplier, user):
 
             logger.info(f"✅ ساخته شد: {product.name} (SKU: {variant.sku})")
             return {"name": product.name, "link": link, "price": str(price_val)}
-    print("ok")
+    
     except Exception as e:
         logger.error(f"❌ خطا در پردازش {link}: {e}")
         logger.debug(traceback.format_exc())
