@@ -1,33 +1,14 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-"""
-create_products_from_raw.py
-- خواندن آخرین raw_*.json
-- فیلتر کردن لینک‌هایی که قبلاً در WatchedURL ثبت شده‌اند
-- برای هر لینک جدید:
-    - گرفتن جزئیات از abdi_fetcher
-    - ساخت Product (is_active=False)
-    - ساخت یک ProductVariant با purchase_price و price
-    - ذخیره تصاویر در ProductImage
-    - ثبت WatchedURL با variant و supplier
-- ارسال گزارش ایمیل و لاگ کامل
-"""
-
-import os
-import sys
-import json
-import logging
-import traceback
+import os, sys, json, logging, traceback, time
 from datetime import datetime
 from urllib.parse import urlparse
 from decimal import Decimal
 
-# ------------------ راه‌اندازی Django ------------------
+# ================= Django setup =================
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-if BASE_DIR not in sys.path:
-    sys.path.insert(0, BASE_DIR)
-
+sys.path.insert(0, BASE_DIR)
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "bazbia_shop.settings")
 
 import django
@@ -36,18 +17,17 @@ django.setup()
 from django.db import transaction
 from django.core.files.base import ContentFile
 from django.utils.text import slugify
-from django.core.mail import send_mail
 from django.conf import settings
 from django.contrib.auth import get_user_model
 
-# ------------------ مدل‌ها ------------------
+# ================= Models =================
 from products.models import (
     Product, ProductVariant, ProductImage, ProductSpecification, Tag, Category
 )
 from suppliers.models import Supplier
 from scrap_abdisite.models import WatchedURL
 
-# ------------------ توابع استخراج (abdi_fetcher) ------------------
+# ================= Fetchers =================
 from scrap_abdisite.utils.abdi_fetcher import (
     fetch_product_details,
     extract_specifications,
@@ -56,27 +36,32 @@ from scrap_abdisite.utils.abdi_fetcher import (
     extract_quantity,
 )
 
-# ------------------ تنظیم لاگ ------------------
+# ================= Logging =================
 LOG_DIR = os.path.join(BASE_DIR, "scrap_abdisite", "logs")
 os.makedirs(LOG_DIR, exist_ok=True)
-LOG_FILE = os.path.join(LOG_DIR, f"create_products_from_raw_{datetime.now():%Y%m%d_%H%M%S}.log")
+
+LOG_FILE = os.path.join(
+    LOG_DIR, f"create_products_from_raw_{datetime.now():%Y%m%d_%H%M%S}.log"
+)
 
 logger = logging.getLogger("create_products_from_raw")
 logger.setLevel(logging.INFO)
-fh = logging.FileHandler(LOG_FILE, encoding="utf-8")
-ch = logging.StreamHandler()
-fmt = logging.Formatter("%(asctime)s [%(levelname)s] %(message)s", "%Y-%m-%d %H:%M:%S")
-fh.setFormatter(fmt)
-ch.setFormatter(fmt)
-logger.addHandler(fh)
-logger.addHandler(ch)
 
-# ------------------ مسیر فایل raw ------------------
+if not logger.handlers:
+    fmt = logging.Formatter("%(asctime)s [%(levelname)s] %(message)s")
+    fh = logging.FileHandler(LOG_FILE, encoding="utf-8")
+    ch = logging.StreamHandler()
+    fh.setFormatter(fmt)
+    ch.setFormatter(fmt)
+    logger.addHandler(fh)
+    logger.addHandler(ch)
+
+# ================= Paths =================
 RAW_FOLDER = os.path.join(BASE_DIR, "scrap_abdisite", "data", "raw")
 
-# ------------------ کمکی‌ها ------------------
+# ================= Helpers =================
 def get_latest_raw_file():
-    files = [f for f in os.listdir(RAW_FOLDER) if f.startswith("raw_") and f.endswith(".json")]
+    files = [f for f in os.listdir(RAW_FOLDER) if f.startswith("raw_")]
     if not files:
         return None
     files.sort(key=lambda f: os.path.getmtime(os.path.join(RAW_FOLDER, f)), reverse=True)
@@ -86,231 +71,172 @@ def load_json(path):
     with open(path, "r", encoding="utf-8") as f:
         return json.load(f)
 
-def download_and_attach_image(product, img_url, is_main=False):
-    """دانلود عکس و ذخیره در ProductImage (اجتناب از تکرار بر اساس source_url)"""
-    try:
-        if not img_url:
-            return None
-        # جلوگیری از تکراری بودن تصویر
-        if ProductImage.objects.filter(product=product, source_url=img_url).exists():
-            logger.info(f"⏭️ تصویر تکراری، رد شد: {img_url}")
-            return None
-
-        resp = None
-        import requests
-        resp = requests.get(img_url, timeout=20)
-        if resp.status_code != 200:
-            logger.warning(f"❌ عدم دریافت تصویر ({resp.status_code}): {img_url}")
-            return None
-
-        parsed = urlparse(img_url)
-        filename = os.path.basename(parsed.path) or f"{slugify(product.name)}.jpg"
-        # امن‌سازی اسم فایل
-        filename = filename.split("?")[0]
-        content = ContentFile(resp.content)
-        img = ProductImage(product=product, source_url=img_url, is_main=is_main)
-        img.image.save(filename, content, save=True)
-        logger.info(f"✅ تصویر ذخیره شد: {filename}")
-        return img
-    except Exception as e:
-        logger.error(f"❌ خطا در دانلود/ذخیره تصویر {img_url}: {e}")
-        logger.debug(traceback.format_exc())
-        return None
+def get_link(item):
+    return item.get("product_link") or item.get("url")
 
 def unique_sku(base):
-    """تولید SKU یکتا بر پایه base"""
-    candidate = slugify(base)[:30]
-    sku = candidate
-    counter = 1
+    sku = slugify(base)[:30]
+    base_sku = sku
+    i = 1
     while ProductVariant.objects.filter(sku=sku).exists():
-        sku = f"{candidate}-{counter}"
-        counter += 1
+        sku = f"{base_sku}-{i}"
+        i += 1
     return sku
 
-# ------------------ ایجاد Supplier و کاربر پیش‌فرض ------------------
-def get_supplier():
-    supplier_name = "عمده فروش عبدی"
-    supplier, _ = Supplier.objects.get_or_create(name=supplier_name)
-    return supplier
-
-def get_default_user():
-    User = get_user_model()
+# ================= Image Handler =================
+def download_and_attach_image(product, img_url, is_main=False):
     try:
-        user = User.objects.get(username="flip")
-    except User.DoesNotExist:
-        user = User.objects.filter(is_superuser=True).first() or User.objects.first()
-    return user
+        import requests
 
-# ------------------ عملیات اصلی برای یک آیتم ------------------
-def process_item(item, supplier, user):
-    link = item.get("product_link") or item.get("url") or item.get("product_link")
-    if not link:
-        logger.warning(f"⏭️ آیتم بدون لینک رد شد: {item.get('name')}")
+        if not img_url:
+            return None
+
+        if ProductImage.objects.filter(product=product, source_url=img_url).exists():
+            return None
+
+        resp = requests.get(
+            img_url,
+            timeout=20,
+            headers={"User-Agent": "Mozilla/5.0"}
+        )
+
+        if resp.status_code != 200:
+            return None
+
+        if not resp.headers.get("Content-Type", "").startswith("image/"):
+            logger.warning(f"❌ Not image: {img_url}")
+            return None
+
+        ext = os.path.splitext(urlparse(img_url).path)[1] or ".jpg"
+        filename = f"{slugify(product.name)}-{int(time.time())}{ext}"
+
+        img = ProductImage(product=product, source_url=img_url, is_main=is_main)
+        img.image.save(filename, ContentFile(resp.content), save=True)
+        return img
+
+    except Exception as e:
+        logger.error(f"❌ Image error {img_url}: {e}")
         return None
 
-    try:
-        logger.info(f"🔎 پردازش لینک: {link}")
+# ================= Core =================
+def get_supplier():
+    return Supplier.objects.get_or_create(name="عمده فروش عبدی")[0]
 
-        # گرفتن جزئیات از abdi_fetcher
+def get_user():
+    User = get_user_model()
+    return User.objects.filter(is_superuser=True).first()
+
+def process_item(item, supplier, user):
+    link = get_link(item)
+    if not link:
+        return None
+
+    logger.info(f"🔎 Processing: {link}")
+
+    try:
         name, price = fetch_product_details(link)
         specs = extract_specifications(link) or []
         tags = extract_tags(link) or []
         images = extract_product_images(link) or []
-        quantity = extract_quantity(link)
+        quantity = extract_quantity(link) or 0
 
-        # مقداردهی اولیه برای فیلدها
         name = name or item.get("name") or "نامشخص"
-        price_val = Decimal(price) if price is not None else Decimal(0)
-        base_price = price_val
+        price = Decimal(price or 0)
 
-        # دسته‌بندی: اگر فایل raw category داشت تلاش کن دسته بسازی/یافت کنی
         category = None
-        cat_name = item.get("category") or item.get("cat") or None
-        if cat_name:
-            cat_slug = slugify(cat_name)
-            category, _ = Category.objects.get_or_create(slug=cat_slug, defaults={"name": cat_name})
+        if item.get("category"):
+            category, _ = Category.objects.get_or_create(
+                slug=slugify(item["category"]),
+                defaults={"name": item["category"]}
+            )
 
         with transaction.atomic():
-            # ساخت محصول غیرفعال
-            slug_candidate = slugify(name)
-            # تضمین یونیک بودن slug
-            slug = slug_candidate
-            sctr = 1
+            slug = slugify(name)
+            i = 1
             while Product.objects.filter(slug=slug).exists():
-                slug = f"{slug_candidate}-{sctr}"
-                sctr += 1
+                slug = f"{slug}-{i}"
+                i += 1
 
             product = Product.objects.create(
                 name=name,
                 slug=slug,
-                description=item.get("description") or "",
-                base_price=base_price,
+                base_price=price,
+                description=item.get("description", ""),
                 category=category,
-                is_active=False,
-                quantity=quantity or 0
+                quantity=quantity,
+                is_active=False
             )
 
-            # مشخصات
             for spec in specs:
                 if ":" in spec:
                     k, v = spec.split(":", 1)
-                    ProductSpecification.objects.create(product=product, name=k.strip(), value=v.strip())
-                else:
-                    ProductSpecification.objects.create(product=product, name=spec.strip(), value="")
+                    ProductSpecification.objects.create(
+                        product=product, name=k.strip(), value=v.strip()
+                    )
 
-            # تگ‌ها
-            for tag_name in tags + item.get("tags", []):
-                if not tag_name:
-                    continue
-                tag_slug = slugify(tag_name)
-                tag_obj, _ = Tag.objects.get_or_create(slug=tag_slug, defaults={"name": tag_name})
-                product.tags.add(tag_obj)
+            for tag in (tags or []) + item.get("tags", []):
+                if tag:
+                    t, _ = Tag.objects.get_or_create(
+                        slug=slugify(tag), defaults={"name": tag}
+                    )
+                    product.tags.add(t)
 
-            # واریانت (یک واریانت برای هر محصول)
-            sku = unique_sku(f"{product.slug}-default")
             variant = ProductVariant.objects.create(
                 product=product,
-                sku=sku,
-                price=price_val,
-                purchase_price=price_val,
-                stock=quantity or 0,
-                profit_percent=30.0
+                sku=unique_sku(product.slug),
+                price=price,
+                purchase_price=price,
+                stock=quantity,
+                profit_percent=30
             )
 
-            # تصاویر: دانلود و attach
-            main_done = False
-            for idx, img_url in enumerate(images):
-                if not img_url:
-                    continue
-                img_inst = download_and_attach_image(product, img_url, is_main=(not main_done))
-                if img_inst and not main_done:
-                    main_done = True
+            if not WatchedURL.objects.filter(url=link).exists():
+                WatchedURL.objects.create(
+                    user=user,
+                    variant=variant,
+                    supplier=supplier,
+                    url=link,
+                    price=price
+                )
 
-            # اگر در فایل raw تصویری بود و از abdi_fetcher تصویری نیومد، استفاده کن
-            raw_images = item.get("images") or item.get("image_links") or []
-            for img_url in raw_images:
-                if not img_url:
-                    continue
-                # فقط اضافه کن اگر منبع مشابه وجود نداره
-                if not ProductImage.objects.filter(product=product, source_url=img_url).exists():
-                    download_and_attach_image(product, img_url, is_main=False)
+        # 🔥 images OUTSIDE transaction
+        main = False
+        for img in images:
+            if download_and_attach_image(product, img, is_main=not main):
+                main = True
 
-            # ثبت WatchedURL
-            WatchedURL.objects.create(
-                user=user,
-                variant=variant,
-                supplier=supplier,
-                url=link,
-                price=price_val
-            )
+        for img in item.get("image_links", []):
+            download_and_attach_image(product, img)
 
-            logger.info(f"✅ ساخته شد: {product.name} (SKU: {variant.sku})")
-            return {"name": product.name, "link": link, "price": str(price_val)}
-    
+        logger.info(f"✅ Created: {product.name}")
+        return True
+
     except Exception as e:
-        logger.error(f"❌ خطا در پردازش {link}: {e}")
+        logger.error(f"❌ Failed {link}: {e}")
         logger.debug(traceback.format_exc())
-        return None
+        return False
 
-# ------------------ تابع اصلی ------------------
+# ================= Main =================
 def main():
-    logger.info("🚀 شروع اجرای create_products_from_raw")
+    logger.info("🚀 create_products_from_raw started")
 
-    latest = get_latest_raw_file()
-    if not latest:
-        logger.warning("⚠️ هیچ فایل raw پیدا نشد در: %s", RAW_FOLDER)
+    raw_file = get_latest_raw_file()
+    if not raw_file:
+        logger.warning("No raw file found")
         return
 
-    try:
-        raw_items = load_json(latest)
-    except Exception as e:
-        logger.error(f"❌ خطا در خواندن فایل JSON {latest}: {e}")
-        return
+    items = load_json(raw_file)
+    existing = set(WatchedURL.objects.values_list("url", flat=True))
 
-    logger.info(f"📦 فایل raw بارگذاری شد: {os.path.basename(latest)} - مجموع آیتم‌ها: {len(raw_items)}")
-
-    # لینک‌های ثبت شده در WatchedURL
-    existing_urls = set(WatchedURL.objects.values_list("url", flat=True))
-    logger.info(f"🗂 تعداد لینک‌های موجود در WatchedURL: {len(existing_urls)}")
-
-    # تامین‌کننده و کاربر پیش‌فرض
     supplier = get_supplier()
-    user = get_default_user()
-    if not user:
-        logger.warning("⚠️ هیچ کاربری برای ثبت WatchedURL یافت نشد؛ WatchedURL با user=NULL ساخته خواهد شد.")
+    user = get_user()
 
-    new_items = [it for it in raw_items if it.get("product_link") and it.get("product_link") not in existing_urls]
-    logger.info(f"🆕 آیتم‌های جدید برای پردازش: {len(new_items)}")
+    for item in items:
+        link = get_link(item)
+        if link and link not in existing:
+            process_item(item, supplier, user)
 
-    created = []
-    for item in new_items:
-        res = process_item(item, supplier, user)
-        if res:
-            created.append(res)
-
-    # گزارش ایمیل
-    try:
-        if created:
-            subject = f"🆕 گزارش تولید محصولات جدید - {len(created)} محصول"
-            body_lines = [f"- {c['name']} | {c['link']} | قیمت: {c['price']}" for c in created]
-            body = "محصولات جدید ساخته شده:\n\n" + "\n".join(body_lines)
-        else:
-            subject = "✅ هیچ محصول جدیدی ساخته نشد"
-            body = "در این اجرا هیچ محصول جدیدی یافت یا ساخته نشد."
-
-        recipients = [getattr(settings, "ADMIN_EMAIL", None) or getattr(settings, "DEFAULT_FROM_EMAIL", None)]
-        recipients = [r for r in recipients if r]
-        if recipients:
-            send_mail(subject, body, settings.DEFAULT_FROM_EMAIL, recipients, fail_silently=False)
-            logger.info("📧 ایمیل گزارش ارسال شد به: %s", ", ".join(recipients))
-        else:
-            logger.info("ℹ️ آدرس ایمیل مدیر تنظیم نشده؛ ایمیل ارسال نشد.")
-    except Exception as e:
-        logger.error(f"❌ خطا در ارسال ایمیل گزارش: {e}")
-        logger.debug(traceback.format_exc())
-
-    logger.info("🎯 عملیات پایان یافت. محصولات ساخته‌شده: %d", len(created))
-    print(f"🎯 عملیات پایان یافت. محصولات ساخته‌شده: {len(created)}")
+    logger.info("🎯 Finished")
 
 if __name__ == "__main__":
     main()
