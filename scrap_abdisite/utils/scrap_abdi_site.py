@@ -1,9 +1,19 @@
-# scrap_abdisite/utils/scrap_abdi_site.py
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-
+# scrap_abdisite/utils/scrap_abdi_site.py
+import sys
 import os
 import json
+
+
+# مسیر ریشه پروژه (جایی که scrap_abdisite قرار دارد)
+PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
+if PROJECT_ROOT not in sys.path:
+    sys.path.insert(0, PROJECT_ROOT)
+
+
+
+
 from datetime import datetime
 from scrap_abdisite.utils.abdi_fetcher import extract_specifications, extract_tags, extract_product_images
 from scrap_abdisite.utils.abdi_fetcher import extract_quantity
@@ -51,9 +61,10 @@ def process_latest_file():
                     new_specs = extract_specifications(product["product_link"])
                     product["specifications"].extend(new_specs)
                     product["checked_specs"] = True
-                    logging.info(f"✅ مشخصات محصول '{product.get('name')}' استخراج شد.")
+                    logging.info("✅ مشخصات محصول '{}' استخراج شد.".format(product.get('name')))
+
                 except Exception as e:
-                    logging.error(f"❌ خطا در استخراج مشخصات محصول {product.get('name')}: {e}")
+                    logging.error("❌ خطا در استخراج مشخصات محصول '{}': {}".format(product.get('name'), e))
 
             # استخراج تگ‌ها
             if not product.get("checked_tags", False):
@@ -61,9 +72,9 @@ def process_latest_file():
                     new_tags = extract_tags(product["product_link"])
                     product["tags"].extend([t for t in new_tags if t not in product["tags"]])
                     product["checked_tags"] = True
-                    logging.info(f"✅ تگ‌های محصول '{product.get('name')}' استخراج شد.")
+                    logging.info("✅ تگ‌های محصول '{}' استخراج شد.".format(product.get('name')))
                 except Exception as e:
-                    logging.error(f"❌ خطا در استخراج تگ محصول {product.get('name')}: {e}")
+                    logging.error("❌ خطا در استخراج تگ محصول '{}': {}".format(product.get('name'), e))
 
             # استخراج تصاویر
             if not product.get("checked_images", False):
@@ -71,24 +82,24 @@ def process_latest_file():
                     new_images = extract_product_images(product["product_link"])
                     product["images"].extend([img for img in new_images if img not in product["images"]])
                     product["checked_images"] = True
-                    logging.info(f"✅ تصاویر محصول '{product.get('name')}' استخراج شد.")
+                    logging.info("✅ تصاویر محصول '{}' استخراج شد.".format(product.get('name')))
                 except Exception as e:
-                    logging.error(f"❌ خطا در استخراج تصاویر محصول {product.get('name')}: {e}")
+                    logging.error("❌ خطا در استخراج تصاویر محصول '{}': {}".format(product.get('name'), e))
 
             # بررسی موجودی
             try:
                 quantity = extract_quantity(product["product_link"])
                 product["quantity"] = quantity
-                logging.info(f"✅ موجودی محصول '{product.get('name')}' بررسی شد: {quantity}")
+                logging.info("✅ موجودی محصول '{}' بررسی شد: {}".format(product.get('name'), quantity))
             except Exception as e:
-                logging.error(f"❌ خطا در بررسی موجودی محصول {product.get('name')}: {e}")
+                logging.error("❌ خطا در بررسی موجودی محصول '{}': {}".format(product.get('name'), e))
 
             processed.append(product)
 
             # ذخیره موقت هر batch_size محصول
             if idx % batch_size == 0:
                 save_partial(processed)
-                logging.info(f"💾 ذخیره موقت بعد از {idx} محصول")
+                logging.info("💾 ذخیره موقت بعد از {} محصول".format(idx))
 
             sleep(1)
 
@@ -104,11 +115,11 @@ def process_latest_file():
 def save_partial(products, suffix="temp"):
     clear_temp_files()
     timestamp = datetime.now().strftime("%Y%m%d_%H%M")
-    filename = f"{suffix}_{timestamp}.json"
+    filename = "{}_{}.json".format(suffix, timestamp)
     output_path = os.path.join(EDITED_FOLDER, filename)
     with open(output_path, "w", encoding="utf-8") as f:
         json.dump(products, f, ensure_ascii=False, indent=2)
-    logging.info(f"💾 فایل موقت ذخیره شد: {filename}")
+    logging.info("💾 فایل موقت ذخیره شد: {}".format(filename))
 
 
 def save_final(products):
@@ -116,14 +127,14 @@ def save_final(products):
         os.makedirs(EDITED_FOLDER, exist_ok=True)
         timestamp = datetime.now().strftime("%Y%m%d_%H%M")
         total_count = len(products)
-        filename = f"edited_{timestamp}_{total_count}.json"
+        filename = "edited_{}_{}.json".format(timestamp, total_count)
         output_path = os.path.join(EDITED_FOLDER, filename)
         with open(output_path, "w", encoding="utf-8") as f:
             json.dump(products, f, ensure_ascii=False, indent=2)
-        logging.info(f"💾 فایل نهایی ذخیره شد: {filename}")
+        logging.info("💾 فایل نهایی ذخیره شد: {}".format(filename))
         return True
     except Exception as e:
-        logging.error(f"❌ خطا در ذخیره فایل نهایی: {e}")
+        logging.error("❌ خطا در ذخیره فایل نهایی: {}".format(e))
         return False
 
 
@@ -169,8 +180,8 @@ def merge_new_products():
 
     merged_products = prev_products + new_products
 
-    logging.info(f"🆕 تعداد محصولات جدید: {len(new_products)}")
-    logging.info(f"📦 مجموع محصولات پس از ادغام: {len(merged_products)}")
+    logging.info("🆕 تعداد محصولات جدید: {}".format(len(new_products)))
+    logging.info("📦 مجموع محصولات پس از ادغام: {}".format(len(merged_products)))
 
     return {
         "raw_file": latest_raw_file,
@@ -188,9 +199,9 @@ def clear_temp_files():
             if os.path.isfile(temp_path):
                 try:
                     os.remove(temp_path)
-                    logging.info(f"🗑️ حذف فایل موقت: {f}")
+                    logging.info("🗑️ حذف فایل موقت: {}".format(f))
                 except Exception as e:
-                    logging.error(f"❌ خطا در حذف فایل موقت {f}: {e}")
+                    logging.error("❌ خطا در حذف فایل موقت {}: {}".format(f, e))
 
 
 if __name__ == "__main__":
