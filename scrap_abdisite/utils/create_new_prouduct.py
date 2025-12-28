@@ -151,11 +151,22 @@ def process_item(item, supplier, user):
             )
 
         with transaction.atomic():
-            slug = slugify(name)
+            # ================= slug safe & unique =================
+            MAX_SLUG_LEN = Product._meta.get_field("slug").max_length
+
+            base_slug = slugify(name)
+            if not base_slug:
+                base_slug = "product"
+
+            base_slug = base_slug[:MAX_SLUG_LEN]
+
+            slug = base_slug
             i = 1
             while Product.objects.filter(slug=slug).exists():
-                slug = f"{slug}-{i}"
+                suffix = f"-{i}"
+                slug = f"{base_slug[:MAX_SLUG_LEN - len(suffix)]}{suffix}"
                 i += 1
+            # ======================================================
 
             product = Product.objects.create(
                 name=name,
