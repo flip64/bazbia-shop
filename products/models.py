@@ -36,7 +36,7 @@ class Tag(models.Model):
 # ==============================
 class Product(models.Model):
     name = models.CharField(max_length=200, help_text="نام محصول")
-    slug = models.SlugField(unique=True, help_text="نامک یکتا برای URL")
+    slug = models.SlugField(unique=True, help_text="نامک یکتا برای URL",max_length=120)
     description = models.TextField(blank=True, null=True, help_text="توضیحات محصول")
     base_price = models.DecimalField(max_digits=12, decimal_places=0, help_text="قیمت پایه محصول")
 
