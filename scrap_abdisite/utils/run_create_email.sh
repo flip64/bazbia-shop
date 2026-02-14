@@ -5,10 +5,10 @@ set -x
 PROJECT_DIR="/home/bazbiair/bazbia"
 LOG_DIR="$PROJECT_DIR/scrap_abdisite/logs"
 mkdir -p "$LOG_DIR"
-LOG_FILE="$LOG_DIR/create_product_$(date +%Y%m%d_%H%M%S).log"
+LOG_FILE="$LOG_DIR/update_$(date +%Y%m%d_%H%M%S).log"
 
 # ---------- شروع لاگ ----------
-echo "شروع اجرای create_product.py:" $(date) >> "$LOG_FILE"
+echo "شروع اجرا updatect.py:" $(date) >> "$LOG_FILE"
 
 # ---------- فعال کردن محیط مجازی ----------
 source /home/bazbiair/virtualenv/bazbia/3.10/bin/activate
@@ -23,7 +23,7 @@ fi
 cd "$PROJECT_DIR"
 export PYTHONPATH="$PROJECT_DIR"
 
-python3 "$PROJECT_DIR/scrap_abdisite/utils/create_product.py" >> "$LOG_FILE" 2>&1
+python3 "$PROJECT_DIR/scrap_abdisite/utils/update.py" >> "$LOG_FILE" 2>&1
 if [ $? -eq 0 ]; then
     echo "✅ create_product.py با موفقیت اجرا شد" >> "$LOG_FILE"
 else
