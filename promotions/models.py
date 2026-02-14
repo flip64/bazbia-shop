@@ -5,3 +5,4 @@ class Banner(models.Model):
     image = models.ImageField(upload_to='banners/')
     link = models.URLField(blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
+    active = models.BooleanField(default=True)  
