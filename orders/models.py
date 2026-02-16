@@ -68,15 +68,16 @@ class OrderItem(models.Model):
 # مدل سبد خرید (Cart)
 # ==============================
 class Cart(models.Model):
-    user = models.ForeignKey(
+    user = models.OneToOneField(
         settings.AUTH_USER_MODEL, on_delete=models.CASCADE,
-        null=True, blank=True, related_name='carts',
+        null=True, blank=True, related_name='cart',
         help_text='اگر کاربر لاگین نکرده، این مقدار تهی می‌ماند.'
     )
     session_key = models.CharField(
         max_length=40, null=True, blank=True,
-        help_text='برای کاربران مهمان، کلید سشن ذخیره می‌شود.'
-    )
+        help_text='برای کاربران مهمان، کلید سشن ذخیره می‌شود.',
+        unique=True
+         )
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -90,6 +91,9 @@ class Cart(models.Model):
         if self.user:
             return f"Cart (User: {self.user})"
         return f"Cart (Session: {self.session_key})"
+    
+
+
 
 # ==============================
 # آیتم‌های سبد خرید (CartItem)
