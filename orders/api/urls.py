@@ -7,7 +7,7 @@ urlpatterns = [
     # محصولات ویژه
     path('weekly-best-sellers/', views.WeeklyBestSellersAPIView.as_view(), name='weekly-best-sellers'),
     path('special-offers/', views.SpecialOffersView.as_view(), name='special-offers'),
-#    path('flash-sales/', views.FlashSalesView.as_view(), name='flash-sales'),
+    path('flash-sales/', views.FlashSalesView.as_view(), name='flash-sales'),
     
     # سبد خرید
     path('cart/', views.CartView.as_view(), name='cart'),
