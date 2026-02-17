@@ -448,3 +448,76 @@ class CancelOrderView(generics.GenericAPIView):
             "message": "سفارش با موفقیت لغو شد.",
             "order": OrderSerializer(order, context={'request': request}).data
         })
+
+
+
+# ==============================
+# 🔄 10. ادغام سبد خرید مهمان با کاربر
+# ==============================
+class MergeCartView(APIView):
+    """
+    ادغام سبد خرید مهمان با حساب کاربری بعد از لاگین
+    POST /api/orders/cart/merge/
+    {
+        "session_key": "abc123..."
+    }
+    """
+    permission_classes = [IsAuthenticated]
+    
+    def post(self, request):
+        session_key = request.data.get('session_key')
+        
+        if not session_key:
+            return Response({
+                "error": "session_key الزامی است"
+            }, status=status.HTTP_400_BAD_REQUEST)
+        
+        try:
+            # سبد خرید مهمان
+            guest_cart = Cart.objects.get(
+                session_key=session_key,
+                is_active=True
+            )
+            
+            # سبد خرید کاربر
+            user_cart, _ = Cart.objects.get_or_create(
+                user=request.user,
+                is_active=True
+            )
+            
+            items_moved = 0
+            with transaction.atomic():
+                for guest_item in guest_cart.items.all():
+                    # بررسی موجودی
+                    if guest_item.variant.stock < guest_item.quantity:
+                        return Response({
+                            "error": f"موجودی {guest_item.variant.product.name} کافی نیست"
+                        }, status=status.HTTP_400_BAD_REQUEST)
+                    
+                    # انتقال به سبد کاربر
+                    user_item, created = CartItem.objects.get_or_create(
+                        cart=user_cart,
+                        variant=guest_item.variant,
+                        defaults={'quantity': guest_item.quantity}
+                    )
+                    
+                    if not created:
+                        user_item.quantity += guest_item.quantity
+                        user_item.save()
+                    
+                    items_moved += 1
+                    guest_item.delete()
+                
+                # غیرفعال کردن سبد مهمان
+                guest_cart.is_active = False
+                guest_cart.save()
+            
+            return Response({
+                "message": f"{items_moved} آیتم با موفقیت به سبد خرید شما منتقل شد",
+                "items_moved": items_moved
+            })
+            
+        except Cart.DoesNotExist:
+            return Response({
+                "error": "سبد خرید مهمان یافت نشد"
+            }, status=status.HTTP_404_NOT_FOUND)
