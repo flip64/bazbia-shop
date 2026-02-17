@@ -19,7 +19,24 @@ from orders.api.serializers import (
     OrderSerializer
 )
 
-
+# ===========================
+# SpecialOffersView
+# ===========================
+class SpecialOffersView(APIView):
+    """
+    دریافت محصولات با تخفیف ویژه
+    """
+    def get(self, request):
+        products = Product.objects.filter(
+            discount_price__isnull=False,
+            is_special=True
+        )[:10]  # ۱۰ محصول برتر
+        serializer = ProductSerializer(products, many=True)
+        return Response({
+            'count': products.count(),
+            'results': serializer.data
+        })
+        
 
 
 
