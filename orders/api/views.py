@@ -19,6 +19,64 @@ from orders.api.serializers import (
     OrderSerializer
 )
 
+
+
+
+class FlashSalesView(APIView):
+    """
+    فروش‌های لحظه‌ای (با زمان محدود)
+    """
+    def get(self, request):
+        products = Product.objects.filter(
+            flash_sale=True,
+            flash_sale_end__gt=timezone.now()
+        )
+        serializer = ProductSerializer(products, many=True)
+        return Response(serializer.data)
+
+class SaveCartView(APIView):
+    """
+    ذخیره سبد خرید برای کاربر
+    """
+    def post(self, request):
+        # منطق ذخیره سبد خرید
+        return Response({'message': 'سبد خرید ذخیره شد'})
+
+class LoadSavedCartView(APIView):
+    """
+    بازیابی سبد خرید ذخیره شده
+    """
+    def get(self, request):
+        # منطق بازیابی سبد خرید
+        return Response({'cart': []})
+
+class TrackOrderView(APIView):
+    """
+    پیگیری سفارش با کد رهگیری
+    """
+    def get(self, request, tracking_code):
+        try:
+            order = Order.objects.get(tracking_code=tracking_code)
+            serializer = OrderSerializer(order)
+            return Response(serializer.data)
+        except Order.DoesNotExist:
+            return Response(
+                {'error': 'سفارش یافت نشد'}, 
+                status=status.HTTP_404_NOT_FOUND
+            )
+
+class ReturnRequestView(APIView):
+    """
+    درخواست مرجوعی کالا
+    """
+    def post(self, request):
+        # منطق درخواست مرجوعی
+        return Response(
+            {'message': 'درخواست مرجوعی ثبت شد'},
+            status=status.HTTP_201_CREATED
+        )
+
+
 # ===========================
 # SpecialOffersView
 # ===========================
