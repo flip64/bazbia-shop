@@ -81,6 +81,9 @@ class Cart(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
+
+    is_active = models.BooleanField(default=True)
+    
     def is_empty(self):
         return not self.items.exists()
 
