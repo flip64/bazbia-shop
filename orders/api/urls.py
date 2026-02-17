@@ -8,6 +8,7 @@ urlpatterns = [
     path('weekly-best-sellers/', views.WeeklyBestSellersAPIView.as_view(), name='weekly-best-sellers'),
     path('special-offers/', views.SpecialOffersView.as_view(), name='special-offers'),
     path('flash-sales/', views.FlashSalesView.as_view(), name='flash-sales'),
+
     
     # سبد خرید
     path('cart/', views.CartView.as_view(), name='cart'),
@@ -17,6 +18,14 @@ urlpatterns = [
     path('cart/clear/', views.ClearCartView.as_view(), name='clear-cart'),
     path('cart/save/', views.SaveCartView.as_view(), name='save-cart'),
     path('cart/load/', views.LoadSavedCartView.as_view(), name='load-cart'),
+
+
+    
+    # ===========================
+    # 🔄 ادغام سبد خرید (NEW)
+    # ===========================
+    path('cart/merge/', views.MergeCartView.as_view(), name='merge-cart'),
+    
     
     # سفارشات
     path('orders/create/', views.CreateOrderView.as_view(), name='create-order'),
