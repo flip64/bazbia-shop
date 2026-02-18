@@ -75,8 +75,7 @@ class Cart(models.Model):
     )
     session_key = models.CharField(
         max_length=40, null=True, blank=True,
-        help_text='برای کاربران مهمان، کلید سشن ذخیره می‌شود.',
-        unique=True
+        help_text='برای کاربران مهمان، کلید سشن ذخیره می‌شود.'
          )
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
