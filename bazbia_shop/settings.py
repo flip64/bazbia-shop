@@ -275,7 +275,7 @@ SIMPLE_JWT = {
     "AUTH_HEADER_TYPES": ("Bearer",),
 }
 
-CORS_ALLOW_ALL_ORIGINS = True  # فقط در حالت توسعه (برای production باید محدود بشه)
+CORS_ALLOW_ALL_ORIGINS = False
 
 CORS_ALLOWED_ORIGINS = [
     "https://bazbia.ir",
@@ -291,7 +291,8 @@ CSRF_TRUSTED_ORIGINS = [
     "https://www.bazbia.ir",
     "https://backend.bazbia.ir",
     "http://localhost:3000",
-    
+    "http://localhost:5173",
+    "http://127.0.0.1:5173"
 ]
 
  
