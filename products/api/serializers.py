@@ -171,11 +171,13 @@ class ProductListSerializer(serializers.ModelSerializer):
     price = serializers.SerializerMethodField()
     discount_price = serializers.SerializerMethodField()
     thumb = serializers.SerializerMethodField()
+    in_stock = serializers.SerializerMethodField()   # ← اضافه شد
+
 
     class Meta:
         model = Product
         fields = [
-            'id', 'name', 'slug',
+            'id', 'name', 'slug',product-60
             'price', 'discount_price',
             'category', 'thumb', 'variants',
             'created_at'
@@ -238,6 +240,20 @@ class ProductListSerializer(serializers.ModelSerializer):
                     f"{attr.attribute.name}: {attr.value}" for attr in variant.attributes.all()
                 ]
             })
+            
+            
+            
+    # 🔹 مجموع موجودی همه واریانت‌ها
+    def get_in_stock(self, obj):
+        total = obj.variants.aggregate(total=Sum('stock'))['total']
+        return int(total or 0)
+
+    def get_variants(self, obj):
+        variants = obj.variants.all()
+        if not variants.exists() or variants.count() == 1:
+            return None
+
+
         return serialized
 
 
