@@ -282,6 +282,8 @@ CORS_ALLOWED_ORIGINS = [
     "https://www.bazbia.ir",
     "https://backend.bazbia.ir",
     "http://localhost:3000",  # اگر برای توسعه در Vite تست می‌کنی
+    "http://localhost:5173",
+    "http://127.0.0.1:5173"
 ]
 
 CSRF_TRUSTED_ORIGINS = [
@@ -289,6 +291,7 @@ CSRF_TRUSTED_ORIGINS = [
     "https://www.bazbia.ir",
     "https://backend.bazbia.ir",
     "http://localhost:3000",
+    
 ]
 
  
