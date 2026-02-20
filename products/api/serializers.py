@@ -177,10 +177,10 @@ class ProductListSerializer(serializers.ModelSerializer):
     class Meta:
         model = Product
         fields = [
-            'id', 'name', 'slug',product-60
+            'id', 'name', 'slug',
             'price', 'discount_price',
             'category', 'thumb', 'variants',
-            'created_at'
+            'created_at','in_stock'
         ]
 
     def get_category(self, obj):
