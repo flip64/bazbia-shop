@@ -158,39 +158,51 @@ class WeeklyBestSellersAPIView(generics.ListAPIView):
 # 🎯 Helper Function - اصلاح شده
 # ==============================
 def get_user_cart(request):
-    """
-    دریافت یا ایجاد سبد خرید برای کاربر یا مهمان
-    - کاربر لاگین کرده: یک سبد خرید دارد (با فرض OneToOneField)
-    - کاربر مهمان: بر اساس session_key
-    """
-    if request.user.is_authenticated:
-        # کاربر لاگین کرده - با فرض OneToOneField
-        cart, created = Cart.objects.get_or_create(
-            user=request.user,
-            defaults={'session_key': None}
-        )
-        
-        # اگر سبد خرید قبلی با session_key داشته، پاکش می‌کنیم
-        if not created and cart.session_key:
-            cart.session_key = None
-            cart.save()
-            
-        return cart
-    
-    else:
-        # کاربر مهمان
-        session_key = request.session.session_key
-        if not session_key:
-            request.session.create()
-            session_key = request.session.session_key
-        
-        cart, created = Cart.objects.get_or_create(
-            session_key=session_key,
-            defaults={'user': None}
-        )
-        
-        return cart
+    print(request)
+    session_key = request.query_params.get("session")
 
+    # ===== USER =====
+    if request.user.is_authenticated:
+
+        user_cart, _ = Cart.objects.get_or_create(user=request.user)
+
+        # merge guest cart اگر وجود دارد
+        if session_key:
+            guest_cart = Cart.objects.filter(
+                session_key=session_key,
+                user__isnull=True,
+                is_active=True
+            ).first()
+
+            if guest_cart and guest_cart != user_cart:
+
+                for item in guest_cart.items.all():
+                    user_item, created = CartItem.objects.get_or_create(
+                        cart=user_cart,
+                        variant=item.variant,
+                        defaults={'quantity': item.quantity}
+                    )
+
+                    if not created:
+                        user_item.quantity += item.quantity
+                        user_item.save()
+
+                guest_cart.is_active = False
+                guest_cart.save()
+
+        return user_cart
+
+    # ===== GUEST =====
+    if not session_key:
+        raise Exception("session_key required")
+
+    cart, _ = Cart.objects.get_or_create(
+        session_key=session_key,
+        user=None,
+        is_active=True
+    )
+
+    return cart
 
 # ==============================
 # 🛒 1. مشاهده سبد خرید
@@ -200,8 +212,12 @@ class CartView(generics.RetrieveAPIView):
     permission_classes = [AllowAny]
 
     def get_object(self):
-        return get_user_cart(self.request)
+        session_key = self.request.query_params.get("session_key")
 
+        print("USER:", self.request.user)
+        print("SESSION:", session_key)
+
+        return get_user_cart(self.request)
 
 # ==============================
 # ➕ 2. افزودن آیتم به سبد خرید - اصلاح شده
