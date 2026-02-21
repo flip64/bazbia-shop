@@ -158,51 +158,31 @@ class WeeklyBestSellersAPIView(generics.ListAPIView):
 # 🎯 Helper Function - اصلاح شده
 # ==============================
 def get_user_cart(request):
-    print(request)
-    session_key = request.query_params.get("session")
 
-    # ===== USER =====
+    # ---------- USER ----------
     if request.user.is_authenticated:
 
-        user_cart, _ = Cart.objects.get_or_create(user=request.user)
+        cart, _ = Cart.objects.get_or_create(
+            user=request.user,
+            defaults={"session_key": None}
+        )
 
-        # merge guest cart اگر وجود دارد
-        if session_key:
-            guest_cart = Cart.objects.filter(
-                session_key=session_key,
-                user__isnull=True,
-                is_active=True
-            ).first()
+        return cart
 
-            if guest_cart and guest_cart != user_cart:
 
-                for item in guest_cart.items.all():
-                    user_item, created = CartItem.objects.get_or_create(
-                        cart=user_cart,
-                        variant=item.variant,
-                        defaults={'quantity': item.quantity}
-                    )
+    # ---------- GUEST ----------
+    if not request.session.session_key:
+        request.session.create()
 
-                    if not created:
-                        user_item.quantity += item.quantity
-                        user_item.save()
-
-                guest_cart.is_active = False
-                guest_cart.save()
-
-        return user_cart
-
-    # ===== GUEST =====
-    if not session_key:
-        raise Exception("session_key required")
+    session_key = request.session.session_key
 
     cart, _ = Cart.objects.get_or_create(
         session_key=session_key,
-        user=None,
-        is_active=True
+        user=None
     )
 
     return cart
+
 
 # ==============================
 # 🛒 1. مشاهده سبد خرید
