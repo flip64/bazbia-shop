@@ -196,7 +196,7 @@ class CartView(generics.RetrieveAPIView):
 
         print("USER:", self.request.user)
         print("SESSION:", session_key)
-        print("test sesion ",self.request.session.session_key)
+        print("test sesion ",self.request)
         return get_user_cart(self.request)
 
 # ==============================
