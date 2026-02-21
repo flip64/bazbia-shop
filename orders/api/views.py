@@ -158,7 +158,7 @@ class WeeklyBestSellersAPIView(generics.ListAPIView):
 # 🎯 Helper Function - اصلاح شده
 # ==============================
 def get_user_cart(request):
-
+    print("sesion da inha ",request.session.session_key)
     # ---------- USER ----------
     if request.user.is_authenticated:
 
