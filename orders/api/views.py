@@ -158,10 +158,6 @@ class WeeklyBestSellersAPIView(generics.ListAPIView):
 # 🎯 Helper Function - اصلاح شده
 # ==============================
 
-from rest_framework import generics
-from rest_framework.permissions import AllowAny
-from .models import Cart, CartItem
-from .serializers import CartSerializer
 
 def get_user_cart(request):
     """
