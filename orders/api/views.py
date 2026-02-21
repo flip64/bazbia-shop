@@ -192,13 +192,16 @@ class CartView(generics.RetrieveAPIView):
     permission_classes = [AllowAny]
 
     def get_object(self):
+        # session_key از query params فرانت
         session_key = self.request.query_params.get("session_key")
 
+        # چاپ برای دیباگ
         print("USER:", self.request.user)
-        print("SESSION:", session_key)
-        print("test sesion ",self.request)
-        return get_user_cart(self.request)
+        print("SESSION_KEY (query param):", session_key)
+        print("SESSION_KEY (backend):", self.request.session.session_key)
 
+        # فراخوانی تابع کمکی
+        return get_user_cart(self.request)
 # ==============================
 # ➕ 2. افزودن آیتم به سبد خرید - اصلاح شده
 # ==============================
