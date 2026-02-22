@@ -166,11 +166,13 @@ def get_user_cart(request):
     """
     # اول تلاش می‌کنیم session_key از query params بگیریم
     session_key = request.query_params.get("session_key")
-
+    print("get session key",session_key)
     # اگر session واقعی Django ساخته نشده، ایجادش کن
+    print("post session key  " ,  request.session.session_key)
+
     if not request.session.session_key:
         request.session.create()
-
+    print("post session key aftercreate " ,  request.session.session_key)
     # اگر session_key از فرانت نیامده، از session backend استفاده کن
     if not session_key:
         session_key = request.session.session_key
@@ -247,20 +249,20 @@ class CartView(generics.RetrieveAPIView):
 class AddToCartView(generics.GenericAPIView):
     serializer_class = CartItemInputSerializer
     permission_classes = [AllowAny]
-
+    print('ok')
     def post(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         
         variant_id = serializer.validated_data['variant_id']
         quantity = serializer.validated_data['quantity']
-
+        print("quantity=",quantity)
         # اعتبارسنجی تعداد
         if quantity <= 0:
             return Response({
                 "error": "تعداد باید بیشتر از صفر باشد"
             }, status=status.HTTP_400_BAD_REQUEST)
-
+        print(request)
         cart = get_user_cart(request)
         variant = get_object_or_404(ProductVariant, id=variant_id)
 
