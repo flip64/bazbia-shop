@@ -164,18 +164,20 @@ def get_user_cart(request):
     دریافت سبد خرید کاربر یا مهمان با توجه به session_key.
     اگر کاربر لاگین باشد، سبد مهمان merge می‌شود.
     """
-    # اول تلاش می‌کنیم session_key از query params بگیریم
-    session_key = request.query_params.get("session_key")
-    print("get session key",session_key)
-    # اگر session واقعی Django ساخته نشده، ایجادش کن
-    print("post session key  " ,  request.session.session_key)
 
+    # ---- 1. گرفتن session_key از query params یا body ----
+    session_key = request.query_params.get("session_key") or request.data.get("session_key")
+    print("Received session_key:", session_key)
+
+    # ---- 2. اگر session داخلی Django ساخته نشده، ایجاد کن ----
     if not request.session.session_key:
         request.session.create()
-    print("post session key aftercreate " ,  request.session.session_key)
-    # اگر session_key از فرانت نیامده، از session backend استفاده کن
+    print("Django session_key:", request.session.session_key)
+
+    # ---- 3. اگر session_key از فرانت نبود، از session داخلی استفاده کن ----
     if not session_key:
         session_key = request.session.session_key
+    print("Final session_key:", session_key)
 
     # ===== USER =====
     if request.user.is_authenticated:
@@ -204,6 +206,15 @@ def get_user_cart(request):
             guest_cart.save()
 
         return user_cart
+
+    # ===== GUEST =====
+    # سبد مهمان
+    cart, _ = Cart.objects.get_or_create(
+        session_key=session_key,
+        user=None,
+        is_active=True
+    )
+    return cart
 
     # ===== GUEST =====
     # سبد مهمان
