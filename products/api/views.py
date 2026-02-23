@@ -1,5 +1,4 @@
 from rest_framework import generics, status
-from rest_framework.views import APIView
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from django.http import JsonResponse, HttpResponseBadRequest
@@ -18,31 +17,29 @@ from products.api.serializers import (
 from products.api.pagination import CustomCategoryPagination
 
 
-# -----------------------------
-# List All Products
-# -----------------------------
+# =============================
+# Product List (با صفحه‌بندی و فیلتر دسته)
+# =============================
 class ProductListAPIView(generics.ListAPIView):
     serializer_class = ProductListSerializer
-    pagination_class = CustomCategoryPagination  # اضافه شد
+    pagination_class = CustomCategoryPagination
 
     def get_queryset(self):
-     
-     category_slug = self.kwargs.get("slug")
-     queryset = Product.objects.filter(
-         is_active=True,
-         variants__isnull=False  # حداقل یک واریانت
-            ).order_by("-id").distinct()
+        category_slug = self.kwargs.get("slug")
+        queryset = Product.objects.filter(
+            is_active=True,
+            variants__isnull=False
+        ).order_by("-id").distinct()
 
-     if category_slug:
-         queryset = queryset.filter(category__slug=category_slug)
+        if category_slug:
+            queryset = queryset.filter(category__slug=category_slug)
 
-        
-     return queryset
+        return queryset
 
 
-# -----------------------------
+# =============================
 # Product Detail
-# -----------------------------
+# =============================
 class ProductDetailAPIView(generics.RetrieveAPIView):
     queryset = Product.objects.filter(is_active=True)
     serializer_class = ProductDetailSerializer
@@ -60,17 +57,17 @@ class ProductDetailAPIView(generics.RetrieveAPIView):
             }, status=status.HTTP_404_NOT_FOUND)
 
 
-# -----------------------------
-# List All Categories
-# -----------------------------
+# =============================
+# Category List
+# =============================
 class CategoryListAPIView(generics.ListAPIView):
-    queryset = Category.objects.filter(parent__isnull=True)  # فقط دسته‌های اصلی
+    queryset = Category.objects.filter(parent__isnull=True)
     serializer_class = CategorySerializer
 
 
-# -----------------------------
-# List Special Products
-# -----------------------------
+# =============================
+# Special Products List
+# =============================
 class SpecialProductListAPIView(generics.ListAPIView):
     serializer_class = SpecialProductSerializer
 
@@ -78,11 +75,12 @@ class SpecialProductListAPIView(generics.ListAPIView):
         return SpecialProduct.objects.filter(is_active=True)
 
 
-# -----------------------------
-# List New Products
-# -----------------------------
+# =============================
+# New Products List
+# =============================
 class NewProductsAPIView(generics.ListAPIView):
     serializer_class = ProductListSerializer
+
     def get_queryset(self):
         queryset = Product.objects.filter(is_active=True).order_by('-created_at')
         category_slug = self.request.query_params.get('category')
@@ -91,84 +89,14 @@ class NewProductsAPIView(generics.ListAPIView):
         return queryset[:30]
 
 
-
-
-# -----------------------------
-# List All Products
-# -----------------------------
-class ProductListAPIView(generics.ListAPIView):
-    serializer_class = ProductListSerializer
-    pagination_class = CustomCategoryPagination  # اضافه شد
-
-    def get_queryset(self):
-     
-     category_slug = self.kwargs.get("slug")
-     queryset = Product.objects.filter(
-         is_active=True,
-         variants__isnull=False  # حداقل یک واریانت
-            ).order_by("-id").distinct()
-
-     if category_slug:
-         queryset = queryset.filter(category__slug=category_slug)
-
-        
-     return queryset
-
-
-# -----------------------------
-# Product Detail
-# -----------------------------
-class ProductDetailAPIView(generics.RetrieveAPIView):
-    queryset = Product.objects.filter(is_active=True)
-    serializer_class = ProductDetailSerializer
-    lookup_field = "slug"
-
-    def retrieve(self, request, *args, **kwargs):
-        try:
-            instance = self.get_object()
-            serializer = self.get_serializer(instance)
-            return Response(serializer.data)
-        except Product.DoesNotExist:
-            return Response({
-                'success': False,
-                'message': 'محصول یافت نشد'
-            }, status=status.HTTP_404_NOT_FOUND)
-
-
-
-# -----------------------------
-# List Special Products
-# -----------------------------
-class SpecialProductListAPIView(generics.ListAPIView):
-    serializer_class = SpecialProductSerializer
-
-    def get_queryset(self):
-        return SpecialProduct.objects.filter(is_active=True)
-
-
-# -----------------------------
-# List New Products
-# -----------------------------
-class NewProductsAPIView(generics.ListAPIView):
-    serializer_class = ProductListSerializer
-    def get_queryset(self):
-        queryset = Product.objects.filter(is_active=True).order_by('-created_at')
-        category_slug = self.request.query_params.get('category')
-        if category_slug:
-            queryset = queryset.filter(category__slug=category_slug)
-        return queryset[:30]
-
-
-
-#---------++--------------------
-# List Products By Category (including all descendants)
-# -----------------------------
+# =============================
+# Products by Category (شامل زیرشاخه‌ها)
+# =============================
 class ProductListCategoryAPIView(generics.ListAPIView):
     serializer_class = ProductListSerializer
     pagination_class = CustomCategoryPagination
 
     def get_category_and_descendants_ids(self, category):
-        """دریافت id دسته اصلی و تمام زیرشاخه‌ها به صورت بازگشتی"""
         ids = [category.id]
         for child in category.subcategories.all():
             ids.extend(self.get_category_and_descendants_ids(child))
@@ -201,10 +129,7 @@ class ProductListCategoryAPIView(generics.ListAPIView):
                         "id": c.id,
                         "name": c.name,
                         "slug": c.slug,
-                        "image": (
-                            request.build_absolute_uri(c.image.url)
-                            if c.image else None
-                        )
+                        "image": request.build_absolute_uri(c.image.url) if c.image else None
                     }
                     for c in subcats
                 ]
@@ -224,13 +149,12 @@ class ProductListCategoryAPIView(generics.ListAPIView):
 
         response_data["success"] = True
         response_data["subcategories"] = subcategories
-
         return Response(response_data)
 
 
-# -----------------------------
-# List Categories as Tree
-# -----------------------------
+# =============================
+# Categories as Tree
+# =============================
 @api_view(['GET'])
 def list_categories(request):
     def build_tree(parent=None):
@@ -252,9 +176,9 @@ def list_categories(request):
     return JsonResponse(data, safe=False)
 
 
-# -----------------------------
+# =============================
 # List Children of a Category
-# -----------------------------
+# =============================
 @api_view(['GET'])
 def category_children(request, slug):
     try:
@@ -266,10 +190,9 @@ def category_children(request, slug):
     return Response(list(children))
 
 
-
-# -----------------------------
+# =============================
 # Import Categories from JSON
-# -----------------------------
+# =============================
 @csrf_exempt
 def import_categories(request):
     if request.method != 'POST':
@@ -304,98 +227,16 @@ def import_categories(request):
     return JsonResponse({"status": "done", "created": created})
 
 
-
-
-        
-# -----------------------------
-# List Categories as Tree
-# -----------------------------
-@api_view(['GET'])
-def list_categories(request):
-    def build_tree(parent=None):
-        categories = Category.objects.filter(parent=parent).values('id', 'name', 'slug')
-        tree = []
-        for cat in categories:
-            children = build_tree(parent=cat['id'])
-            item = {
-                'id': cat['id'],
-                'name': cat['name'],
-                'slug': cat['slug'],
-            }
-            if children:
-                item['children'] = children
-            tree.append(item)
-        return tree
-
-    data = build_tree()
-    return JsonResponse(data, safe=False)
-
-
-# -----------------------------
-# List Children of a Category
-# -----------------------------
-@api_view(['GET'])
-def category_children(request, slug):
-    try:
-        parent = Category.objects.get(slug=slug)
-    except Category.DoesNotExist:
-        return Response({"error": "دسته‌بندی یافت نشد"}, status=404)
-
-    children = parent.subcategories.all().values('id', 'name', 'slug')
-    return Response(list(children))
-
-
-
-# -----------------------------
-# Import Categories from JSON
-# -----------------------------
-@csrf_exempt
-def import_categories(request):
-    if request.method != 'POST':
-        return HttpResponseBadRequest("Only POST method allowed")
-
-    try:
-        payload = json.loads(request.body)
-    except json.JSONDecodeError:
-        return HttpResponseBadRequest("Invalid JSON")
-
-    created = []
-
-    @transaction.atomic
-    def create_or_get_category(item, parent=None):
-        slug = item['slug']
-        name = item['name']
-
-        category, is_created = Category.objects.get_or_create(
-            slug=slug,
-            defaults={'name': name, 'parent': parent}
-        )
-
-        if is_created:
-            created.append(category.name)
-
-        for child in item.get('children', []):
-            create_or_get_category(child, parent=category)
-
-    for cat_item in payload:
-        create_or_get_category(cat_item)
-
-    return JsonResponse({"status": "done", "created": created})
-
-
-# -----------------------------
-# List All Products with Full Details
-# -----------------------------
-
-
-
+# =============================
+# Product Full List (تمام جزئیات)
+# =============================
 class ProductFullListAPIView(generics.ListAPIView):
     """
     نمایش لیست محصولات با تمام جزئیات (تصاویر، واریانت‌ها، ویدیوها، تگ‌ها و ...)
     """
     queryset = Product.objects.filter(is_active=True).order_by('-id')
     serializer_class = ProductDetailSerializer
-    pagination_class = CustomCategoryPagination  # برای صفحه‌بندی
+    pagination_class = CustomCategoryPagination
 
     def get_queryset(self):
         queryset = super().get_queryset()
