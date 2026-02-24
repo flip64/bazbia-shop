@@ -166,7 +166,7 @@ class ProductVideoSerializer(serializers.ModelSerializer):
 # 🔹 لیست محصولات برای صفحه فروشگاه
 # ------------------------------
 class ProductListSerializer(serializers.ModelSerializer):
-    variants = serializers.SerializerMethodField()
+    variants = ProductVariantSerializer(many=True, read_only=True)
     category = serializers.SerializerMethodField()
     price = serializers.SerializerMethodField()
     discount_price = serializers.SerializerMethodField()
@@ -208,39 +208,7 @@ class ProductListSerializer(serializers.ModelSerializer):
         variant = obj.variants.exclude(discount_price__isnull=True).order_by('discount_price').first()
         return int(variant.discount_price) if variant and variant.discount_price else None
 
-    def get_variants(self, obj):
-        variants = obj.variants.all()
-        if not variants.exists():
-            return None
-        if variants.count() == 1:
-            return None
-
-        serialized = []
-        for variant in variants:
-            main_image = variant.images.filter(is_main=True).first()
-            if main_image:
-                url = main_image.image.url
-            elif variant.images.exists():
-                url = variant.images.first().image.url
-            else:
-                url = '/media/default-thumb.jpg'
-
-            request = self.context.get('request')
-            if request:
-                url = request.build_absolute_uri(url)
-
-            serialized.append({
-                'id': variant.id,
-                'sku': variant.sku,
-                'price': int(variant.price) if variant.price else None,
-                'discount_price': int(variant.discount_price) if variant.discount_price else None,
-                'stock': variant.stock,
-                'thumb': url,
-                'attributes': [
-                    f"{attr.attribute.name}: {attr.value}" for attr in variant.attributes.all()
-                ]
-            })
-            
+    
             
             
     # 🔹 مجموع موجودی همه واریانت‌ها
