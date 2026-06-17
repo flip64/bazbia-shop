@@ -1,5 +1,8 @@
 from django.db import models
 from decimal import Decimal, ROUND_HALF_UP
+from PIL import Image
+from django.db import models
+
 
 # ==============================
 # مدل دسته‌بندی محصولات (Category)
@@ -15,7 +18,29 @@ class Category(models.Model):
         null=True, blank=True, related_name='subcategories',
         help_text="دسته‌بندی والد (اختیاری)"
     )
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)
 
+        if self.image:
+            img = Image.open(self.image.path)
+
+            SIZE = (256, 256)
+
+            img.thumbnail(SIZE)
+
+            background = Image.new(
+                "RGB",
+                SIZE,
+                (255, 255, 255)
+            )
+
+            x = (SIZE[0] - img.width) // 2
+            y = (SIZE[1] - img.height) // 2
+
+            background.paste(img, (x, y))
+
+            background.save(self.image.path)
+            
     def __str__(self):
         return f"{self.parent.name} -> {self.name}" if self.parent else self.name
 
