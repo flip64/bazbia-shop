@@ -1,7 +1,6 @@
 from django.db import models
 from decimal import Decimal, ROUND_HALF_UP
 from PIL import Image
-from django.db import models
 
 
 # ==============================
@@ -24,7 +23,7 @@ class Category(models.Model):
         if self.image:
             img = Image.open(self.image.path)
 
-            SIZE = (256, 256)
+            SIZE = (128, 128)
 
             img.thumbnail(SIZE)
 
