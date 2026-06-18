@@ -18,10 +18,9 @@ urlpatterns = [
     path('categories/<slug:slug>/', views.ProductListCategoryAPIView.as_view(), name='list_categories_api'),
     path('import-categories/', category_api.import_categories, name='import-categories'),
 
-    # محصولات ویژه و جدید
-    path('specialproduct/', views.SpecialProductListAPIView.as_view(), name='specialproduct'),
-    path('new_products/', views.NewProductsAPIView.as_view(), name='newproducts'),
 
+
+    
     # جزئیات محصول بر اساس slug
     path('<slug:slug>/', views.ProductDetailAPIView.as_view(), name='product-detail'),
 ]
