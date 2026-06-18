@@ -65,29 +65,6 @@ class CategoryListAPIView(generics.ListAPIView):
     serializer_class = CategorySerializer
 
 
-# =============================
-# Special Products List
-# =============================
-class SpecialProductListAPIView(generics.ListAPIView):
-    serializer_class = SpecialProductSerializer
-
-    def get_queryset(self):
-        return SpecialProduct.objects.filter(is_active=True)
-
-
-# =============================
-# New Products List
-# =============================
-class NewProductsAPIView(generics.ListAPIView):
-    serializer_class = ProductListSerializer
-
-    def get_queryset(self):
-        queryset = Product.objects.filter(is_active=True).order_by('-created_at')
-        category_slug = self.request.query_params.get('category')
-        if category_slug:
-            queryset = queryset.filter(category__slug=category_slug)
-        return queryset[:30]
-
 
 # =============================
 # Products by Category (شامل زیرشاخه‌ها)
