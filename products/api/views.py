@@ -16,23 +16,13 @@ from products.api.serializers import (
 )
 from products.api.pagination import CustomCategoryPagination
 
-
 # =============================
-# Product List (با صفحه‌بندی و فیلتر دسته)
+# Product filter mixin 
 # =============================
-class ProductFilterAPIView(generics.ListAPIView):
-    serializer_class = ProductListSerializer
-    pagination_class = CustomCategoryPagination
 
-    def get_queryset(self):
+class ProductFilterMixin:
 
-        queryset = Product.objects.filter(
-            is_active=True
-        ).prefetch_related(
-            "variants",
-            "images",
-            "tags"
-        ).distinct()
+    def apply_filters(self, queryset):
 
         # دسته بندی
         category = self.request.query_params.get("category")
@@ -98,7 +88,61 @@ class ProductFilterAPIView(generics.ListAPIView):
         elif ordering == "price_desc":
             queryset = queryset.order_by("-variants__price")
 
+        else:
+            queryset = queryset.order_by("-id")
+
         return queryset.distinct()
+
+
+
+# =============================
+# Product List (با صفحه‌بندی و فیلتر دسته)
+# =============================
+class ProductListAPIView(
+    ProductFilterMixin,
+    generics.ListAPIView
+):
+    serializer_class = ProductListSerializer
+    pagination_class = CustomCategoryPagination
+
+    def get_queryset(self):
+        queryset = Product.objects.filter(
+            is_active=True,
+            variants__isnull=False
+        ).prefetch_related(
+            "variants",
+            "images",
+            "tags"
+        )
+
+        return self.apply_filters(queryset)
+
+# =============================
+# Product Full List (تمام جزئیات)
+# =============================
+
+class ProductFullListAPIView(
+    ProductFilterMixin,
+    generics.ListAPIView
+):
+    serializer_class = ProductDetailSerializer
+    pagination_class = CustomCategoryPagination
+
+    def get_queryset(self):
+        queryset = Product.objects.filter(
+            is_active=True,
+            variants__isnull=False
+        ).prefetch_related(
+            "variants",
+            "variants__attributes",
+            "images",
+            "videos",
+            "tags",
+            "specifications"
+        )
+
+        return self.apply_filters(queryset)
+
 
 
 
@@ -271,20 +315,4 @@ def import_categories(request):
     return JsonResponse({"status": "done", "created": created})
 
 
-# =============================
-# Product Full List (تمام جزئیات)
-# =============================
-class ProductFullListAPIView(generics.ListAPIView):
-    """
-    نمایش لیست محصولات با تمام جزئیات (تصاویر، واریانت‌ها، ویدیوها، تگ‌ها و ...)
-    """
-    queryset = Product.objects.filter(is_active=True).order_by('-id')
-    serializer_class = ProductDetailSerializer
-    pagination_class = CustomCategoryPagination
 
-    def get_queryset(self):
-        queryset = super().get_queryset()
-        category_slug = self.request.query_params.get("category")
-        if category_slug:
-            queryset = queryset.filter(category__slug=category_slug)
-        return queryset.distinct()
