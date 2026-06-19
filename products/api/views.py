@@ -20,21 +20,88 @@ from products.api.pagination import CustomCategoryPagination
 # =============================
 # Product List (با صفحه‌بندی و فیلتر دسته)
 # =============================
-class ProductListAPIView(generics.ListAPIView):
+class ProductFilterAPIView(generics.ListAPIView):
     serializer_class = ProductListSerializer
     pagination_class = CustomCategoryPagination
 
     def get_queryset(self):
-        category_slug = self.kwargs.get("slug")
+
         queryset = Product.objects.filter(
-            is_active=True,
-            variants__isnull=False
-        ).order_by("-id").distinct()
+            is_active=True
+        ).prefetch_related(
+            "variants",
+            "images",
+            "tags"
+        ).distinct()
 
-        if category_slug:
-            queryset = queryset.filter(category__slug=category_slug)
+        # دسته بندی
+        category = self.request.query_params.get("category")
+        if category:
+            queryset = queryset.filter(
+                category__slug=category
+            )
 
-        return queryset
+        # تگ
+        tag = self.request.query_params.get("tag")
+        if tag:
+            queryset = queryset.filter(
+                tags__slug=tag
+            )
+
+        # جستجو
+        search = self.request.query_params.get("search")
+        if search:
+            queryset = queryset.filter(
+                name__icontains=search
+            )
+
+        # حداقل قیمت
+        min_price = self.request.query_params.get("min_price")
+        if min_price:
+            queryset = queryset.filter(
+                variants__price__gte=min_price
+            )
+
+        # حداکثر قیمت
+        max_price = self.request.query_params.get("max_price")
+        if max_price:
+            queryset = queryset.filter(
+                variants__price__lte=max_price
+            )
+
+        # موجودی
+        in_stock = self.request.query_params.get("in_stock")
+        if in_stock == "true":
+            queryset = queryset.filter(
+                variants__stock__gt=0
+            )
+
+        # محصولات ویژه
+        special = self.request.query_params.get("special")
+        if special == "true":
+            queryset = queryset.filter(
+                special__is_active=True
+            )
+
+        # مرتب سازی
+        ordering = self.request.query_params.get("ordering")
+
+        if ordering == "newest":
+            queryset = queryset.order_by("-created_at")
+
+        elif ordering == "oldest":
+            queryset = queryset.order_by("created_at")
+
+        elif ordering == "price_asc":
+            queryset = queryset.order_by("variants__price")
+
+        elif ordering == "price_desc":
+            queryset = queryset.order_by("-variants__price")
+
+        return queryset.distinct()
+
+
+
 
 
 # =============================
