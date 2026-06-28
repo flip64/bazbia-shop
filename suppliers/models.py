@@ -221,3 +221,74 @@ class SupplierOffer(models.Model):
 
     def __str__(self):
         return f"{self.supplier.name} → {self.variant.sku}"
+
+
+
+
+
+class SupplierPriceHistory(models.Model):
+    """
+    ==========================================================
+    تاریخچه قیمت تأمین‌کننده (SupplierPriceHistory)
+    ==========================================================
+
+    این مدل تمامی تغییرات قیمت خرید محصولات از تأمین‌کنندگان
+    را ثبت می‌کند.
+
+    هر بار که قیمت خرید یک SupplierOffer تغییر کند، یک رکورد
+    جدید در این جدول ایجاد می‌شود.
+
+    این جدول فقط برای نگهداری تاریخچه است و هیچ تغییری در
+    قیمت فعلی ایجاد نمی‌کند.
+
+    ارتباط‌ها
+    ----------
+    SupplierOffer (1) -------- (∞) SupplierPriceHistory
+
+    مثال
+    -----
+    1405/04/01    1,200,000
+    1405/04/03    1,150,000
+    1405/04/08    1,180,000
+
+    کاربردها
+    --------
+    - مشاهده تاریخچه قیمت خرید
+    - رسم نمودار تغییر قیمت
+    - محاسبه کمترین و بیشترین قیمت
+    - تحلیل نوسانات قیمت
+    ==========================================================
+    """
+
+    supplier_offer = models.ForeignKey(
+        "SupplierOffer",
+        on_delete=models.CASCADE,
+        related_name="price_history",
+        verbose_name="پیشنهاد تأمین‌کننده",
+        help_text="پیشنهاد تأمین‌کننده‌ای که قیمت آن تغییر کرده است."
+    )
+
+    price = models.DecimalField(
+        max_digits=12,
+        decimal_places=0,
+        verbose_name="قیمت خرید",
+        help_text="قیمت خرید ثبت‌شده در این تاریخ."
+    )
+
+    created_at = models.DateTimeField(
+        auto_now_add=True,
+        verbose_name="زمان ثبت",
+        help_text="زمان ثبت این تغییر قیمت."
+    )
+
+    class Meta:
+        ordering = ["-created_at"]
+        verbose_name = "تاریخچه قیمت تأمین‌کننده"
+        verbose_name_plural = "تاریخچه قیمت تأمین‌کنندگان"
+
+    def __str__(self):
+        return (
+            f"{self.supplier_offer.variant.sku} | "
+            f"{self.price} | "
+            f"{self.created_at:%Y-%m-%d %H:%M}"
+        )
