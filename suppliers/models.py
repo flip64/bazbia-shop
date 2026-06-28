@@ -158,7 +158,7 @@ class SupplierOffer(models.Model):
     )
 
     supplier_url = models.URLField(
-        unique=True,
+        
         verbose_name="لینک محصول",
         help_text="آدرس صفحه محصول در سایت تأمین‌کننده"
     )
