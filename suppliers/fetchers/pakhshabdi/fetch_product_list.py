@@ -50,7 +50,7 @@ def read_product_sitemap(url):
         response = requests.get(url, headers=HEADERS, timeout=15)
 
         if response.status_code != 200:
-            print(f"Skip ({response.status_code})")
+            print("Skip ("+ response.status_code +")")
             return products
 
         root = ET.fromstring(response.content)
@@ -85,13 +85,13 @@ def main():
 
     sitemaps = get_product_sitemaps()
 
-    print(f"Found {len(sitemaps)} product sitemaps")
+    print("Found", len(sitemaps)," product sitemaps")
 
     for sitemap in sitemaps:
 
         products = read_product_sitemap(sitemap)
 
-        print(f"  {len(products)} products")
+        print( len(products)," products")
 
         all_products.extend(products)
 
