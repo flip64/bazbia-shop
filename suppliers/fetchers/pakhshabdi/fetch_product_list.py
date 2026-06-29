@@ -1,5 +1,6 @@
 
 # -*- coding: utf-8 -*-
+import codecs
 import requests
 import xml.etree.ElementTree as ET
 import json
@@ -95,7 +96,7 @@ def main():
 
         all_products.extend(products)
 
-    with open(OUTPUT_FILE, "w", encoding="utf-8") as f:
+    with codecs.open(OUTPUT_FILE, "w", encoding="utf-8") as f:
         json.dump(all_products, f, ensure_ascii=False, indent=2)
 
     print("-" * 50)
