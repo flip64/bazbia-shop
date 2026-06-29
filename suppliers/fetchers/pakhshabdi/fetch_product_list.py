@@ -96,9 +96,11 @@ def main():
 
         all_products.extend(products)
 
-    with codecs.open(OUTPUT_FILE, "w", encoding="utf-8") as f:
+    
+    with codecs.open(OUTPUT_FILE, "w", "utf-8") as f:
         json.dump(all_products, f, ensure_ascii=False, indent=2)
-
+   
+    
     print("-" * 50)
     print("Total:", len(all_products))
     print("Saved:", OUTPUT_FILE)
