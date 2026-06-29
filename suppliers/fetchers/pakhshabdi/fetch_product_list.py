@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+
 # -*- coding: utf-8 -*-
 import requests
 import xml.etree.ElementTree as ET
@@ -41,7 +41,7 @@ def get_product_sitemaps():
 def read_product_sitemap(url):
     """خواندن یک Product Sitemap"""
 
-    print(f"Reading: {url}")
+    print("Reading:" ,url)
 
     products = []
 
