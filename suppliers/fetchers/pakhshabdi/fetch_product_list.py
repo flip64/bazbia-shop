@@ -95,8 +95,8 @@ def main():
             f,
             ensure_ascii=False,
             indent=2
-        )
-
+        ).encode("utf-8")
+                               
     print("Found {} available products.".format(len(results)))
     print("Saved:", output_file)
 
