@@ -36,14 +36,7 @@ def check_product(url):
         )
 
         if not stock:
-            print("=" * 80)
-            print("Stock not found")
-            print("URL:", url)
-            print("Has product_title:", "product_title" in html)
-            print("Has stock in-stock:", "stock in-stock" in html)
-            print("Has InStock:", "InStock" in html)
-            print("Has OutOfStock:", "OutOfStock" in html)
-            print(html[:1000])
+    
             return None
 
         price = re.search(
