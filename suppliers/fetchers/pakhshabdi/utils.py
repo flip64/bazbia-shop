@@ -27,6 +27,12 @@ def check_product(url):
             html,
             re.I
         )
+        print("URL:", url)
+        print("Status:", r.status_code)
+        print("Length:", len(r.text))
+        print("Has product_title:", "product_title" in r.text)
+        print("Has InStock:", "InStock" in r.text)
+        print("Has stock in-stock:", "stock in-stock" in r.text)
 
         return {
             "name": re.sub(r"<.*?>", "", name.group(1)).strip() if name else "",
