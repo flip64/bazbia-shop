@@ -3,7 +3,7 @@ import xml.etree.ElementTree as ET
 import json
 import re
 ThreadPoolExecutor, as_completed
-from product_checker import  check_product
+
 BASE_URL = "https://pakhshabdi.com/sitemap_index.xml"
 
 HEADERS = {
@@ -195,7 +195,15 @@ def main():
                 )
 
     results.sort(key=lambda x: x["name"])
+    import os
 
+    BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+    DATA_DIR = os.path.join(BASE_DIR, "..", "data")
+    OUTPUT_FILE = os.path.join(DATA_DIR, "available_products.json")
+
+    # اگر پوشه data وجود نداشت، ایجادش کن
+    os.makedirs(DATA_DIR, exist_ok=True)
+  
     with open(OUTPUT_FILE, "w", encoding="utf-8") as f:
         json.dump(
             results,
