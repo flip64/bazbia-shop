@@ -89,7 +89,7 @@ def get_all_urls():
 
     sitemaps = get_product_sitemaps()
 
-    print(f"Found {len(sitemaps)} sitemaps")
+
 
     for sitemap in sitemaps:
 
@@ -111,7 +111,7 @@ def get_all_urls():
         except Exception as e:
             print(e)
 
-    print(f"Total urls: {len(urls)}")
+    print("Total urls: len(urls)",len(urls))
 
     return urls
     def main():
