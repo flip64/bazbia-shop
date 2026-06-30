@@ -1,3 +1,16 @@
+# -*- coding: utf-8 -*-
+from __future__ import unicode_literals
+
+import re
+import requests
+
+HEADERS = {
+    "User-Agent": "Mozilla/5.0"
+}
+
+session = requests.Session()
+session.headers.update(HEADERS)
+
 def check_product(url):
     try:
         print("=" * 80)
