@@ -13,12 +13,10 @@ session.headers.update(HEADERS)
 
 def check_product(url):
     try:
-        print("=" * 80)
-        print("URL:", url)
-
+        
         r = session.get(url, timeout=20)
 
-        print("Status:", r.status_code)
+        
 
         if r.status_code != 200:
             print("Status code is not 200")
@@ -26,14 +24,7 @@ def check_product(url):
 
         html = r.text
 
-        print("Length:", len(html))
-        print("Encoding:", r.encoding)
-        print("Has product_title:", "product_title" in html)
-        print("Has stock in-stock:", "stock in-stock" in html)
-        print("Has InStock:", "InStock" in html)
-        print("Has OutOfStock:", "OutOfStock" in html)
-        print("Has product:price:amount:", "product:price:amount" in html)
-
+        
         name = re.search(
             r'<h1[^>]*class="[^"]*product_title[^"]*"[^>]*>(.*?)</h1>',
             html,
