@@ -1,16 +1,15 @@
-import requests
-import xml.etree.ElementTree as ET
+import os
 import json
 import re
-ThreadPoolExecutor, as_completed
+import requests
+import xml.etree.ElementTree as ET
+from concurrent.futures import ThreadPoolExecutor, as_completed
 
 BASE_URL = "https://pakhshabdi.com/sitemap_index.xml"
 
 HEADERS = {
     "User-Agent": "Mozilla/5.0"
 }
-
-OUTPUT_FILE = "available_products.json"
 
 NAMESPACE = {
     "sm": "http://www.sitemaps.org/schemas/sitemap/0.9"
@@ -20,10 +19,9 @@ session = requests.Session()
 session.headers.update(HEADERS)
 
 
-
 def check_product(url):
     try:
-        r = requests.get(url, headers=HEADERS, timeout=20)
+        r = session.get(url, timeout=20)
 
         if r.status_code != 200:
             return False
@@ -58,11 +56,13 @@ def check_product(url):
             "name": re.sub(r"<.*?>", "", name.group(1)).strip() if name else "",
             "price": int(price.group(1)) if price else 0,
             "stock": int(stock.group(1)),
-            "url":url
+            "url": url
         }
 
     except Exception:
         return False
+
+
 def get_product_sitemaps():
     response = session.get(BASE_URL, timeout=20)
     response.raise_for_status()
@@ -112,42 +112,7 @@ def get_all_urls():
     print(f"Total urls: {len(urls)}")
 
     return urls
-
-
-def extract_json_ld(html):
-
-    m = re.search(
-        r'<script[^>]*type="application/ld\+json"[^>]*>(.*?)</script>',
-        html,
-        re.DOTALL
-    )
-
-    if not m:
-        return None
-
-    text = m.group(1).strip()
-
-    try:
-        return json.loads(text)
-
-    except:
-
-        try:
-
-            start = text.find("{")
-            end = text.rfind("}") + 1
-
-            return json.loads(text[start:end])
-
-        except:
-            return None
-
-
-
-        
-        
-        
-def main():
+    def main():
 
     urls = get_all_urls()
 
@@ -161,7 +126,6 @@ def main():
     print("Checking products...")
     print("-" * 60)
 
-    # تعداد تردها را بسته به سرعت اینترنت می‌توان تغییر داد
     with ThreadPoolExecutor(max_workers=20) as executor:
 
         futures = {
@@ -181,8 +145,10 @@ def main():
                     results.append(product)
 
                     print(
-                        f"[{found}] {product['name']} | "
-                        f"{product['price']} {product['currency']}"
+                        f"[{found}] "
+                        f"{product['name']} | "
+                        f"{product['price']} | "
+                        f"Stock: {product['stock']}"
                     )
 
             except Exception:
@@ -195,29 +161,7 @@ def main():
                 )
 
     results.sort(key=lambda x: x["name"])
-    import os
 
+    # مسیر پوشه data (یک شاخه بالاتر)
     BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-    DATA_DIR = os.path.join(BASE_DIR, "..", "data")
-    OUTPUT_FILE = os.path.join(DATA_DIR, "available_products.json")
-
-    # اگر پوشه data وجود نداشت، ایجادش کن
-    os.makedirs(DATA_DIR, exist_ok=True)
-  
-    with open(OUTPUT_FILE, "w", encoding="utf-8") as f:
-        json.dump(
-            results,
-            f,
-            ensure_ascii=False,
-            indent=2
-        )
-
-    print("\n" + "=" * 60)
-    print("Finished")
-    print(f"Available products : {len(results)}")
-    print(f"Saved to           : {OUTPUT_FILE}")
-    print("=" * 60)
-
-
-if __name__ == "__main__":
-    main()
+    DATA_DIR = os.path.join(BASE_DIR, "..
