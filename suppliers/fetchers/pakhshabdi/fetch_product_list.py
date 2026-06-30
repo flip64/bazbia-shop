@@ -6,7 +6,7 @@ import json
 import re
 import requests
 import xml.etree.ElementTree as ET
-from concurrent.futures import ThreadPoolExecutor, as_completed
+from multiprocessing.dummy import Pool as ThreadPool
 
 BASE_URL = "https://pakhshabdi.com/sitemap_index.xml"
 
@@ -27,18 +27,16 @@ def check_product(url):
         r = session.get(url, timeout=20)
 
         if r.status_code != 200:
-            return False
+            return None
 
         html = r.text
 
-        # نام محصول
         name = re.search(
             r'<h1[^>]*class="[^"]*product_title[^"]*"[^>]*>(.*?)</h1>',
             html,
             re.I | re.S
         )
 
-        # موجودی
         stock = re.search(
             r'class="stock\s+in-stock"[^>]*>\s*(\d+)',
             html,
@@ -46,9 +44,8 @@ def check_product(url):
         )
 
         if not stock:
-            return False
+            return None
 
-        # قیمت
         price = re.search(
             r'property="product:price:amount"\s+content="(\d+)"',
             html,
@@ -62,8 +59,8 @@ def check_product(url):
             "url": url
         }
 
-    except Exception:
-        return False
+    except:
+        return None
 
 
 def get_product_sitemaps():
@@ -87,18 +84,10 @@ def get_all_urls():
 
     urls = []
 
-    sitemaps = get_product_sitemaps()
-
-    print("Found {} sitemaps".format(len(sitemaps)))
-
-    for sitemap in sitemaps:
-
-        print("Reading:", sitemap)
+    for sitemap in get_product_sitemaps():
 
         try:
-
             r = session.get(sitemap, timeout=20)
-
             root = ET.fromstring(r.content)
 
             for item in root.findall("sm:url", NAMESPACE):
@@ -108,10 +97,8 @@ def get_all_urls():
                 if loc is not None:
                     urls.append(loc.text.strip())
 
-        except Exception as e:
-            print(e)
-
-    print("Total urls: {}".format(len(urls)))
+        except:
+            pass
 
     return urls
 
@@ -122,55 +109,16 @@ def main():
 
     results = []
 
-    total = len(urls)
-    done = 0
-    found = 0
+    pool = ThreadPool(20)
 
-    print("-" * 60)
-    print("Checking products...")
-    print("-" * 60)
 
-    with ThreadPoolExecutor(max_workers=20) as executor:
+    for product in pool.imap_unordered(check_product, urls):
 
-        futures = {
-            executor.submit(check_product, url): url
-            for url in urls
-        }
+        if product:
+            results.append(product)
 
-        for future in as_completed(futures):
-
-            done += 1
-
-            try:
-
-                product = future.result()
-
-                if product:
-
-                    found += 1
-                    results.append(product)
-
-                    print(
-                        "[{}] {} | {} | Stock: {}".format(
-                            found,
-                            product["name"],
-                            product["price"],
-                            product["stock"]
-                        )
-                    )
-
-            except Exception:
-                pass
-
-            if done % 25 == 0 or done == total:
-
-                print(
-                    "Checked: {}/{} | Available: {}".format(
-                        done,
-                        total,
-                        found
-                    )
-                )
+    pool.close()
+    pool.join()
 
     results.sort(key=lambda x: x["name"])
 
@@ -190,11 +138,8 @@ def main():
             indent=2
         )
 
-    print("\n" + "=" * 60)
-    print("Finished")
-    print("Available products :", len(results))
-    print("Saved to           :", output_file)
-    print("=" * 60)
+    print("Found {} available products.".format(len(results)))
+    print("Saved:", output_file)
 
 
 if __name__ == "__main__":
