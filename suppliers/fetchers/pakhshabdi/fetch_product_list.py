@@ -33,7 +33,7 @@ def get_product_sitemaps():
 
         loc = item.find("sm:loc", NAMESPACE)
 
-        if loc is not None and "product" in loc.text.lower():
+        if loc is not None and "product-sitemap" in loc.text.lower():
             sitemaps.append(loc.text.strip())
 
     return sitemaps
