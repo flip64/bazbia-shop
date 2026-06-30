@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+from __future__ import unicode_literals
 import os
 import json
 import re
@@ -183,8 +185,8 @@ def get_all_urls():
 
     print("\n" + "=" * 60)
     print("Finished")
-    print(f"Available products : {len(results)}")
-    print(f"Saved to           : {output_file}")
+    print("Available products : {len(results)}")
+    print("Saved to           : output_file",output_file )
     print("=" * 60)
 
 
