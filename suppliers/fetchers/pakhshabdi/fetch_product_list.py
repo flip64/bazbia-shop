@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
+
 import os
 import json
 import re
@@ -66,19 +67,18 @@ def check_product(url):
 
 
 def get_product_sitemaps():
-    response = session.get(BASE_URL, timeout=20)
-    response.raise_for_status()
 
-    root = ET.fromstring(response.content)
+    r = session.get(BASE_URL, timeout=20)
+    root = ET.fromstring(r.content)
 
     sitemaps = []
 
-    for sitemap in root.findall("sm:sitemap", NAMESPACE):
+    for item in root.findall("sm:sitemap", NAMESPACE):
 
-        loc = sitemap.find("sm:loc", NAMESPACE)
+        loc = item.find("sm:loc", NAMESPACE)
 
-        if loc is not None and "product-sitemap" in loc.text:
-            sitemaps.append(loc.text)
+        if loc is not None and "product" in loc.text.lower():
+            sitemaps.append(loc.text.strip())
 
     return sitemaps
 
@@ -89,7 +89,7 @@ def get_all_urls():
 
     sitemaps = get_product_sitemaps()
 
-
+    print("Found {} sitemaps".format(len(sitemaps)))
 
     for sitemap in sitemaps:
 
@@ -111,10 +111,12 @@ def get_all_urls():
         except Exception as e:
             print(e)
 
-    print("Total urls: len(urls)",len(urls))
+    print("Total urls: {}".format(len(urls)))
 
     return urls
-    def main():
+
+
+def main():
 
     urls = get_all_urls()
 
@@ -140,42 +142,47 @@ def get_all_urls():
             done += 1
 
             try:
+
                 product = future.result()
 
                 if product:
+
                     found += 1
                     results.append(product)
 
                     print(
-                        f"[{found}] "
-                        f"{product['name']} | "
-                        f"{product['price']} | "
-                        f"Stock: {product['stock']}"
+                        "[{}] {} | {} | Stock: {}".format(
+                            found,
+                            product["name"],
+                            product["price"],
+                            product["stock"]
+                        )
                     )
 
             except Exception:
                 pass
 
             if done % 25 == 0 or done == total:
+
                 print(
-                    f"Checked: {done}/{total} | "
-                    f"Available: {found}"
+                    "Checked: {}/{} | Available: {}".format(
+                        done,
+                        total,
+                        found
+                    )
                 )
 
     results.sort(key=lambda x: x["name"])
 
-    # مسیر پوشه data (یک شاخه بالاتر)
     BASE_DIR = os.path.dirname(os.path.abspath(__file__))
     DATA_DIR = os.path.join(BASE_DIR, "..", "data")
 
-    # اگر پوشه وجود نداشت، ساخته شود
-    os.makedirs(DATA_DIR, exist_ok=True)
+    if not os.path.exists(DATA_DIR):
+        os.makedirs(DATA_DIR)
 
-    # فایل خروجی
     output_file = os.path.join(DATA_DIR, "available_products.json")
 
-    # ذخیره
-    with open(output_file, "w", encoding="utf-8") as f:
+    with open(output_file, "w") as f:
         json.dump(
             results,
             f,
@@ -185,8 +192,8 @@ def get_all_urls():
 
     print("\n" + "=" * 60)
     print("Finished")
-    print("Available products : {len(results)}")
-    print("Saved to           : output_file",output_file )
+    print("Available products :", len(results))
+    print("Saved to           :", output_file)
     print("=" * 60)
 
 
