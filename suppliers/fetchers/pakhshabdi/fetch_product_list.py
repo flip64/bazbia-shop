@@ -164,4 +164,29 @@ def get_all_urls():
 
     # مسیر پوشه data (یک شاخه بالاتر)
     BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-    DATA_DIR = os.path.join(BASE_DIR, "..
+    DATA_DIR = os.path.join(BASE_DIR, "..", "data")
+
+    # اگر پوشه وجود نداشت، ساخته شود
+    os.makedirs(DATA_DIR, exist_ok=True)
+
+    # فایل خروجی
+    output_file = os.path.join(DATA_DIR, "available_products.json")
+
+    # ذخیره
+    with open(output_file, "w", encoding="utf-8") as f:
+        json.dump(
+            results,
+            f,
+            ensure_ascii=False,
+            indent=2
+        )
+
+    print("\n" + "=" * 60)
+    print("Finished")
+    print(f"Available products : {len(results)}")
+    print(f"Saved to           : {output_file}")
+    print("=" * 60)
+
+
+if __name__ == "__main__":
+    main()
