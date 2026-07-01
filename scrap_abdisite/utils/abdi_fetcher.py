@@ -126,10 +126,7 @@ def fetch_product_details(url):
 
 # ================== استخراج موجودی ==================
 def extract_quantity(product_link):
-    resp = session.get(product_link, timeout=15)
-    resp.raise_for_status()
-
-    soup = BeautifulSoup(resp.text, "html.parser")
+    soup = get_soup(product_link)
 
     stock_elem = soup.find(
         lambda tag: tag.name in ["span", "div", "p", "li"]
@@ -145,8 +142,8 @@ def extract_quantity(product_link):
     if match:
         return int(match.group(1))
 
-    match2 = re.search(r"(\d+)", text)
-    if match2:
-        return int(match2.group(1))
+    match = re.search(r"(\d+)", text)
+    if match:
+        return int(match.group(1))
 
     return None
