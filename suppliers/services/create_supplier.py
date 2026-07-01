@@ -1,14 +1,8 @@
 from suppliers.models import Supplier
+from suppliers.data.supplier_data import SupplierData
 
 
-def create_supplier(
-    name,
-    website=None,
-    phone=None,
-    email=None,
-    address=None,
-    note="",
-):
+def create_supplier(data: SupplierData) -> Supplier:
     """
     ایجاد تأمین‌کننده
 
@@ -16,14 +10,15 @@ def create_supplier(
     همان رکورد برگردانده می‌شود.
     """
 
-    supplier, created = Supplier.objects.get_or_create(
-        name=name,
+    supplier, _ = Supplier.objects.get_or_create(
+        name=data.name,
         defaults={
-            "website": website,
-            "phone": phone,
-            "email": email,
-            "address": address,
-            "note": note,
+            "website": data.website,
+            "phone": data.phone,
+            "email": data.email,
+            "address": data.address,
+            "is_active": data.is_active,
+            "note": data.note,
         },
     )
 
