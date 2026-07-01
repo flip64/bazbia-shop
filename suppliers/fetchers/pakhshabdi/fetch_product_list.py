@@ -6,6 +6,10 @@ import json
 import re
 import requests
 import xml.etree.ElementTree as ET
+import logging
+
+
+from logging.handlers import RotatingFileHandler
 from multiprocessing.dummy import Pool as ThreadPool
 from utils import check_product
 BASE_URL = "https://pakhshabdi.com/sitemap_index.xml"
@@ -20,6 +24,29 @@ NAMESPACE = {
 
 session = requests.Session()
 session.headers.update(HEADERS)
+
+
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+
+
+
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.INFO)
+
+handler = RotatingFileHandler(
+    os.path.join(BASE_DIR, "fetch_product_list.log"),
+    maxBytes=5 * 1024 * 1024,   # 5 MB
+    backupCount=2             # نگهداری 5 فایل قدیمی
+)
+
+formatter = logging.Formatter(
+    "%(asctime)s | %(levelname)s | %(message)s"
+)
+
+handler.setFormatter(formatter)
+logger.addHandler(handler)
+
+
 
 
 def get_product_sitemaps():
@@ -89,17 +116,16 @@ def main():
 
     output_file = os.path.join(DATA_DIR, "available_products.json")
 
-    with open(output_file, "w") as f:
-        json.dump(
+    with open(output_file, "wb") as f:
+     f.write(
+        json.dumps(
             results,
-            f,
             ensure_ascii=False,
             indent=2
         ).encode("utf-8")
-                               
-    print("Found {} available products.".format(len(results)))
-    print("Saved:", output_file)
-
+     )                           
+    logger.info("Found %d available products.", len(results))
+    logger.info("Saved: %s", output_file)
 
 if __name__ == "__main__":
     main()
