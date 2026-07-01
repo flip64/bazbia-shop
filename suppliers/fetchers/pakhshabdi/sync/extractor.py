@@ -1,6 +1,6 @@
 from products.services.product_data import ProductData
 
-from .fetcher import (
+from .abdi_fetcher import (
     fetch_product_details,
     extract_quantity,
     extract_product_images,
