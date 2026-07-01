@@ -36,3 +36,25 @@ def create_supplier_offer(
     )
 
     return supplier_offer
+
+from suppliers.models import SupplierPriceHistory
+
+
+def create_price_history(supplier_offer, price):
+    """
+    ثبت یک رکورد جدید در تاریخچه قیمت تأمین‌کننده.
+
+    Args:
+        supplier_offer: شیء SupplierOffer
+        price: قیمت خرید 
+
+    Returns:
+        SupplierPriceHistory
+    """
+
+    history = SupplierPriceHistory.objects.create(
+        supplier_offer=supplier_offer,
+        price=price,
+    )
+
+    return history
