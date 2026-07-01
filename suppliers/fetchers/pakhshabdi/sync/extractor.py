@@ -1,6 +1,6 @@
 from products.services.product_data import ProductData
 
-from .abdi_fetcher import (
+from suppliers.fetchers.pakhshabdi.sync.abdi_fetcher import (
     fetch_product_details,
     extract_quantity,
     extract_product_images,
