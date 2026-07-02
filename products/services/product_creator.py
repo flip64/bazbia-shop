@@ -5,7 +5,7 @@
 
 تمام عملیات ساخت محصول از طریق این فایل انجام می‌شود.
 """
-
+import uuid
 import os
 import requests
 
@@ -43,7 +43,7 @@ def create_variant(product, product_data):
     """
     return ProductVariant.objects.create(
         product=product,
-        sku=product_data.sku,
+        sku=uuid.uuid4().hex[:12],   
         price=product_data.price,
         stock=product_data.quantity,
     )
@@ -106,3 +106,8 @@ def create_videos(product, product_data):
     ایجاد ویدئوهای محصول
     """
     pass
+
+
+
+
+
