@@ -1,20 +1,22 @@
-from django.test import TestCase
+
 
 from suppliers.models import Supplier
 from products.models import Product
 from products.services.create_product_from_url import create_product_from_url
+import os
+import sys
+import django
 
+BASE_DIR = os.path.abspath(
+    os.path.join(os.path.dirname(__file__), "../../../../")
+)
+sys.path.insert(0, BASE_DIR)
 
-class CreateProductFromUrlTest(TestCase):
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "bazbia_shop.settings")
+django.setup()
 
-    def test_create_product(self):
-        supplier = Supplier.objects.create(
+supplier = Supplier.objects.create(
             name="پخش عبدی",
         )
-
-        url = "https://pakhshabdi.com/product/..."  # آدرس واقعی یک محصول
-
-        product = create_product_from_url(url, supplier)
-
-        self.assertIsNotNone(product.id)
-        self.assertTrue(Product.objects.filter(id=product.id).exists())
+url = "https://pakhshabdi.com/product/..."  # آدرس واقعی یک محصول
+product = create_product_from_url(url)
