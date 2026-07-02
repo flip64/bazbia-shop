@@ -19,7 +19,7 @@ from suppliers.fetchers.pakhshabdi.sync.extractor import extract_product_data
 
 
 @transaction.atomic
-def create_product_from_url(url, supplier):
+def create_product_from_url(url):
     data = extract_product_data(url)
 
     product = create_product(data)
