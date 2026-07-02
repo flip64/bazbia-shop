@@ -1,7 +1,7 @@
 from django.db import transaction
 
 from products.services.product_data import ProductData
-
+from supplier.fetchers.pakhshabdi.get_supplier_abdi import get_or_create_supplier
 from products.services.product_creator import (
     create_product,
     create_variant,
@@ -31,7 +31,7 @@ def create_product_from_url(url):
     create_tags(product, data)
 
     create_images(product, data)
-
+    supplier =get_or_create_supplier()
     offer = create_supplier_offer(
         supplier=supplier,
         variant=variant,
