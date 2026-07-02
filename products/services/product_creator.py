@@ -29,7 +29,7 @@ def create_product(product_data):
     """
     return Product.objects.create(
         name=product_data.name,
-        slug=create_slug(name),
+        slug=create_slug(product_data.name),
         description=product_data.description,
         base_price=product_data.price,
         quantity=product_data.quantity,
