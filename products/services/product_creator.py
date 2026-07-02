@@ -12,7 +12,7 @@ import requests
 from django.core.files import File
 from django.core.files.temp import NamedTemporaryFile
 from django.utils.text import slugify
-
+from products.services.helpper import create_slug
 from products.models import (
     Product,
     ProductVariant,
@@ -29,7 +29,7 @@ def create_product(product_data):
     """
     return Product.objects.create(
         name=product_data.name,
-        slug=product_data.slug,
+        slug=create_slug(name),
         description=product_data.description,
         base_price=product_data.price,
         quantity=product_data.quantity,
