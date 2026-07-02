@@ -1,6 +1,7 @@
 from django.utils import timezone
 
 from suppliers.models import SupplierOffer
+from suppliers.models import SupplierPriceHistory
 
 
 def create_supplier_offer(
@@ -37,7 +38,6 @@ def create_supplier_offer(
 
     return supplier_offer
 
-from suppliers.models import SupplierPriceHistory
 
 
 def create_price_history(supplier_offer, price):
