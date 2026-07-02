@@ -5,10 +5,13 @@
 
 تمام عملیات ساخت محصول از طریق این فایل انجام می‌شود.
 """
-from django.core.files import File
-from django.core.files.temp import NamedTemporaryFile
+
 import os
 import requests
+
+from django.core.files import File
+from django.core.files.temp import NamedTemporaryFile
+from django.utils.text import slugify
 
 from products.models import (
     Product,
@@ -24,25 +27,26 @@ def create_product(product_data):
     """
     ایجاد محصول
     """
-  Product.objects.create(
-    name=product_data.name,
-    slug=product_data.slug,
-    description=product_data.description,
-    base_price=product_data.price,
-    quantity=product_data.quantity,
-    category=product_data.category,
-  )
+    return Product.objects.create(
+        name=product_data.name,
+        slug=product_data.slug,
+        description=product_data.description,
+        base_price=product_data.price,
+        quantity=product_data.quantity,
+        category=product_data.category,
+    )
+
 
 def create_variant(product, product_data):
     """
     ایجاد واریانت محصول
     """
-    ProductVariant.objects.create(
-    product=product,
-    sku=product_data.sku,
-    price=product_data.price,
-    stock=product_data.quantity,
-)
+    return ProductVariant.objects.create(
+        product=product,
+        sku=product_data.sku,
+        price=product_data.price,
+        stock=product_data.quantity,
+    )
 
 
 def create_specifications(product, product_data):
@@ -50,11 +54,11 @@ def create_specifications(product, product_data):
     ایجاد مشخصات محصول
     """
     for spec in product_data.specifications:
-    ProductSpecification.objects.create(
-        product=product,
-        name=spec["name"],
-        value=spec["value"],
-    )
+        ProductSpecification.objects.create(
+            product=product,
+            name=spec["name"],
+            value=spec["value"],
+        )
 
 
 def create_tags(product, product_data):
@@ -62,17 +66,13 @@ def create_tags(product, product_data):
     ایجاد تگ‌های محصول
     """
     for tag_name in product_data.tags:
-    tag, _ = Tag.objects.get_or_create(
-        name=tag_name,
-        defaults={"slug": ...}
-    )
-    product.tags.add(tag)
-
-
-
-    
-    
-
+        tag, _ = Tag.objects.get_or_create(
+            name=tag_name,
+            defaults={
+                "slug": slugify(tag_name),
+            },
+        )
+        product.tags.add(tag)
 
 
 def create_images(product, product_data):
@@ -105,4 +105,4 @@ def create_videos(product, product_data):
     """
     ایجاد ویدئوهای محصول
     """
-    
+    pass
