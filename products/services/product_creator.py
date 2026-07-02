@@ -68,14 +68,16 @@ def create_tags(product, product_data):
     ایجاد تگ‌های محصول
     """
     for tag_name in product_data.tags:
+        slug = slugify(tag_name)
+
         tag, _ = Tag.objects.get_or_create(
-            name=tag_name,
+            slug=slug,
             defaults={
-                "slug": slugify(tag_name),
+                "name": tag_name,
             },
         )
-        product.tags.add(tag)
 
+        product.tags.add(tag)    
 
 def create_images(product, product_data):
     """
@@ -108,6 +110,9 @@ def create_videos(product, product_data):
     ایجاد ویدئوهای محصول
     """
     pass
+
+
+
 
 
 
