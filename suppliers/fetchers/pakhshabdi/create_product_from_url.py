@@ -1,7 +1,7 @@
 from django.db import transaction
 
 from products.services.product_data import ProductData
-from supplier.fetchers.pakhshabdi.get_supplier_abdi import get_or_create_supplier
+from suppliers.fetchers.pakhshabdi.get_supplier_abdi import get_or_create_supplier
 from products.services.product_creator import (
     create_product,
     create_variant,
