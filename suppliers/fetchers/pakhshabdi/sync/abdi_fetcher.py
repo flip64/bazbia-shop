@@ -68,17 +68,25 @@ def extract_specifications(url):
     soup = get_soup(url)
     feature_list = []
 
-    section_title = soup.find(text=lambda t: t and "ویژگی های محصول" in t)
+    section_title = soup.find(
+        string=lambda t: t and "ویژگی های محصول" in t
+    )
+
     if section_title:
         ul = section_title.find_next("ul")
         if ul:
             for li in ul.find_all("li"):
-                if ":" in li.text:
-                    key, val = li.text.split(":", 1)
-                    feature_list.append(f"{key.strip()}: {val.strip()}")
+                text = li.get_text(strip=True)
+
+                if ":" in text:
+                    key, val = text.split(":", 1)
+
+                    feature_list.append({
+                        "name": key.strip(),
+                        "value": val.strip(),
+                    })
+
     return feature_list
-
-
 # ================== استخراج تگ‌ها ==================
 def extract_tags(url):
     soup = get_soup(url)
