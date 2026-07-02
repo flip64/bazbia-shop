@@ -15,7 +15,7 @@ from suppliers.services.offer_creator import (
     create_price_history,
 )
 
-from suppliers.fetchers.pakhshabdi.extractor import extract_product_data
+from suppliers.fetchers.pakhshabdi.sync.extractor import extract_product_data
 
 
 @transaction.atomic
