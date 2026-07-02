@@ -53,6 +53,8 @@ def create_specifications(product, product_data):
     """
     ایجاد مشخصات محصول
     """
+    print(product_data.specifications)
+    print(type(product_data.specifications))
     for spec in product_data.specifications:
         ProductSpecification.objects.create(
             product=product,
