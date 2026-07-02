@@ -26,11 +26,11 @@ def create_product_from_url(url):
 
     variant = create_variant(product, data)
 
-    create_specifications(product, data.specifications)
+    create_specifications(product, data)
 
-    create_tags(product, data.tags)
+    create_tags(product, data)
 
-    create_images(product, data.images)
+    create_images(product, data)
 
     offer = create_supplier_offer(
         supplier=supplier,
