@@ -54,7 +54,7 @@ def check_product(url):
 
         product = {
             "name": product_name,
-            "price": int(price.group(1)) if price else 0,
+            "price": int(price.group(1)) //10 if price else 0,
             "stock": int(stock.group(1)),
             "url": url
         }
