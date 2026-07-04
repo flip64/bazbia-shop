@@ -22,13 +22,6 @@ for item in products:
 
     suppler = get_supplier_abdi()
     offer = find_offer_by_url(suppler , item["url"])
-    print(offer.supplier_url)
-    print(item["url"])
-    print('*'*20)
-
-    print(offer.purchase_price)
-    print(item["price"])
-    print('*'*50)
     if offer:
      if offer.purchase_price == item["price"]:        
        print("tagir nakardeh")
