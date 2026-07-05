@@ -28,5 +28,6 @@ for item in products:
             info(f"{item['name']} taghir nakardeh")
         else:
             update_offer(offer, item)
+            info(f"{item['name']} update shod")
     else:
         create_product_from_url(item["url"])
