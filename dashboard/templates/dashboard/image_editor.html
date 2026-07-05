@@ -1,1 +1,110 @@
 
+{% extends "dashboard/base.html" %}
+{% load static %}
+
+{% block title %}ویرایشگر تصویر{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet"
+      href="https://uicdn.toast.com/tui-image-editor/latest/tui-image-editor.css">
+
+<style>
+/* ===== Layout ===== */
+.editor-wrapper {
+    display: flex;
+    height: 100vh;
+    background: #f5f7fa;
+    direction: rtl;
+    font-family: sans-serif;
+}
+
+/* ===== Top bar ===== */
+.topbar {
+    position: fixed;
+    top: 0;
+    right: 0;
+    left: 0;
+    height: 55px;
+    background: #1f2937;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 15px;
+    z-index: 1000;
+}
+
+.topbar button {
+    background: #2563eb;
+    border: none;
+    color: white;
+    padding: 8px 12px;
+    border-radius: 8px;
+    cursor: pointer;
+}
+
+.topbar button:hover {
+    background: #1d4ed8;
+}
+
+/* ===== Sidebar ===== */
+.sidebar {
+    width: 250px;
+    background: #ffffff;
+    border-left: 1px solid #e5e7eb;
+    padding: 15px;
+    margin-top: 55px;
+}
+
+/* ===== Canvas area ===== */
+.canvas-area {
+    flex: 1;
+    margin-top: 55px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+#editor {
+    width: 100%;
+    height: calc(100vh - 55px);
+    background: #ddd;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+
+<!-- TOP BAR -->
+<div class="topbar">
+    <div>🖼 ویرایشگر بازبیا</div>
+
+    <div>
+        <button id="openBtn">📂 انتخاب تصویر</button>
+        <button id="saveBtn">💾 ذخیره</button>
+    </div>
+</div>
+
+<div class="editor-wrapper">
+
+    <!-- SIDEBAR -->
+    <div class="sidebar">
+        <h3>تنظیمات</h3>
+        <p>این بخش بعداً برای فیلتر و تنظیمات استفاده می‌شود</p>
+    </div>
+
+    <!-- CANVAS -->
+    <div class="canvas-area">
+        <div id="editor"></div>
+    </div>
+
+</div>
+
+<!-- FILE INPUT -->
+<input type="file" id="fileInput" hidden>
+
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://uicdn.toast.com/tui-image-editor/latest/tui-image-editor.min.js"></script>
+{% endblock %}
