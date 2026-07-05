@@ -160,10 +160,7 @@ class ProductVariant(models.Model):
     # =======================
     # فیلدهای جدید برای مدیریت قیمت
     # =======================
-    purchase_price = models.DecimalField(
-        max_digits=12, decimal_places=2, null=True, blank=True,
-        help_text="قیمت خرید از تأمین‌کننده"
-    )
+    
     profit_percent = models.DecimalField(
         max_digits=5, decimal_places=2, default=30.00,
         help_text="درصد سود محصول بر اساس قیمت خرید"
