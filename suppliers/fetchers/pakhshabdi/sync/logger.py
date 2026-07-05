@@ -13,7 +13,7 @@ BASE_DIR = os.path.dirname(
     )
 )
 
-LOG_DIR = os.path.join(BASE_DIR, "scrap_abdisite", "logs")
+LOG_DIR = os.path.join(BASE_DIR, "pakhshabdi", "logs")
 
 if not os.path.exists(LOG_DIR):
     os.makedirs(LOG_DIR)
