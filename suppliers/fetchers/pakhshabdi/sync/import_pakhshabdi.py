@@ -25,7 +25,7 @@ for item in products:
 
     if offer:
         if offer.purchase_price == item["price"]:
-            info(item["name"] , " taghir nakardeh")
+            info(f"{item['name']} taghir nakardeh")
         else:
             update_offer(offer, item)
     else:
