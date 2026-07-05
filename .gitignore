@@ -4,10 +4,17 @@ venv/
 env/
 ENV/
 pyvenv.cfg
+bin/
+lib/
+lib64/
+
 
 # Python
 __pycache__/
 *.py[cod]
+
+
+
 
 # Django
 *.log
