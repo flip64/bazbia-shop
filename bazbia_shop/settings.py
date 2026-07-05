@@ -88,7 +88,7 @@ INSTALLED_APPS = [
     'suppliers',
     'schema_viewer',
     'bazbia_packing',
-
+    'dashboard',
 
 ]
 
