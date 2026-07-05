@@ -3,143 +3,131 @@ from decimal import Decimal
 
 class PricingService:
     """
-    سرویس مدیریت قیمت محصولات
+    سرویس مرکزی قیمت‌گذاری فروشگاه
 
-    مسئول:
+    مسئولیت‌ها:
     - محاسبه قیمت فروش
-    - اعمال قوانین سود
-    - بروزرسانی قیمت واریانت
-    - ثبت تاریخچه تغییر قیمت
+    - اعمال قوانین قیمت
+    - بروزرسانی قیمت محصولات
+    - ثبت تاریخچه تغییرات
     """
 
-    # ==========================================
+    # ==========================================================
     # Public API
-    # ==========================================
+    # ==========================================================
 
     @classmethod
-    def calculate_price(cls, offer, variant):
-        """
-        محاسبه قیمت فروش
-        """
+    def calculate_price(cls, offer):
+        """محاسبه قیمت نهایی فروش"""
         pass
 
     @classmethod
-    def update_variant_price(cls, offer):
-        """
-        بروزرسانی قیمت یک واریانت
-        """
+    def update_offer_price(cls, offer):
+        """بروزرسانی قیمت یک پیشنهاد فروش"""
+        pass
+
+    @classmethod
+    def update_variant_prices(cls, variant):
+        """بروزرسانی قیمت یک واریانت"""
         pass
 
     @classmethod
     def update_product_prices(cls, product):
-        """
-        بروزرسانی تمام واریانت‌های محصول
-        """
+        """بروزرسانی تمام واریانت‌های یک محصول"""
         pass
 
     @classmethod
     def update_supplier_prices(cls, supplier):
-        """
-        بروزرسانی تمام قیمت‌های یک تامین‌کننده
-        """
+        """بروزرسانی تمام محصولات یک تامین‌کننده"""
         pass
 
     @classmethod
     def update_all_prices(cls):
-        """
-        بروزرسانی کل فروشگاه
-        """
+        """بروزرسانی کل قیمت‌های فروشگاه"""
         pass
 
-    # ==========================================
-    # Calculation
-    # ==========================================
+    # ==========================================================
+    # Price Calculation
+    # ==========================================================
 
     @classmethod
     def get_purchase_price(cls, offer):
-        """
-        دریافت قیمت خرید
-        """
+        """قیمت خرید"""
         pass
 
     @classmethod
-    def get_profit_percent(cls, variant):
-        """
-        دریافت درصد سود
-        """
+    def get_profit_percent(cls, offer):
+        """درصد سود"""
         pass
 
     @classmethod
-    def apply_profit(cls, purchase_price, profit_percent):
-        """
-        اعمال درصد سود
-        """
+    def apply_profit(cls, purchase_price, percent):
+        """اعمال سود"""
+        pass
+
+    @classmethod
+    def apply_discount(cls, price, offer):
+        """اعمال تخفیف"""
         pass
 
     @classmethod
     def apply_rounding(cls, price):
-        """
-        گرد کردن قیمت
-        """
+        """گرد کردن قیمت"""
         pass
 
     @classmethod
-    def apply_min_price(cls, price):
-        """
-        اعمال حداقل قیمت
-        """
+    def apply_limits(cls, price):
+        """اعمال حداقل و حداکثر قیمت"""
         pass
 
-    @classmethod
-    def apply_max_price(cls, price):
-        """
-        اعمال حداکثر قیمت
-        """
-        pass
-
-    # ==========================================
+    # ==========================================================
     # Validation
-    # ==========================================
+    # ==========================================================
 
     @classmethod
     def validate_offer(cls, offer):
-        """
-        اعتبارسنجی اطلاعات تامین‌کننده
-        """
+        """اعتبارسنجی اطلاعات پیشنهاد فروش"""
         pass
 
     @classmethod
-    def validate_variant(cls, variant):
-        """
-        اعتبارسنجی واریانت
-        """
+    def validate_price(cls, price):
+        """اعتبارسنجی قیمت"""
         pass
 
-    # ==========================================
+    # ==========================================================
     # Database
-    # ==========================================
+    # ==========================================================
 
     @classmethod
     def save_price(cls, variant, price):
-        """
-        ذخیره قیمت
-        """
+        """ذخیره قیمت"""
         pass
 
     @classmethod
     def create_history(cls, variant, old_price, new_price):
-        """
-        ثبت تاریخچه قیمت
-        """
+        """ثبت تاریخچه تغییر قیمت"""
         pass
 
-    # ==========================================
+    # ==========================================================
     # Utilities
-    # ==========================================
+    # ==========================================================
 
     @classmethod
     def has_price_changed(cls, old_price, new_price):
-        """
-        بررسی تغییر قیمت
-        """
+        """بررسی تغییر قیمت"""
         return old_price != new_price
+
+    @classmethod
+    def should_update(cls, variant, new_price):
+        """بررسی نیاز به بروزرسانی"""
+        pass
+
+    @classmethod
+    def lock_variant(cls, variant):
+        """قفل کردن واریانت هنگام بروزرسانی"""
+        pass
+
+    @classmethod
+    def unlock_variant(cls, variant):
+        """آزاد کردن قفل"""
+        pass
