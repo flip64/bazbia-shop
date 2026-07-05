@@ -10,6 +10,7 @@ sys.path.insert(0, BASE_DIR)
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "bazbia_shop.settings")
 django.setup()
 
+from suppliers.fetchers.pakhshabdi.sync.logger import info, warning, error, exception
 from suppliers.fetchers.pakhshabdi.sync.json_loader import load_available_products
 from suppliers.fetchers.pakhshabdi.sync.find_offer import find_offer_by_url
 from suppliers.fetchers.pakhshabdi.sync.create_product_from_url import create_product_from_url
@@ -24,7 +25,7 @@ for item in products:
 
     if offer:
         if offer.purchase_price == item["price"]:
-            print("taghir nakarde")
+            info(item["name"] , " taghir nakardeh")
         else:
             update_offer(offer, item)
     else:
