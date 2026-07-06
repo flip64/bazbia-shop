@@ -32,7 +32,7 @@ def sync_products():
             product = product_index[url]
 
             product["price"] = available["price"]
-            product["quantity"] = available.get("quantity", 0)
+            product["stock"] = available.get("quantity", 0)
 
         # محصول جدید
         else:
