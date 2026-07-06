@@ -23,10 +23,10 @@ def load_json(filename):
     path = os.path.join(DATA_DIR, filename)
 
     if not os.path.exists(path):
-        warning("%s پیدا نشد.", filename)
+        warning(f"{filename} پیدا نشد.")
         return []
 
-    info("Loading %s", filename)
+    info(f"{filename} Loading %s")
 
     with open(path, "r", encoding="utf-8") as f:
         return json.load(f)
