@@ -7,8 +7,8 @@ from suppliers.fetchers.pakhshabdi.extractor import extract_product_data
 from suppliers.services.product_to_json import product_to_json
 
 
-AVAILABLE_PRODUCTS_FILE = "data/available_products.json"
-PRODUCTDATA_FILE = "data/productdata.json"
+AVAILABLE_PRODUCTS_FILE = "available_products.json"
+PRODUCTDATA_FILE = "productdata.json"
 
 
 def sync_products():
