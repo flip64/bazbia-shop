@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from product_data import ProductData
+from products.services.product_data import ProductData
 
 
 def product_from_json(data):
