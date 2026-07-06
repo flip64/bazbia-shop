@@ -45,8 +45,7 @@ def sync_products():
             productdata.append(
                 product_to_json(product)
             )
-
-    save_json(PRODUCTDATA_FILE, productdata)
+            save_json(PRODUCTDATA_FILE, productdata)
 
 
 if __name__ == "__main__":
