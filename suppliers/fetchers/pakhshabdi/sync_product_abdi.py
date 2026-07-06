@@ -24,7 +24,7 @@ def sync_products():
 
     for available in available_products:
 
-        url = available["supplier_url"]
+        url = available["url"]
 
         # محصول وجود دارد
         if url in product_index:
