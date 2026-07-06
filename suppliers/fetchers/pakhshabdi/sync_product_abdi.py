@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
 
-from services.loader_json import load_json
-from services.save_json import save_json
+from suppliers.fetchers.pakhshabdi.loader_json import load_json
+from suppliers.fetchers.pakhshabdi.save_json import save_json
 
-from extractor import extract
-from services.product_to_json import product_to_json
+from suppliers.fetchers.pakhshabdi.extractor import extract_product_data
+from suppliers.services.product_to_json import product_to_json
 
 
 AVAILABLE_PRODUCTS_FILE = "data/available_products.json"
