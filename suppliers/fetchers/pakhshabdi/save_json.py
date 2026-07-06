@@ -12,7 +12,7 @@ BASE_DIR = os.path.dirname(
     )
 )
 
-DATA_DIR = os.path.join(BASE_DIR, "data")
+DATA_DIR = os.path.join(BASE_DIR, "pakhshabdi","data")
 
 
 def save_json(filename, data):
