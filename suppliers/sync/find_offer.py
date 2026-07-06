@@ -1,5 +1,5 @@
 from suppliers.models import SupplierOffer
-from supliers.services.get_supplier import get_supplier
+from suppliers.services.get_supplier import get_supplier
 
 
 def find_offer(productData):
