@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from suppliers.fetchers.pakhshabdi.loader_json import load_json
+from suppliers.fetchers.pakhshabdi.json_loader.py import load_json
 from suppliers.fetchers.pakhshabdi.save_json import save_json
 
 from suppliers.fetchers.pakhshabdi.extractor import extract_product_data
