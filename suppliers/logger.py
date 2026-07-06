@@ -44,17 +44,17 @@ if not logger.handlers:
     logger.addHandler(console_handler)
 
 
-def info(message):
-    logger.info(message)
+def info(message,*args):
+    logger.info(message,*args)
 
 
-def warning(message):
-    logger.warning(message)
+def warning(message,*args):
+    logger.warning(message,*args)
 
 
-def error(message):
-    logger.error(message)
+def error(message,*args):
+    logger.error(message,*args)
 
 
-def exception(message):
-    logger.exception(message)
+def exception(message,*args):
+    logger.exception(message,*args)
