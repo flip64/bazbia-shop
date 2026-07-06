@@ -3,50 +3,38 @@
 import os
 import json
 
-from suppliers.logger import info ,warning
+from suppliers.logger import info, warning
 
 
 BASE_DIR = os.path.dirname(
     os.path.dirname(
-            os.path.abspath(__file__)
-        
+        os.path.abspath(__file__)
     )
 )
 
-DATA_DIR = os.path.join(
-    BASE_DIR,
-    "pakhshabdi",
-    "data"
-)
+DATA_DIR = os.path.join(BASE_DIR, "data")
 
 
-def get_latest_available_file():
-    files = [
-        f for f in os.listdir(DATA_DIR)
-        if f.startswith("available") and f.endswith(".json")
-    ]
+def load_json(filename):
+    """
+    بارگذاری یک فایل JSON از پوشه data
+    """
 
-    if not files:
-        return None
+    path = os.path.join(DATA_DIR, filename)
 
-    files.sort(
-        key=lambda f: os.path.getmtime(
-            os.path.join(DATA_DIR, f)
-        ),
-        reverse=True
-    )
-
-    return os.path.join(DATA_DIR, files[0])
-
-
-def load_available_products():
-    path = get_latest_available_file()
-
-    if not path:
-        warning("available_products.json پیدا نشد.")
+    if not os.path.exists(path):
+        warning("%s پیدا نشد.", filename)
         return []
 
-    info(f"Loading {os.path.basename(path)}")
+    info("Loading %s", filename)
 
     with open(path, "r", encoding="utf-8") as f:
         return json.load(f)
+
+
+def load_available_products():
+    return load_json("available_products.json")
+
+
+def load_productdata():
+    return load_json("productdata.json")
