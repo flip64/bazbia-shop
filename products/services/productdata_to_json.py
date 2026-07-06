@@ -22,7 +22,7 @@ def product_to_json(product):
         "tags": product.tags,
 
         "supplier": product.supplier,
-        "supplier_url": product.url,
+        "supplier_url": product.supplier_url,
         "supplier_product_code": product.supplier_product_code,
 
         "is_active": product.is_active,
