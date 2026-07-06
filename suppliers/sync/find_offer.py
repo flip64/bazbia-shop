@@ -1,4 +1,5 @@
 from suppliers.models import SupplierOffer
+from supliers.services.get_supplier import get_supplier
 
 
 def find_offer(productData):
@@ -14,7 +15,7 @@ def find_offer(productData):
     -------
     SupplierOffer | None
     """
-    supplier = productData.supplier
+    supplier = get_supplier(productData.supplier)
     supplier_url = productData.supplier_url
     return (
         SupplierOffer.objects
