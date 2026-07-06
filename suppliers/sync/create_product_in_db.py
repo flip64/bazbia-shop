@@ -1,5 +1,5 @@
 from django.db import transaction
-
+from suppliers.servieses.get_supplier import get_supplier
 from products.services.product_data import ProductData
 from suppliers.fetchers.pakhshabdi.get_supplier_abdi import get_supplier_abdi
 from products.services.product_creator import (
@@ -28,8 +28,9 @@ def create_product_from_productData(data):
     create_tags(product, data)
 
     create_images(product, data)
+    supplier = get_supplier(data.supplier)
     offer = create_supplier_offer(
-        supplier=data.supplier,
+        supplier= supplier,
         variant=variant,
         supplier_url= data.supplier_url ,
         purchase_price = data.price,
