@@ -28,9 +28,9 @@ def sync_products():
 
         # محصول وجود دارد
         if url in product_index:
-
+   
             product = product_index[url]
-
+            print(" موجود")
             product["price"] = available["price"]
             product["stock"] = available.get("quantity", 0)
 
