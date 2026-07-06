@@ -18,7 +18,7 @@ def sync_products():
 
     # ایندکس محصولات بر اساس URL
     product_index = {
-        item["supplier_url"]: item
+        item["url"]: item
         for item in productdata
     }
 
