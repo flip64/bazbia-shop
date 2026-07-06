@@ -1,5 +1,5 @@
 from django.db import transaction
-from suppliers.servieses.get_supplier import get_supplier
+from suppliers.services.get_supplier import get_supplier
 from products.services.product_data import ProductData
 from suppliers.fetchers.pakhshabdi.get_supplier_abdi import get_supplier_abdi
 from products.services.product_creator import (
