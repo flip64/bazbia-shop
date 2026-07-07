@@ -1,9 +1,9 @@
-from functions import lru_cache 
+from functools import lru_cache 
 from suppliers.services.SupplierData import SupplierData
 from suppliers.services.get_supplier import get_supplier
 from suppliers.services.create_supplier import create_supplier
 
-@lru_cache
+@lru_cache(maxsize=1)
 def get_supplier_abdi():
     supplier = get_supplier("پخش عبدی")
 
