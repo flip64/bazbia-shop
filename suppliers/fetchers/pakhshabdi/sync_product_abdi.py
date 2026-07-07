@@ -66,7 +66,7 @@ def sync_products():
             save_json(PRODUCTDATA_FILE, productdata)
 
 
-       save_json(PRODUCTDATA_FILE, productdata)
+        save_json(PRODUCTDATA_FILE, productdata)
             
 if __name__ == "__main__":
     sync_products()
