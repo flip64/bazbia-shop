@@ -46,7 +46,7 @@ def sync_products():
         if supplier_url in product_index:
             product = product_index[supplier_url]
             print(product)
-            print(avilable["price"])
+            print(available["price"])
             if product["price"] != available["price"]:
                 product["price"] = available["price"]
                 save_json(PRODUCTDATA_FILE, productdata)
