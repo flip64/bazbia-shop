@@ -64,7 +64,7 @@ def check_product(url):
             "name": product_name,
             "price": int(price.group(1)) //10 if price else 0,
             "stock": int(stock.group(1)),
-            "url": url
+            "supplier_url": url
         }
 
         print("SUCCESS:", product["name"])
