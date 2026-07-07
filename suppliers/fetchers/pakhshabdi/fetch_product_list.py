@@ -1,4 +1,22 @@
 # -*- coding: utf-8 -*-
+
+import os
+import sys
+import django
+
+BASE_DIR = os.path.abspath(
+    os.path.join(os.path.dirname(__file__), "..", "..")
+)
+sys.path.insert(0, BASE_DIR)
+
+os.environ.setdefault(
+    "DJANGO_SETTINGS_MODULE",
+    "bazbia_shop.settings"
+)
+
+django.setup()
+
+
 from __future__ import unicode_literals
 from suppliers.fetchers.pakhshabdi.sync_product_abdi import sync_products
 
