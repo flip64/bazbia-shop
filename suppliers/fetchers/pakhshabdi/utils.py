@@ -5,6 +5,14 @@ import re
 import requests
 import traceback
 
+try:
+    unicode
+except NameError:
+    unicode = str
+
+
+
+
 HEADERS = {
     "User-Agent": "Mozilla/5.0"
 }
