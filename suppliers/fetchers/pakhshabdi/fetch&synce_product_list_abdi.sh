@@ -12,8 +12,14 @@ echo "Python: $(which python)"
 echo "Version: $(python --version)"
 
 # اجرای اسکریپت
-python suppliers/sync/import_product.py
+echo "شروع: scrap list"
+python suppliers/fetchers/pakhshabdi/fetch_product_list.py
+echo "پایان : scrap list"
+echo "شروع: همگام سازی لیست "
 
+python suppliers/fetchers/pakhshabdi/sync_product_abdi.py
+
+echo "پایان  همگام سازی لیست "
 EXIT_CODE=$?
 
 echo "پایان: $(date)"
