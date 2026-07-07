@@ -50,7 +50,7 @@ def sync_products():
             product = product_index[supplier_url]
             product["price"] = available["price"]
             product["stock"] = available.get("quantity", 0)
-            save_json(PRODUCTDATA_FILE, productdata)
+            
 
         # محصول جدید
         else:
@@ -66,5 +66,7 @@ def sync_products():
             save_json(PRODUCTDATA_FILE, productdata)
 
 
+       save_json(PRODUCTDATA_FILE, productdata)
+            
 if __name__ == "__main__":
     sync_products()
