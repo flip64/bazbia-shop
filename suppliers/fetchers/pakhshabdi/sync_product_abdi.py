@@ -42,19 +42,19 @@ def sync_products():
 
     for available in available_products:
 
-        url = available["url"]
+        supplier_url = available["supplier_url"]
 
         # محصول وجود دارد
-        if url in product_index:
+        if supplier_url in product_index:
    
-            product = product_index[url]
+            product = product_index[supplier_url]
             product["price"] = available["price"]
             product["stock"] = available.get("quantity", 0)
 
         # محصول جدید
         else:
 
-            product = extract_product_data(url)
+            product = extract_product_data(supplier_url)
 
             if product is None:
                 continue
