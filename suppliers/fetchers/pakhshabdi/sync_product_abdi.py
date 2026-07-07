@@ -40,6 +40,7 @@ def sync_products():
         for item in productdata
     }
 
+            
     for available in available_products:
 
         supplier_url = available["supplier_url"]
@@ -65,8 +66,7 @@ def sync_products():
             )
             save_json(PRODUCTDATA_FILE, productdata)
 
-
-        save_json(PRODUCTDATA_FILE, productdata)
-            
+    save_json(PRODUCTDATA_FILE, productdata)
+    
 if __name__ == "__main__":
     sync_products()
