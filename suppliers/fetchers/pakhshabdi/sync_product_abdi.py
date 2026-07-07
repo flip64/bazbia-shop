@@ -47,12 +47,15 @@ def sync_products():
 
         # محصول وجود دارد
         if supplier_url in product_index:
-   
             product = product_index[supplier_url]
-            product["price"] = available["price"]
-            product["stock"] = available.get("quantity", 0)
-            
-
+            if product["price"] != available["price"]:
+                product["price"] = available["price"]
+                save_json(PRODUCTDATA_FILE, productdata)
+             
+            if product["stock"] != available.get("quantity", 0):
+                product["stock"] = available.get("quantity", 0)
+                save_json(PRODUCTDATA_FILE, productdata)
+    
         # محصول جدید
         else:
 
@@ -66,7 +69,7 @@ def sync_products():
             )
             save_json(PRODUCTDATA_FILE, productdata)
 
-    save_json(PRODUCTDATA_FILE, productdata)
+    
     
 if __name__ == "__main__":
     sync_products()
