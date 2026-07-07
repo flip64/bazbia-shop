@@ -1,24 +1,8 @@
 # -*- coding: utf-8 -*-
 
-import os
-import sys
-import django
-
-BASE_DIR = os.path.abspath(
-    os.path.join(os.path.dirname(__file__), "..", "..")
-)
-sys.path.insert(0, BASE_DIR)
-
-os.environ.setdefault(
-    "DJANGO_SETTINGS_MODULE",
-    "bazbia_shop.settings"
-)
-
-django.setup()
-
 
 from __future__ import unicode_literals
-from suppliers.fetchers.pakhshabdi.sync_product_abdi import sync_products
+
 
 
 import os
@@ -146,8 +130,8 @@ def main():
      )                           
     logger.info("Found %d available products.", len(results))
     logger.info("Saved: %s", output_file)
-    sync_products()
-    logger.info("synce products")
+
+    
 
 if __name__ == "__main__":
     main()
