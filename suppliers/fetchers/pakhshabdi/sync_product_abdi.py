@@ -50,6 +50,7 @@ def sync_products():
             product = product_index[supplier_url]
             product["price"] = available["price"]
             product["stock"] = available.get("quantity", 0)
+            save_json(PRODUCTDATA_FILE, productdata)
 
         # محصول جدید
         else:
