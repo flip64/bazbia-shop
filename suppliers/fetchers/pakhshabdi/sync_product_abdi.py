@@ -45,10 +45,12 @@ def sync_products():
         # محصول وجود دارد
         if supplier_url in product_index:
             product = product_index[supplier_url]
-            print(product)
-            print(available["price"])
+            
+            
             if product["price"] != available["price"]:
+                print(product["price"])
                 product["price"] = available["price"]
+                print(product["price"])
                 save_json(PRODUCTDATA_FILE, productdata)
              
             if product["stock"] != available.get("quantity", 0):
