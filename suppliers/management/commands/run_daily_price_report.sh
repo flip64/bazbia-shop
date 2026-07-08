@@ -2,4 +2,4 @@
 
 source /home/bazbiair/virtualenv/bazbia/3.10/bin/activate && cd /home/bazbiair/bazbia
 
-python suppliers/management/commands/daily_price_report.py
+python -m suppliers.management.commands.daily_price_report
