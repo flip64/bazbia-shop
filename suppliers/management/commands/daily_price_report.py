@@ -1,6 +1,6 @@
 from django.core.management.base import BaseCommand
 
-from suppliers.services.daily_price_report import DailyPriceReportService
+from suppliers.services.reports.daily_price_report import DailyPriceReportService
 
 
 class Command(BaseCommand):
