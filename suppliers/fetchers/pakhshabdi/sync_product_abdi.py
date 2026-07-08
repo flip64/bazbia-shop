@@ -30,31 +30,29 @@ def sync_products():
 
     available_products = load_json(AVAILABLE_PRODUCTS_FILE)
     productdata = load_json(PRODUCTDATA_FILE)
-
+            
     # ایندکس محصولات بر اساس URL
     product_index = {
         item["supplier_url"]: item
         for item in productdata
     }
 
-            
     for available in available_products:
 
         supplier_url = available["supplier_url"]
 
         # محصول وجود دارد
         if supplier_url in product_index:
+            
             product = product_index[supplier_url]
-            
-            
+
             if product["price"] != available["price"]:
-                print(product["price"])
                 product["price"] = available["price"]
-                print(product["price"])
                 save_json(PRODUCTDATA_FILE, productdata)
              
-            if product["stock"] != available.get("quantity", 0):
-                product["stock"] = available.get("quantity", 0)
+
+            if product["quantity"] != available["stock"]:
+                product["quantity"] = available["stock"]
                 save_json(PRODUCTDATA_FILE, productdata)
     
         # محصول جدید
