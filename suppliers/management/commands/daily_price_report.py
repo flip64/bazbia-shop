@@ -24,4 +24,4 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         service = DailyPriceReportService()
         service.run()
-      
+        print("ok")
