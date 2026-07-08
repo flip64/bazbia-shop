@@ -1,1 +1,193 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="UTF-8">
 
+<style>
+body{
+    margin:0;
+    padding:30px;
+    background:#f5f6fa;
+    font-family:Tahoma,Arial,sans-serif;
+    direction:rtl;
+}
+
+.container{
+    max-width:1000px;
+    margin:auto;
+    background:#ffffff;
+    border-radius:12px;
+    overflow:hidden;
+    box-shadow:0 5px 15px rgba(0,0,0,.08);
+}
+
+.header{
+    background:#198754;
+    color:#fff;
+    padding:25px;
+}
+
+.header h2{
+    margin:0;
+    font-size:24px;
+}
+
+.header p{
+    margin-top:8px;
+    opacity:.9;
+}
+
+.summary{
+    padding:20px 30px;
+    background:#f8f9fa;
+    border-bottom:1px solid #eee;
+}
+
+.summary span{
+    display:inline-block;
+    margin-left:25px;
+    font-weight:bold;
+}
+
+table{
+    width:100%;
+    border-collapse:collapse;
+}
+
+thead{
+    background:#212529;
+    color:#fff;
+}
+
+th{
+    padding:14px;
+    text-align:center;
+    font-size:14px;
+}
+
+td{
+    padding:12px;
+    text-align:center;
+    border-bottom:1px solid #ececec;
+}
+
+tbody tr:nth-child(even){
+    background:#fafafa;
+}
+
+.price-old{
+    color:#dc3545;
+}
+
+.price-new{
+    color:#198754;
+    font-weight:bold;
+}
+
+.footer{
+    padding:20px;
+    text-align:center;
+    color:#666;
+    background:#f8f9fa;
+    font-size:13px;
+}
+</style>
+
+</head>
+
+<body>
+
+<div class="container">
+
+    <div class="header">
+        <h2>گزارش روزانه تغییر قیمت تأمین‌کنندگان</h2>
+        <p>{{ report_date }}</p>
+    </div>
+
+    <div class="summary">
+
+        <span>تعداد تغییرات:
+            {{ changes|length }}
+        </span>
+
+    </div>
+
+    <table>
+
+        <thead>
+
+        <tr>
+
+            <th>#</th>
+
+            <th>محصول</th>
+
+            <th>SKU</th>
+
+            <th>تأمین‌کننده</th>
+
+            <th>قیمت قبلی</th>
+
+            <th>قیمت جدید</th>
+
+            <th>زمان تغییر</th>
+
+        </tr>
+
+        </thead>
+
+        <tbody>
+
+        {% for item in changes %}
+
+        <tr>
+
+            <td>{{ forloop.counter }}</td>
+
+            <td>{{ item.product }}</td>
+
+            <td>{{ item.sku }}</td>
+
+            <td>{{ item.supplier }}</td>
+
+            <td class="price-old">
+                {{ item.old_price|default:"-" }}
+            </td>
+
+            <td class="price-new">
+                {{ item.new_price }}
+            </td>
+
+            <td>{{ item.time }}</td>
+
+        </tr>
+
+        {% empty %}
+
+        <tr>
+
+            <td colspan="7">
+
+                هیچ تغییر قیمتی در ۲۴ ساعت گذشته ثبت نشده است.
+
+            </td>
+
+        </tr>
+
+        {% endfor %}
+
+        </tbody>
+
+    </table>
+
+    <div class="footer">
+
+        این گزارش به صورت خودکار توسط سیستم تأمین‌کنندگان
+        <strong>بازبیا</strong> ایجاد شده است.
+
+    </div>
+
+</div>
+
+</body>
+</html>
