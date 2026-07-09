@@ -210,24 +210,15 @@ LANGUAGE_CODE = 'en-us'
 import os
 from django.utils import timezone
 
-# خواندن USE_TZ از محیط
-USE_TZ = os.environ.get("DJANGO_USE_TZ", "false").lower() != "false"
 
-# رشته TIME_ZONE همیشه معتبر باشد
-TIME_ZONE = "UTC"
+LANGUAGE_CODE = "fa-ir"
 
-# اگر USE_TZ=false بود، توابع زمان را override کنیم تا خطای ZoneInfo ندهد
-if not USE_TZ:
-    class FixedTimezone:
-        def utcoffset(self, dt): return None
-        def tzname(self, dt): return None
-        def dst(self, dt): return None
+TIME_ZONE = "Asia/Tehran"
 
-    timezone.get_default_timezone = lambda: FixedTimezone()
-    timezone.get_current_timezone = lambda: FixedTimezone()
-    timezone.localtime = lambda value=None, timezone=None: value
-    timezone.template_localtime = lambda value, use_tz=None: value
+USE_TZ = True
+
 USE_I18N = True
+
 
 
 

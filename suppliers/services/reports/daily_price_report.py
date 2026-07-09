@@ -1,11 +1,16 @@
 from datetime import timedelta
-
 from django.conf import settings
 from django.core.mail import EmailMultiAlternatives
 from django.template.loader import render_to_string
+from suppliers.models import SupplierPriceHistory
 from django.utils import timezone
 
-from suppliers.models import SupplierPriceHistory
+import jdatetime
+
+
+
+
+
 
 
 class DailyPriceReportService:
@@ -75,11 +80,12 @@ class DailyPriceReportService:
         """
         رندر قالب HTML
         """
+        now = timezone.localtime()
 
         return render_to_string(
             "suppliers/daily_price_report.html",
             {
-                "report_date": timezone.localtime(),
+                "report_date": jdatetime.datetime.fromgregorian(datetime=now).strftime("%Y/%m/%d %H:%M") ,
                 "changes": changes,
                 "count": len(changes),
             },
@@ -95,7 +101,7 @@ class DailyPriceReportService:
             body="این گزارش به صورت HTML ارسال شده است.",
             from_email=settings.DEFAULT_FROM_EMAIL,
             to=[
-                "nima.jr64@gmail.com",   # ایمیل خودت
+                "jr64.naderloo@gmail.com",   # ایمیل خودت
             ],
         )
 
