@@ -9,6 +9,6 @@ def dashboard(request):
     
     context = {
         "page_title": "داشبورد مدیریت",
-        "supplers":suppliers
+        "suppliers":suppliers
     }
     return render(request, "dashboard/index.html", context)
