@@ -12,6 +12,7 @@ def create_supplier(data: SupplierData) -> Supplier:
 
     supplier, _ = Supplier.objects.get_or_create(
         name=data.name,
+        slug=data.slug,
         defaults={
             "website": data.website,
             "phone": data.phone,
