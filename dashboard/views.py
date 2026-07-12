@@ -2,6 +2,8 @@
 from django.shortcuts import render,get_object_or_404
 from django.contrib.auth.decorators import login_required
 from suppliers.models import Supplier
+from products.models import Product
+
 @login_required
 def dashboard(request):
     suppliers = Supplier.objects.filter(is_active=True)
