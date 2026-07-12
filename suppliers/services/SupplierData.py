@@ -19,6 +19,7 @@ class SupplierData(object):
         # ==========================
         # اطلاعات تماس
         # ==========================
+        self.slug = None
         self.website = None
         self.phone = None
         self.email = None
