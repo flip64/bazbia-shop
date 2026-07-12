@@ -5,11 +5,12 @@ from suppliers.services.create_supplier import create_supplier
 
 @lru_cache(maxsize=1)
 def get_supplier_abdi():
-    supplier = get_supplier("پخش عبدی")
+    supplier = get_supplier("abdi")
 
     if supplier is None:
         data = SupplierData()
         data.name = "پخش عبدی"
+        data.slug = "abdi"
         data.website = "https://pakhshabdi.com"
         data.phone = ""
         data.email = ""
