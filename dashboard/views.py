@@ -25,10 +25,12 @@ def dataTable(request, slug=None):
     if slug:
         supplier = get_object_or_404(
             Supplier,
-            slug=slug,
+            name=slug,
             is_active=True
         )
-        products = supplier.products.all()   # یا Product.objects.filter(...)
+        products = Product.objects.filter(variants__supplier_offers__supplier=supplier
+        ).distinct()
+   
 
     context = {
         "page_title": "داشبورد مدیریت",
