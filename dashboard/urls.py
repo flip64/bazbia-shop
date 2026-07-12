@@ -5,8 +5,8 @@ app_name = "dashboard"
 urlpatterns = [
     
     path('', dashboard , name='dashboard'),
-    path('suppliers/', dashboard , name='dashboard'),
-    path('datatables/', dataTable , name='datatable'),
+    path('suppliers/', dashboard , name='supplers'),
+    path('datatables/<slug:slug>/', name='datatable'),
 
 
 
