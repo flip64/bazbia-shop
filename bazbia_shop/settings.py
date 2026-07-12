@@ -213,11 +213,11 @@ from django.utils import timezone
 
 LANGUAGE_CODE = "fa-ir"
 
-TIME_ZONE = "Asia/Tehran"
+TIME_ZONE = "UTC"
 
 USE_TZ = False
 
-USE_I18N = True
+# USE_I18N = True
 
 
 
