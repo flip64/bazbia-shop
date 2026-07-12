@@ -27,7 +27,7 @@ def dataTable(request, slug=None):
     if slug:
         supplier = get_object_or_404(
             Supplier,
-            name=slug,
+            slug=slug,
             is_active=True
         )
         products = Product.objects.filter(variants__supplier_offers__supplier=supplier
