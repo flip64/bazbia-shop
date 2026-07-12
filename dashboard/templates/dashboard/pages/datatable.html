@@ -75,20 +75,23 @@
 									</tr>
 								</thead>
 								<tbody>
-									<tr>
+									
 									  {% for product in products %}
+									    <tr>
 											  <td class="table-plus">	{{ product.name.name }}</td>
 										      <td>25</td>
 										      <td>Sagittarius</td>
 										      <td>2829 Trainer Avenue Peoria, IL 61602</td>
 										      <td>29-03-2018</td>
 										      <td>$162,700</td>
+
+										</tr>
                                            {% empty %}
 												<a class="dropdown-item" href="#">تأمین‌کننده‌ای وجود ندارد</a>
                                             {% endfor %}
 									
 										
-									</tr>
+								
 								
 								
 								</tbody>
