@@ -19,7 +19,7 @@ class Supplier(models.Model):
     name = models.CharField(
         max_length=255,
         unique=True,
-        help_text="نام انگلیسب شرکت یا فروشنده عمده"
+        help_text="نام شرکت یا فروشنده عمده"
     )
 
 
@@ -27,7 +27,7 @@ class Supplier(models.Model):
     slug = models.CharField(
         max_length=255,
         unique=True,
-        help_text="نام شرکت یا فروشنده عمده"
+        help_text =" نامک یکتا برای لینک  "
     )
 
 
