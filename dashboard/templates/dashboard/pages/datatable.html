@@ -62,10 +62,9 @@
 							<h4 class="text-blue h4">لیست محصولات تامین کننده </h4>
 						</div>
 						<div class="pb-20">
-							<table
-								class="table hover multiple-select-row data-table-export nowrap"
-							>
+							<table class="table hover multiple-select-row data-table-export nowrap">
 								<thead>
+									
 									<tr>
 										<th class="table-plus datatable-nosort">Name</th>
 										<th>نام محصول </th>
@@ -76,14 +75,19 @@
 									</tr>
 								</thead>
 								<tbody>
-									
 									<tr>
-										<td class="table-plus">Gloria F. Mead</td>
-										<td>25</td>
-										<td>Sagittarius</td>
-										<td>2829 Trainer Avenue Peoria, IL 61602</td>
-										<td>29-03-2018</td>
-										<td>$162,700</td>
+									  {% for product in products %}
+											  <td class="table-plus">	{{ product.name.name }}</td>
+										      <td>25</td>
+										      <td>Sagittarius</td>
+										      <td>2829 Trainer Avenue Peoria, IL 61602</td>
+										      <td>29-03-2018</td>
+										      <td>$162,700</td>
+                                           {% empty %}
+												<a class="dropdown-item" href="#">تأمین‌کننده‌ای وجود ندارد</a>
+                                            {% endfor %}
+									
+										
 									</tr>
 								
 								
