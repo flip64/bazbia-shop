@@ -1,7 +1,7 @@
 from suppliers.models import Supplier
 
 
-def get_supplier(name):
+def get_supplier(slug):
     """
     دریافت تأمین‌کننده بر اساس نام.
 
@@ -9,6 +9,6 @@ def get_supplier(name):
     """
 
     try:
-        return Supplier.objects.get(name=name)
+        return Supplier.objects.get(slug=slug)
     except Supplier.DoesNotExist:
         return None
