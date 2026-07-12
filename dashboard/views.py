@@ -8,8 +8,9 @@ def dashboard(request):
 
     
     context = {
-        "page_title": "داشبورد مدیریت",
+        "page_title": "محصولات ",
         "suppliers":suppliers
+        
     }
     return render(request, "dashboard/index.html", context)
 
