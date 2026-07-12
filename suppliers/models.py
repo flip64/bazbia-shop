@@ -27,7 +27,8 @@ class Supplier(models.Model):
     slug = models.CharField(
         max_length=255,
         help_text =" نامک یکتا برای لینک  ",
-        unique=True,
+        unique=False,
+        null=True
     )
 
 
