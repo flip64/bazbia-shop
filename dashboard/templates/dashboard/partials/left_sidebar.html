@@ -36,7 +36,7 @@
 		
                               {% for supplier in suppliers %}
                                 <li>
-                                 <a href="">
+                                 <a href="{% url 'datatables',supplier.slug  %}">
                                   {{ supplier.name }}
                                  </a>
                                 </li>
