@@ -25,10 +25,7 @@ def unique_slug(name):
 
     while Product.objects.filter(slug=slug).exists():
         suffix = "-{}".format(i)
-        slug = "{}{}".format(
-            base[:max_length - len(suffix)],
-            suffix
-        )
+        slug = "{}{}".format(base[: max_length - len(suffix)], suffix)
         i += 1
 
     return slug

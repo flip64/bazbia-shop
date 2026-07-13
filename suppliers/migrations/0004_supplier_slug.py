@@ -6,13 +6,15 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('suppliers', '0003_alter_supplieroffer_supplier_url'),
+        ("suppliers", "0003_alter_supplieroffer_supplier_url"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='supplier',
-            name='slug',
-            field=models.CharField(help_text=' نامک یکتا برای لینک  ', max_length=255, null=True),
+            model_name="supplier",
+            name="slug",
+            field=models.CharField(
+                help_text=" نامک یکتا برای لینک  ", max_length=255, null=True
+            ),
         ),
     ]

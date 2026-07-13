@@ -1,4 +1,3 @@
-
 fetchers = [
     abdi,
     supplier2,

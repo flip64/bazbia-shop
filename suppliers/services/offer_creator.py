@@ -39,14 +39,13 @@ def create_supplier_offer(
     return supplier_offer
 
 
-
 def create_price_history(supplier_offer, price):
     """
     ثبت یک رکورد جدید در تاریخچه قیمت تأمین‌کننده.
 
     Args:
         supplier_offer: شیء SupplierOffer
-        price: قیمت خرید 
+        price: قیمت خرید
 
     Returns:
         SupplierPriceHistory

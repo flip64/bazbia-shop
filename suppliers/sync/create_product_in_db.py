@@ -16,7 +16,6 @@ from suppliers.services.offer_creator import (
 )
 
 
-
 @transaction.atomic
 def create_product_from_productData(data):
     product = create_product(data)
@@ -30,14 +29,12 @@ def create_product_from_productData(data):
     create_images(product, data)
     supplier = get_supplier(data.supplier)
     offer = create_supplier_offer(
-        supplier= supplier,
+        supplier=supplier,
         variant=variant,
-        supplier_url= data.supplier_url ,
-        purchase_price = data.price,
-        supplier_stock=  data.quantity,
-        supplier_product_name = data.name
-
-       
+        supplier_url=data.supplier_url,
+        purchase_price=data.price,
+        supplier_stock=data.quantity,
+        supplier_product_name=data.name,
     )
 
     create_price_history(offer, data.price)

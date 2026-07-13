@@ -6,13 +6,20 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('suppliers', '0002_supplier_is_active_supplier_note_supplier_updated_at_and_more'),
+        (
+            "suppliers",
+            "0002_supplier_is_active_supplier_note_supplier_updated_at_and_more",
+        ),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='supplieroffer',
-            name='supplier_url',
-            field=models.URLField(help_text='آدرس صفحه محصول در سایت تأمین\u200cکننده', max_length=1000, verbose_name='لینک محصول'),
+            model_name="supplieroffer",
+            name="supplier_url",
+            field=models.URLField(
+                help_text="آدرس صفحه محصول در سایت تأمین\u200cکننده",
+                max_length=1000,
+                verbose_name="لینک محصول",
+            ),
         ),
     ]

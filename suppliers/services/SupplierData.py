@@ -36,7 +36,4 @@ class SupplierData(object):
         self.note = ""
 
     def __repr__(self):
-        return (
-            "<SupplierData name={!r}>"
-            .format(self.name)
-        )
+        return "<SupplierData name={!r}>".format(self.name)

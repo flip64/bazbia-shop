@@ -18,11 +18,7 @@ def find_offer(productData):
     supplier = get_supplier(productData.supplier)
     supplier_url = productData.supplier_url
     return (
-        SupplierOffer.objects
-        .filter(
-            supplier=supplier,
-            supplier_url= supplier_url
-        )
+        SupplierOffer.objects.filter(supplier=supplier, supplier_url=supplier_url)
         .select_related("variant", "supplier")
         .first()
     )

@@ -4,10 +4,7 @@ import os
 import sys
 import django
 
-
-BASE_DIR = os.path.abspath(
-    os.path.join(os.path.dirname(__file__), "../../../")
-)
+BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "../../../"))
 
 sys.path.insert(0, BASE_DIR)
 
@@ -21,7 +18,6 @@ from suppliers.fetchers.pakhshabdi.extractor import extract_product_data
 from suppliers.fetchers.pakhshabdi.extractor import extract_product_data
 from products.services.productdata_to_json import product_to_json
 
-
 AVAILABLE_PRODUCTS_FILE = "available_products.json"
 PRODUCTDATA_FILE = "productdata.json"
 
@@ -30,12 +26,9 @@ def sync_products():
 
     available_products = load_json(AVAILABLE_PRODUCTS_FILE)
     productdata = load_json(PRODUCTDATA_FILE)
-            
+
     # ایندکس محصولات بر اساس URL
-    product_index = {
-        item["supplier_url"]: item
-        for item in productdata
-    }
+    product_index = {item["supplier_url"]: item for item in productdata}
 
     for available in available_products:
 
@@ -43,18 +36,17 @@ def sync_products():
 
         # محصول وجود دارد
         if supplier_url in product_index:
-            
+
             product = product_index[supplier_url]
 
             if product["price"] != available["price"]:
                 product["price"] = available["price"]
                 save_json(PRODUCTDATA_FILE, productdata)
-             
 
             if product["quantity"] != available["stock"]:
                 product["quantity"] = available["stock"]
                 save_json(PRODUCTDATA_FILE, productdata)
-    
+
         # محصول جدید
         else:
 
@@ -63,12 +55,9 @@ def sync_products():
             if product is None:
                 continue
 
-            productdata.append(
-                product_to_json(product)
-            )
+            productdata.append(product_to_json(product))
             save_json(PRODUCTDATA_FILE, productdata)
 
-    
-    
+
 if __name__ == "__main__":
     sync_products()

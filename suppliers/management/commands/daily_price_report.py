@@ -5,10 +5,7 @@ import django
 BASE_DIR = "/home/bazbiair/bazbia"
 sys.path.insert(0, BASE_DIR)
 
-os.environ.setdefault(
-    "DJANGO_SETTINGS_MODULE",
-    "bazbia_shop.settings"
-)
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "bazbia_shop.settings")
 
 django.setup()
 
@@ -23,4 +20,3 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         service = DailyPriceReportService()
         service.run()
-        

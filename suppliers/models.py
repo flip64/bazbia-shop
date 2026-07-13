@@ -17,74 +17,46 @@ class Supplier(models.Model):
 
     # نام تأمین‌کننده
     name = models.CharField(
-        max_length=255,
-        unique=True,
-        help_text="نام شرکت یا فروشنده عمده"
+        max_length=255, unique=True, help_text="نام شرکت یا فروشنده عمده"
     )
-
 
     # نام slug
     slug = models.SlugField(
-        max_length=255,
-        help_text =" نامک یکتا برای لینک  ",
-        unique=True,
-        null=False
+        max_length=255, help_text=" نامک یکتا برای لینک  ", unique=True, null=False
     )
 
-
-
-    
     # وب‌سایت رسمی
     website = models.URLField(
-        blank=True,
-        null=True,
-        help_text="آدرس وب‌سایت تأمین‌کننده"
+        blank=True, null=True, help_text="آدرس وب‌سایت تأمین‌کننده"
     )
 
     # شماره تماس
     phone = models.CharField(
-        max_length=50,
-        blank=True,
-        null=True,
-        help_text="شماره تماس"
+        max_length=50, blank=True, null=True, help_text="شماره تماس"
     )
 
     # ایمیل
-    email = models.EmailField(
-        blank=True,
-        null=True,
-        help_text="ایمیل"
-    )
+    email = models.EmailField(blank=True, null=True, help_text="ایمیل")
 
     # آدرس
-    address = models.TextField(
-        blank=True,
-        null=True,
-        help_text="آدرس دفتر یا انبار"
-    )
+    address = models.TextField(blank=True, null=True, help_text="آدرس دفتر یا انبار")
 
     # فعال بودن همکاری
     is_active = models.BooleanField(
-        default=True,
-        help_text="آیا همکاری با این تأمین‌کننده فعال است؟"
+        default=True, help_text="آیا همکاری با این تأمین‌کننده فعال است؟"
     )
 
     # یادداشت داخلی
-    note = models.TextField(
-        blank=True,
-        help_text="یادداشت‌های داخلی مدیر فروشگاه"
-    )
+    note = models.TextField(blank=True, help_text="یادداشت‌های داخلی مدیر فروشگاه")
 
     # تاریخ ایجاد
     created_at = models.DateTimeField(
-        auto_now_add=True,
-        help_text="تاریخ ثبت تأمین‌کننده"
+        auto_now_add=True, help_text="تاریخ ثبت تأمین‌کننده"
     )
 
     # آخرین ویرایش
     updated_at = models.DateTimeField(
-        auto_now=True,
-        help_text="آخرین زمان ویرایش اطلاعات"
+        auto_now=True, help_text="آخرین زمان ویرایش اطلاعات"
     )
 
     class Meta:
@@ -94,9 +66,6 @@ class Supplier(models.Model):
 
     def __str__(self):
         return self.name
-
-
-
 
 
 class SupplierOffer(models.Model):
@@ -144,7 +113,7 @@ class SupplierOffer(models.Model):
         on_delete=models.CASCADE,
         related_name="offers",
         verbose_name="تأمین‌کننده",
-        help_text="تأمین‌کننده عرضه‌کننده این محصول"
+        help_text="تأمین‌کننده عرضه‌کننده این محصول",
     )
 
     variant = models.ForeignKey(
@@ -152,71 +121,54 @@ class SupplierOffer(models.Model):
         on_delete=models.CASCADE,
         related_name="supplier_offers",
         verbose_name="واریانت محصول",
-        help_text="واریانتی که این تأمین‌کننده عرضه می‌کند"
+        help_text="واریانتی که این تأمین‌کننده عرضه می‌کند",
     )
 
     supplier_product_name = models.CharField(
         max_length=300,
         blank=True,
         verbose_name="نام محصول نزد تأمین‌کننده",
-        help_text="نامی که تأمین‌کننده برای این محصول استفاده می‌کند."
+        help_text="نامی که تأمین‌کننده برای این محصول استفاده می‌کند.",
     )
 
     supplier_product_code = models.CharField(
         max_length=100,
         blank=True,
         verbose_name="کد محصول تأمین‌کننده",
-        help_text="کد داخلی محصول نزد تأمین‌کننده (در صورت وجود)"
+        help_text="کد داخلی محصول نزد تأمین‌کننده (در صورت وجود)",
     )
 
     supplier_url = models.URLField(
         max_length=1000,
         verbose_name="لینک محصول",
-        help_text="آدرس صفحه محصول در سایت تأمین‌کننده"
+        help_text="آدرس صفحه محصول در سایت تأمین‌کننده",
     )
 
     purchase_price = models.DecimalField(
-        max_digits=12,
-        decimal_places=0,
-        verbose_name="قیمت خرید"
+        max_digits=12, decimal_places=0, verbose_name="قیمت خرید"
     )
 
     supplier_stock = models.PositiveIntegerField(
-        default=0,
-        verbose_name="موجودی تأمین‌کننده"
+        default=0, verbose_name="موجودی تأمین‌کننده"
     )
 
-    is_available = models.BooleanField(
-        default=True,
-        verbose_name="موجود"
-    )
+    is_available = models.BooleanField(default=True, verbose_name="موجود")
 
     is_primary = models.BooleanField(
         default=False,
         verbose_name="تأمین‌کننده اصلی",
-        help_text="اگر فعال باشد این تأمین‌کننده به عنوان تأمین‌کننده اصلی محصول استفاده می‌شود."
+        help_text="اگر فعال باشد این تأمین‌کننده به عنوان تأمین‌کننده اصلی محصول استفاده می‌شود.",
     )
 
     last_seen = models.DateTimeField(
-        null=True,
-        blank=True,
-        verbose_name="آخرین مشاهده در لیست محصولات"
+        null=True, blank=True, verbose_name="آخرین مشاهده در لیست محصولات"
     )
 
-    last_checked = models.DateTimeField(
-        auto_now=True,
-        verbose_name="آخرین بررسی"
-    )
+    last_checked = models.DateTimeField(auto_now=True, verbose_name="آخرین بررسی")
 
-    created_at = models.DateTimeField(
-        auto_now_add=True,
-        verbose_name="تاریخ ایجاد"
-    )
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name="تاریخ ایجاد")
 
-    updated_at = models.DateTimeField(
-        auto_now=True,
-        verbose_name="آخرین بروزرسانی"
-    )
+    updated_at = models.DateTimeField(auto_now=True, verbose_name="آخرین بروزرسانی")
 
     class Meta:
         verbose_name = "پیشنهاد تأمین‌کننده"
@@ -226,16 +178,12 @@ class SupplierOffer(models.Model):
 
         constraints = [
             models.UniqueConstraint(
-                fields=["supplier", "variant"],
-                name="unique_supplier_variant"
+                fields=["supplier", "variant"], name="unique_supplier_variant"
             )
         ]
 
     def __str__(self):
         return f"{self.supplier.name} → {self.variant.sku}"
-
-
-
 
 
 class SupplierPriceHistory(models.Model):
@@ -277,20 +225,18 @@ class SupplierPriceHistory(models.Model):
         on_delete=models.CASCADE,
         related_name="price_history",
         verbose_name="پیشنهاد تأمین‌کننده",
-        help_text="پیشنهاد تأمین‌کننده‌ای که قیمت آن تغییر کرده است."
+        help_text="پیشنهاد تأمین‌کننده‌ای که قیمت آن تغییر کرده است.",
     )
 
     price = models.DecimalField(
         max_digits=12,
         decimal_places=0,
         verbose_name="قیمت خرید",
-        help_text="قیمت خرید ثبت‌شده در این تاریخ."
+        help_text="قیمت خرید ثبت‌شده در این تاریخ.",
     )
 
     created_at = models.DateTimeField(
-        auto_now_add=True,
-        verbose_name="زمان ثبت",
-        help_text="زمان ثبت این تغییر قیمت."
+        auto_now_add=True, verbose_name="زمان ثبت", help_text="زمان ثبت این تغییر قیمت."
     )
 
     class Meta:

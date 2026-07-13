@@ -5,14 +5,9 @@ import json
 
 from suppliers.logger import info, warning
 
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
-BASE_DIR = os.path.dirname(
-    os.path.dirname(
-        os.path.abspath(__file__)
-    )
-)
-
-DATA_DIR = os.path.join(BASE_DIR, "pakhshabdi","data")
+DATA_DIR = os.path.join(BASE_DIR, "pakhshabdi", "data")
 
 
 def load_json(filename):

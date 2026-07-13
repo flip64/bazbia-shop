@@ -26,9 +26,6 @@ def save_price_history(offer, new_price):
     if offer.purchase_price == new_price:
         return False
 
-    SupplierPriceHistory.objects.create(
-        supplier_offer=offer,
-        price=new_price
-    )
+    SupplierPriceHistory.objects.create(supplier_offer=offer, price=new_price)
 
     return True

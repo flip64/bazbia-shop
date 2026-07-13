@@ -5,14 +5,9 @@ import json
 
 from suppliers.logger import info
 
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
-BASE_DIR = os.path.dirname(
-    os.path.dirname(
-        os.path.abspath(__file__)
-    )
-)
-
-DATA_DIR = os.path.join(BASE_DIR, "pakhshabdi","data")
+DATA_DIR = os.path.join(BASE_DIR, "pakhshabdi", "data")
 
 
 def save_json(filename, data):
@@ -23,11 +18,6 @@ def save_json(filename, data):
     path = os.path.join(DATA_DIR, filename)
 
     with open(path, "w", encoding="utf-8") as f:
-        json.dump(
-            data,
-            f,
-            ensure_ascii=False,
-            indent=2
-        )
+        json.dump(data, f, ensure_ascii=False, indent=2)
 
     info("Saved %s", filename)

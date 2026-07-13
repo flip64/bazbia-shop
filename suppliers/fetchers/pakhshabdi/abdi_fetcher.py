@@ -8,17 +8,20 @@ logger = logging.getLogger(__name__)
 
 # ================== Session سراسری ==================
 session = requests.Session()
-session.headers.update({
-    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
-                  "AppleWebKit/537.36 (KHTML, like Gecko) "
-                  "Chrome/120.0.0.0 Safari/537.36",
-    "Accept-Language": "fa-IR,fa;q=0.9,en-US;q=0.8,en;q=0.7",
-    "Referer": "https://pakhshabdi.com/",
-    "Connection": "keep-alive",
-})
+session.headers.update(
+    {
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
+        "AppleWebKit/537.36 (KHTML, like Gecko) "
+        "Chrome/120.0.0.0 Safari/537.36",
+        "Accept-Language": "fa-IR,fa;q=0.9,en-US;q=0.8,en;q=0.7",
+        "Referer": "https://pakhshabdi.com/",
+        "Connection": "keep-alive",
+    }
+)
 
 # ================== کش ساده soup ==================
 _soup_cache = {}
+
 
 def get_soup(url):
     """دریافت یا بازگرداندن BeautifulSoup مربوط به یک URL"""
@@ -45,15 +48,12 @@ def clean_price(price_str):
     return int(digits) if digits else None
 
 
-
 # ================== استخراج مشخصات ==================
 def extract_specifications(url):
     soup = get_soup(url)
     feature_list = []
 
-    section_title = soup.find(
-        string=lambda t: t and "ویژگی های محصول" in t
-    )
+    section_title = soup.find(string=lambda t: t and "ویژگی های محصول" in t)
 
     if section_title:
         ul = section_title.find_next("ul")
@@ -64,12 +64,16 @@ def extract_specifications(url):
                 if ":" in text:
                     key, val = text.split(":", 1)
 
-                    feature_list.append({
-                        "name": key.strip(),
-                        "value": val.strip(),
-                    })
+                    feature_list.append(
+                        {
+                            "name": key.strip(),
+                            "value": val.strip(),
+                        }
+                    )
 
     return feature_list
+
+
 # ================== استخراج تگ‌ها ==================
 def extract_tags(url):
     soup = get_soup(url)

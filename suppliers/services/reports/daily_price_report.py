@@ -8,11 +8,6 @@ from django.utils import timezone
 import jdatetime
 
 
-
-
-
-
-
 class DailyPriceReportService:
 
     def run(self):
@@ -42,8 +37,7 @@ class DailyPriceReportService:
         since = timezone.now() - timedelta(hours=24)
 
         history = (
-            SupplierPriceHistory.objects
-            .filter(created_at__gte=since)
+            SupplierPriceHistory.objects.filter(created_at__gte=since)
             .select_related(
                 "supplier_offer__supplier",
                 "supplier_offer__variant__product",
@@ -56,8 +50,7 @@ class DailyPriceReportService:
         for item in history:
 
             previous = (
-                SupplierPriceHistory.objects
-                .filter(
+                SupplierPriceHistory.objects.filter(
                     supplier_offer=item.supplier_offer,
                     created_at__lt=item.created_at,
                 )
@@ -65,14 +58,16 @@ class DailyPriceReportService:
                 .first()
             )
 
-            changes.append({
-                "product": item.supplier_offer.variant.product.name,
-                "sku": item.supplier_offer.variant.sku,
-                "supplier": item.supplier_offer.supplier.name,
-                "old_price": previous.price if previous else None,
-                "new_price": item.price,
-                "time": timezone.localtime(item.created_at),
-            })
+            changes.append(
+                {
+                    "product": item.supplier_offer.variant.product.name,
+                    "sku": item.supplier_offer.variant.sku,
+                    "supplier": item.supplier_offer.supplier.name,
+                    "old_price": previous.price if previous else None,
+                    "new_price": item.price,
+                    "time": timezone.localtime(item.created_at),
+                }
+            )
 
         return changes
 
@@ -85,7 +80,9 @@ class DailyPriceReportService:
         return render_to_string(
             "suppliers/daily_price_report.html",
             {
-                "report_date": jdatetime.datetime.fromgregorian(datetime=now).strftime("%Y/%m/%d %H:%M") ,
+                "report_date": jdatetime.datetime.fromgregorian(datetime=now).strftime(
+                    "%Y/%m/%d %H:%M"
+                ),
                 "changes": changes,
                 "count": len(changes),
             },
@@ -101,7 +98,7 @@ class DailyPriceReportService:
             body="این گزارش به صورت HTML ارسال شده است.",
             from_email=settings.DEFAULT_FROM_EMAIL,
             to=[
-                "jr64.naderloo@gmail.com",   # ایمیل خودت
+                "jr64.naderloo@gmail.com",  # ایمیل خودت
             ],
         )
 

@@ -14,7 +14,6 @@ def list_product():
 
     for item in raw_products:
         product_data = product_from_json(item)
-    
 
         if product_data:
             product_data_list.append(product_data)

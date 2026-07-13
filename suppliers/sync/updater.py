@@ -21,10 +21,11 @@ def find_offer(supplier, url):
 
     url = normalize_url(url)
 
-    return SupplierOffer.objects.filter(
-        supplier=supplier,
-        supplier_url=url
-    ).select_related("variant").first()
+    return (
+        SupplierOffer.objects.filter(supplier=supplier, supplier_url=url)
+        .select_related("variant")
+        .first()
+    )
 
 
 def update_offer(offer, item):
@@ -63,15 +64,9 @@ def update_existing_product(supplier, item):
     در غیر این صورت None برمی‌گرداند.
     """
 
-    offer = find_offer(
-        supplier,
-        item["url"]
-    )
+    offer = find_offer(supplier, item["url"])
 
     if not offer:
         return None
 
-    return update_offer(
-        offer,
-        item
-    )
+    return update_offer(offer, item)

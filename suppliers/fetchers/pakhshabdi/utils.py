@@ -11,11 +11,7 @@ except NameError:
     unicode = str
 
 
-
-
-HEADERS = {
-    "User-Agent": "Mozilla/5.0"
-}
+HEADERS = {"User-Agent": "Mozilla/5.0"}
 
 session = requests.Session()
 session.headers.update(HEADERS)
@@ -34,23 +30,17 @@ def check_product(url):
         name = re.search(
             r'<h1[^>]*class="[^"]*product_title[^"]*"[^>]*>(.*?)</h1>',
             html,
-            re.I | re.S
+            re.I | re.S,
         )
 
-        stock = re.search(
-            r'class="stock\s+in-stock"[^>]*>\s*(\d+)',
-            html,
-            re.I
-        )
+        stock = re.search(r'class="stock\s+in-stock"[^>]*>\s*(\d+)', html, re.I)
 
         if not stock:
-    
+
             return None
 
         price = re.search(
-            r'property="product:price:amount"\s+content="(\d+)"',
-            html,
-            re.I
+            r'property="product:price:amount"\s+content="(\d+)"', html, re.I
         )
 
         if name:
@@ -58,13 +48,13 @@ def check_product(url):
             if not isinstance(product_name, unicode):
                 product_name = product_name.decode("utf-8", "ignore")
         else:
-            product_name = u""
+            product_name = ""
 
         product = {
             "name": product_name,
-            "price": int(price.group(1)) //10 if price else 0,
+            "price": int(price.group(1)) // 10 if price else 0,
             "stock": int(stock.group(1)),
-            "supplier_url": url
+            "supplier_url": url,
         }
 
         print("SUCCESS:", product["name"])
