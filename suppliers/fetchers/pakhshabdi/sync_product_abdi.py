@@ -15,7 +15,6 @@ django.setup()
 from suppliers.fetchers.pakhshabdi.json_loader import load_json
 from suppliers.fetchers.pakhshabdi.save_json import save_json
 from suppliers.fetchers.pakhshabdi.extractor import extract_product_data
-from suppliers.fetchers.pakhshabdi.extractor import extract_product_data
 from products.services.productdata_to_json import product_to_json
 
 AVAILABLE_PRODUCTS_FILE = "available_products.json"
