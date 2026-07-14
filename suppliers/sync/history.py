@@ -9,6 +9,9 @@ def save_price_history(offer, new_price):
     """
     اگر قیمت تغییر کرده باشد، تاریخچه ثبت می‌شود.
 
+    این تابع باید قبل از به‌روزرسانی
+    offer.purchase_price فراخوانی شود.
+
     Parameters
     ----------
     offer : SupplierOffer
@@ -26,6 +29,9 @@ def save_price_history(offer, new_price):
     if offer.purchase_price == new_price:
         return False
 
-    SupplierPriceHistory.objects.create(supplier_offer=offer, price=new_price)
+    SupplierPriceHistory.objects.create(
+        supplier_offer=offer,
+        price=new_price,
+    )
 
     return True
