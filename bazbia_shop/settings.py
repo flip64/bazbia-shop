@@ -99,7 +99,7 @@ MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',  # این رو اول همه middleware ها بذار
     'django.middleware.common.CommonMiddleware',
     'django.middleware.security.SecurityMiddleware',
-
+    "whitenoise.middleware.WhiteNoiseMiddleware",
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
@@ -133,6 +133,18 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'bazbia_shop.wsgi.application'
+
+
+STORAGES = {
+    "default": {
+        "BACKEND": "django.core.files.storage.FileSystemStorage",
+    },
+    "staticfiles": {
+        "BACKEND": (
+            "whitenoise.storage.CompressedManifestStaticFilesStorage"
+        ),
+    },
+}
 
 
 
