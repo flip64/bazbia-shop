@@ -24,7 +24,7 @@
             </h1>
 
             <p class="text-secondary mb-0">
-                مشاهده قیمت خرید، قیمت فروش، درصد سود و موجودی محصولات
+                مشاهده قیمت خرید، قیمت فروش، موجودی و وضعیت محصولات
             </p>
         </div>
 
@@ -43,10 +43,7 @@
                 {% for supplier_item in suppliers %}
                     <li>
                         <a
-                            class="dropdown-item
-                            {% if supplier_item.pk == supplier.pk %}
-                                active
-                            {% endif %}"
+                            class="dropdown-item{% if supplier_item.pk == supplier.pk %} active{% endif %}"
                             href="{% url 'dashboard:supplier_products' supplier_item.slug %}"
                         >
                             {{ supplier_item.name }}
@@ -206,18 +203,16 @@
                         </th>
 
                         <th scope="col">
-                            موجودی
+                            موجودی تأمین‌کننده
                         </th>
 
                         <th scope="col">
-                            وضعیت
+                            وضعیت سایت
                         </th>
-                        
-                        <th scope="col">
+
+                        <th scope="col" class="text-center">
                             عملیات
-                        
                         </th>
-                        
                     </tr>
                 </thead>
 
@@ -268,47 +263,39 @@
                             </td>
 
                             <td>
-                                {% if offer.variant.profit_percent is not None %}
-                                    <span class="profit-badge">
-                                        {{ offer.variant.profit_percent }}٪
-                                    </span>
-                                {% else %}
-                                    <span class="text-secondary">
-                                        —
-                                    </span>
-                                {% endif %}
-                            </td>
-
-                            <td>
                                 {{ offer.supplier_stock|default:0 }}
                             </td>
 
                             <td>
-                                {% if offer.variant.product.is_active  %}
+                                {% if offer.variant.product.is_active %}
                                     <span class="status-badge status-available">
                                         فعال
                                     </span>
                                 {% else %}
                                     <span class="status-badge status-unavailable">
-                                        غیر فعال
+                                        غیرفعال
                                     </span>
                                 {% endif %}
                             </td>
 
                             <td class="text-center">
 
-                              {% if offer.supplier_url %}
-                                <a
-                                 href="{{ offer.supplier_url }}"
-                                 target="_blank"
-                                 rel="noopener noreferrer"
-                                 class="btn btn-sm btn-outline-primary"
-                                 title="مشاهده در سایت تأمین‌کننده"
-                                 > 🔗
-                                </a>
-                             {% else %} 
-                                <span class="text-secondary">—</span>
-                             {% endif %}
+                                {% if offer.supplier_url %}
+                                    <a
+                                        href="{{ offer.supplier_url }}"
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        class="btn btn-sm btn-outline-primary"
+                                        title="مشاهده در سایت تأمین‌کننده"
+                                        aria-label="مشاهده محصول در سایت تأمین‌کننده"
+                                    >
+                                        🔗
+                                    </a>
+                                {% else %}
+                                    <span class="text-secondary">
+                                        —
+                                    </span>
+                                {% endif %}
 
                             </td>
 
@@ -369,14 +356,12 @@
                             </li>
                         {% endif %}
 
-
                         <li class="page-item active">
                             <span class="page-link">
                                 صفحه {{ page_obj.number }}
                                 از {{ page_obj.paginator.num_pages }}
                             </span>
                         </li>
-
 
                         {% if page_obj.has_next %}
                             <li class="page-item">
