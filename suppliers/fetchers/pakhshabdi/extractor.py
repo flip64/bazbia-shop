@@ -24,6 +24,6 @@ def extract_product_data(url):
     data.tags = extract_tags(url)
 
     data.supplier_url = url
-    data.supplier = get_supplier_abdi().name
+    data.supplier = get_supplier_abdi().slug
     data.is_active = False
     return data
