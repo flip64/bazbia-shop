@@ -17,6 +17,8 @@ class UpdateOfferTest(TestCase):
         self.product = Product.objects.create(
             name="Test Product",
             slug="test-product",
+            base_price=1000,
+
         )
 
         self.variant = ProductVariant.objects.create(
