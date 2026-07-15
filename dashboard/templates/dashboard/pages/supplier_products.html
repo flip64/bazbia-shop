@@ -12,7 +12,7 @@
 
 <div class="container-fluid px-0">
 
-    <!-- عنوان و انتخاب تأمین‌کننده -->
+    <!-- عنوان صفحه و انتخاب تأمین‌کننده -->
     <div
         class="d-flex flex-column flex-md-row
                justify-content-between align-items-md-center
@@ -24,7 +24,7 @@
             </h1>
 
             <p class="text-secondary mb-0">
-                مشاهده قیمت خرید، قیمت فروش، موجودی و وضعیت محصولات
+                مشاهده قیمت خرید، قیمت فروش، موجودی و وضعیت محصولات در سایت
             </p>
         </div>
 
@@ -65,7 +65,7 @@
 
     <div class="dashboard-card">
 
-        <!-- جستجو و فیلتر -->
+        <!-- جستجو و فیلتر وضعیت سایت -->
         <div class="p-3 p-md-4 border-bottom">
 
             <form method="get" class="row g-3 align-items-end">
@@ -82,7 +82,7 @@
                         type="search"
                         id="searchInput"
                         name="q"
-                        value="{{ request.GET.q }}"
+                        value="{{ search_query }}"
                         class="form-control"
                         placeholder="نام محصول یا SKU"
                     >
@@ -90,15 +90,15 @@
 
                 <div class="col-12 col-md-4 col-lg-3">
                     <label
-                        for="stockFilter"
+                        for="statusFilter"
                         class="form-label"
                     >
-                        وضعیت موجودی
+                        وضعیت سایت
                     </label>
 
                     <select
-                        id="stockFilter"
-                        name="stock"
+                        id="statusFilter"
+                        name="status"
                         class="form-select"
                     >
                         <option value="">
@@ -106,21 +106,21 @@
                         </option>
 
                         <option
-                            value="available"
-                            {% if request.GET.stock == "available" %}
+                            value="active"
+                            {% if site_status == "active" %}
                                 selected
                             {% endif %}
                         >
-                            فقط موجود
+                            فقط فعال
                         </option>
 
                         <option
-                            value="unavailable"
-                            {% if request.GET.stock == "unavailable" %}
+                            value="inactive"
+                            {% if site_status == "inactive" %}
                                 selected
                             {% endif %}
                         >
-                            فقط ناموجود
+                            فقط غیرفعال
                         </option>
                     </select>
                 </div>
@@ -134,7 +134,7 @@
                     </button>
                 </div>
 
-                {% if request.GET.q or request.GET.stock %}
+                {% if search_query or site_status %}
                     <div class="col-12 col-md-auto">
                         <a
                             href="{% url 'dashboard:supplier_products' supplier.slug %}"
@@ -162,11 +162,7 @@
                 </div>
 
                 <div class="fw-bold">
-                    {% if total_results is not None %}
-                        {{ total_results }}
-                    {% else %}
-                        {{ product_offers|length }}
-                    {% endif %}
+                    {{ total_results }}
                     محصول
                 </div>
             </div>
@@ -313,7 +309,7 @@
                                     </h2>
 
                                     <p class="text-secondary mb-0">
-                                        محصولی مطابق اطلاعات یا فیلترهای انتخاب‌شده وجود ندارد.
+                                        محصولی مطابق جستجو یا فیلتر انتخاب‌شده وجود ندارد.
                                     </p>
 
                                 </div>
@@ -343,7 +339,7 @@
                             <li class="page-item">
                                 <a
                                     class="page-link"
-                                    href="?page={{ page_obj.previous_page_number }}{% if request.GET.q %}&q={{ request.GET.q|urlencode }}{% endif %}{% if request.GET.stock %}&stock={{ request.GET.stock }}{% endif %}"
+                                    href="?page={{ page_obj.previous_page_number }}{% if search_query %}&q={{ search_query|urlencode }}{% endif %}{% if site_status %}&status={{ site_status }}{% endif %}"
                                 >
                                     قبلی
                                 </a>
@@ -367,7 +363,7 @@
                             <li class="page-item">
                                 <a
                                     class="page-link"
-                                    href="?page={{ page_obj.next_page_number }}{% if request.GET.q %}&q={{ request.GET.q|urlencode }}{% endif %}{% if request.GET.stock %}&stock={{ request.GET.stock }}{% endif %}"
+                                    href="?page={{ page_obj.next_page_number }}{% if search_query %}&q={{ search_query|urlencode }}{% endif %}{% if site_status %}&status={{ site_status }}{% endif %}"
                                 >
                                     بعدی
                                 </a>
