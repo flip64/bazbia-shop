@@ -206,16 +206,18 @@
                         </th>
 
                         <th scope="col">
-                            درصد سود
-                        </th>
-
-                        <th scope="col">
                             موجودی
                         </th>
 
                         <th scope="col">
                             وضعیت
                         </th>
+                        
+                        <th scope="col">
+                            وضعیت
+                        
+                        </th>
+                        
                     </tr>
                 </thead>
 
@@ -291,6 +293,23 @@
                                         غیر فعال
                                     </span>
                                 {% endif %}
+                            </td>
+
+                            <td class="text-center">
+
+                              {% if offer.supplier_url %}
+                                <a
+                                 href="{{ offer.supplier_url }}"
+                                 target="_blank"
+                                 rel="noopener noreferrer"
+                                 class="btn btn-sm btn-outline-primary"
+                                 title="مشاهده در سایت تأمین‌کننده"
+                                 > 🔗
+                                </a>
+                             {% else %} 
+                                <span class="text-secondary">—</span>
+                             {% endif %}
+
                             </td>
 
                         </tr>
