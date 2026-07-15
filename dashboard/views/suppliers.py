@@ -47,8 +47,8 @@ def supplier_detail(request, slug):
 def supplier_products(request, slug):
     """
     نمایش محصولات یک تأمین‌کننده همراه با:
-    - جستجو
-    - فیلتر موجودی
+    - جستجو بر اساس نام محصول یا SKU
+    - فیلتر وضعیت فعال یا غیرفعال محصول در سایت
     - صفحه‌بندی
     """
 
@@ -74,7 +74,7 @@ def supplier_products(request, slug):
     )
 
     search_query = request.GET.get("q", "").strip()
-    stock_status = request.GET.get("stock", "").strip()
+    site_status = request.GET.get("status", "").strip()
 
     if search_query:
         product_offers = product_offers.filter(
@@ -82,14 +82,14 @@ def supplier_products(request, slug):
             | Q(variant__sku__icontains=search_query)
         )
 
-    if stock_status == "available":
+    if site_status == "active":
         product_offers = product_offers.filter(
-            supplier_stock__gt=0,
+            variant__product__is_active=True,
         )
 
-    elif stock_status == "unavailable":
+    elif site_status == "inactive":
         product_offers = product_offers.filter(
-            supplier_stock__lte=0,
+            variant__product__is_active=False,
         )
 
     paginator = Paginator(product_offers, 25)
@@ -104,6 +104,8 @@ def supplier_products(request, slug):
         "product_offers": page_obj.object_list,
         "page_obj": page_obj,
         "total_results": paginator.count,
+        "search_query": search_query,
+        "site_status": site_status,
     }
 
     return render(
