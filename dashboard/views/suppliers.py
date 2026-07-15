@@ -1,11 +1,11 @@
 # -*- coding: utf-8 -*-
 
 from django.contrib.auth.decorators import login_required
+from django.core.paginator import Paginator
+from django.db.models import Q
 from django.shortcuts import get_object_or_404, render
 
 from suppliers.models import Supplier, SupplierOffer
-from django.core.paginator import Paginator
-from django.db.models import Q
 
 
 @login_required
@@ -25,10 +25,22 @@ def supplier_list(request):
     )
 
 
+@login_required
+def supplier_detail(request, slug):
+    """
+    نمایش جزئیات یک تأمین‌کننده.
+    """
 
+    context = {
+        "page_title": "جزئیات تأمین‌کننده",
+        "supplier_slug": slug,
+    }
 
-
-
+    return render(
+        request,
+        "dashboard/pages/supplier_detail.html",
+        context,
+    )
 
 
 @login_required
