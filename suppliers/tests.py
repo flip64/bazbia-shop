@@ -2,7 +2,7 @@ from django.test import TestCase
 
 from products.models import Product, ProductVariant
 from suppliers.models import Supplier, SupplierOffer
-from product.services import ProductData
+from products.services.product_data import ProductData
 from suppliers.sync.updater import update_offer
 
 
