@@ -4,6 +4,8 @@ from django.contrib.auth.decorators import login_required
 from django.shortcuts import get_object_or_404, render
 
 from suppliers.models import Supplier, SupplierOffer
+from django.core.paginator import Paginator
+from django.db.models import Q
 
 
 @login_required
@@ -23,28 +25,19 @@ def supplier_list(request):
     )
 
 
-@login_required
-def supplier_detail(request, slug):
-    """
-    نمایش جزئیات یک تأمین‌کننده.
-    """
 
-    context = {
-        "page_title": "جزئیات تأمین‌کننده",
-        "supplier_slug": slug,
-    }
 
-    return render(
-        request,
-        "dashboard/pages/supplier_detail.html",
-        context,
-    )
+
+
 
 
 @login_required
 def supplier_products(request, slug):
     """
-    نمایش محصولات یک تأمین‌کننده.
+    نمایش محصولات یک تأمین‌کننده همراه با:
+    - جستجو
+    - فیلتر موجودی
+    - صفحه‌بندی
     """
 
     supplier = get_object_or_404(
@@ -68,11 +61,37 @@ def supplier_products(request, slug):
         .order_by("variant__product__name")
     )
 
+    search_query = request.GET.get("q", "").strip()
+    stock_status = request.GET.get("stock", "").strip()
+
+    if search_query:
+        product_offers = product_offers.filter(
+            Q(variant__product__name__icontains=search_query)
+            | Q(variant__sku__icontains=search_query)
+        )
+
+    if stock_status == "available":
+        product_offers = product_offers.filter(
+            supplier_stock__gt=0,
+        )
+
+    elif stock_status == "unavailable":
+        product_offers = product_offers.filter(
+            supplier_stock__lte=0,
+        )
+
+    paginator = Paginator(product_offers, 25)
+
+    page_number = request.GET.get("page")
+    page_obj = paginator.get_page(page_number)
+
     context = {
         "page_title": f"محصولات {supplier.name}",
         "supplier": supplier,
         "suppliers": suppliers,
-        "product_offers": product_offers,
+        "product_offers": page_obj.object_list,
+        "page_obj": page_obj,
+        "total_results": paginator.count,
     }
 
     return render(
