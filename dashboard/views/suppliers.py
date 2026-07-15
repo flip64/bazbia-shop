@@ -1,7 +1,9 @@
 # -*- coding: utf-8 -*-
 
 from django.contrib.auth.decorators import login_required
-from django.shortcuts import render
+from django.shortcuts import get_object_or_404, render
+
+from suppliers.models import Supplier, SupplierOffer
 
 
 @login_required
@@ -45,9 +47,32 @@ def supplier_products(request, slug):
     نمایش محصولات یک تأمین‌کننده.
     """
 
+    supplier = get_object_or_404(
+        Supplier,
+        slug=slug,
+        is_active=True,
+    )
+
+    suppliers = Supplier.objects.filter(
+        is_active=True,
+    ).order_by("name")
+
+    product_offers = (
+        SupplierOffer.objects
+        .filter(supplier=supplier)
+        .select_related(
+            "supplier",
+            "variant",
+            "variant__product",
+        )
+        .order_by("variant__product__name")
+    )
+
     context = {
-        "page_title": "محصولات تأمین‌کننده",
-        "supplier_slug": slug,
+        "page_title": f"محصولات {supplier.name}",
+        "supplier": supplier,
+        "suppliers": suppliers,
+        "product_offers": product_offers,
     }
 
     return render(
