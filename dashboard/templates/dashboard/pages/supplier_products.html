@@ -11,17 +11,381 @@
 {% block content %}
 
 <div class="container-fluid px-0">
-    <div class="dashboard-card p-4">
 
-        <h1 class="h4 mb-3">
-            {{ page_title }}
-        </h1>
+    <!-- عنوان و انتخاب تأمین‌کننده -->
+    <div
+        class="d-flex flex-column flex-md-row
+               justify-content-between align-items-md-center
+               gap-3 mb-4"
+    >
+        <div>
+            <h1 class="h4 mb-1">
+                محصولات {{ supplier.name }}
+            </h1>
 
-        <p class="text-secondary mb-0">
-            این صفحه در مراحل بعد تکمیل خواهد شد.
-        </p>
+            <p class="text-secondary mb-0">
+                مشاهده قیمت خرید، قیمت فروش، درصد سود و موجودی محصولات
+            </p>
+        </div>
+
+        <div class="dropdown">
+            <button
+                class="btn btn-primary dropdown-toggle"
+                type="button"
+                data-bs-toggle="dropdown"
+                aria-expanded="false"
+            >
+                {{ supplier.name }}
+            </button>
+
+            <ul class="dropdown-menu dropdown-menu-end">
+
+                {% for supplier_item in suppliers %}
+                    <li>
+                        <a
+                            class="dropdown-item
+                            {% if supplier_item.pk == supplier.pk %}
+                                active
+                            {% endif %}"
+                            href="{% url 'dashboard:supplier_products' supplier_item.slug %}"
+                        >
+                            {{ supplier_item.name }}
+                        </a>
+                    </li>
+
+                {% empty %}
+                    <li>
+                        <span class="dropdown-item-text text-secondary">
+                            تأمین‌کننده‌ای وجود ندارد
+                        </span>
+                    </li>
+                {% endfor %}
+
+            </ul>
+        </div>
+    </div>
+
+
+    <div class="dashboard-card">
+
+        <!-- جستجو و فیلتر -->
+        <div class="p-3 p-md-4 border-bottom">
+
+            <form method="get" class="row g-3 align-items-end">
+
+                <div class="col-12 col-md-6 col-lg-4">
+                    <label
+                        for="searchInput"
+                        class="form-label"
+                    >
+                        جستجوی محصول
+                    </label>
+
+                    <input
+                        type="search"
+                        id="searchInput"
+                        name="q"
+                        value="{{ request.GET.q }}"
+                        class="form-control"
+                        placeholder="نام محصول یا SKU"
+                    >
+                </div>
+
+                <div class="col-12 col-md-4 col-lg-3">
+                    <label
+                        for="stockFilter"
+                        class="form-label"
+                    >
+                        وضعیت موجودی
+                    </label>
+
+                    <select
+                        id="stockFilter"
+                        name="stock"
+                        class="form-select"
+                    >
+                        <option value="">
+                            همه محصولات
+                        </option>
+
+                        <option
+                            value="available"
+                            {% if request.GET.stock == "available" %}
+                                selected
+                            {% endif %}
+                        >
+                            فقط موجود
+                        </option>
+
+                        <option
+                            value="unavailable"
+                            {% if request.GET.stock == "unavailable" %}
+                                selected
+                            {% endif %}
+                        >
+                            فقط ناموجود
+                        </option>
+                    </select>
+                </div>
+
+                <div class="col-12 col-md-auto">
+                    <button
+                        type="submit"
+                        class="btn btn-primary w-100"
+                    >
+                        اعمال فیلتر
+                    </button>
+                </div>
+
+                {% if request.GET.q or request.GET.stock %}
+                    <div class="col-12 col-md-auto">
+                        <a
+                            href="{% url 'dashboard:supplier_products' supplier.slug %}"
+                            class="btn btn-outline-secondary w-100"
+                        >
+                            حذف فیلترها
+                        </a>
+                    </div>
+                {% endif %}
+
+            </form>
+
+        </div>
+
+
+        <!-- اطلاعات کلی -->
+        <div
+            class="p-3 p-md-4 border-bottom
+                   d-flex flex-column flex-md-row
+                   justify-content-between gap-3"
+        >
+            <div>
+                <div class="text-secondary small mb-1">
+                    تعداد نتایج
+                </div>
+
+                <div class="fw-bold">
+                    {% if total_results is not None %}
+                        {{ total_results }}
+                    {% else %}
+                        {{ product_offers|length }}
+                    {% endif %}
+                    محصول
+                </div>
+            </div>
+
+            <div class="text-md-end">
+                <div class="text-secondary small mb-1">
+                    تأمین‌کننده انتخاب‌شده
+                </div>
+
+                <div class="fw-bold">
+                    {{ supplier.name }}
+                </div>
+            </div>
+        </div>
+
+
+        <!-- جدول محصولات -->
+        <div class="table-responsive">
+
+            <table class="table table-hover align-middle mb-0 products-table">
+
+                <thead>
+                    <tr>
+                        <th scope="col">
+                            نام محصول
+                        </th>
+
+                        <th scope="col">
+                            قیمت خرید
+                        </th>
+
+                        <th scope="col">
+                            قیمت فروش
+                        </th>
+
+                        <th scope="col">
+                            درصد سود
+                        </th>
+
+                        <th scope="col">
+                            موجودی
+                        </th>
+
+                        <th scope="col">
+                            وضعیت
+                        </th>
+                    </tr>
+                </thead>
+
+                <tbody>
+
+                    {% for offer in product_offers %}
+
+                        <tr>
+
+                            <td>
+                                <div class="product-name">
+                                    {{ offer.variant.product.name }}
+                                </div>
+
+                                {% if offer.variant.sku %}
+                                    <div class="product-meta">
+                                        SKU: {{ offer.variant.sku }}
+                                    </div>
+                                {% endif %}
+                            </td>
+
+                            <td>
+                                {% if offer.purchase_price is not None %}
+                                    {{ offer.purchase_price }}
+
+                                    <span class="currency-label">
+                                        ریال
+                                    </span>
+                                {% else %}
+                                    <span class="text-secondary">
+                                        ثبت نشده
+                                    </span>
+                                {% endif %}
+                            </td>
+
+                            <td>
+                                {% if offer.variant.price is not None %}
+                                    {{ offer.variant.price }}
+
+                                    <span class="currency-label">
+                                        ریال
+                                    </span>
+                                {% else %}
+                                    <span class="text-secondary">
+                                        ثبت نشده
+                                    </span>
+                                {% endif %}
+                            </td>
+
+                            <td>
+                                {% if offer.variant.profit_percent is not None %}
+                                    <span class="profit-badge">
+                                        {{ offer.variant.profit_percent }}٪
+                                    </span>
+                                {% else %}
+                                    <span class="text-secondary">
+                                        —
+                                    </span>
+                                {% endif %}
+                            </td>
+
+                            <td>
+                                {{ offer.supplier_stock|default:0 }}
+                            </td>
+
+                            <td>
+                                {% if offer.supplier_stock > 0 %}
+                                    <span class="status-badge status-available">
+                                        موجود
+                                    </span>
+                                {% else %}
+                                    <span class="status-badge status-unavailable">
+                                        ناموجود
+                                    </span>
+                                {% endif %}
+                            </td>
+
+                        </tr>
+
+                    {% empty %}
+
+                        <tr>
+                            <td colspan="6">
+
+                                <div class="empty-state">
+
+                                    <h2 class="h5 mb-2">
+                                        محصولی پیدا نشد
+                                    </h2>
+
+                                    <p class="text-secondary mb-0">
+                                        محصولی مطابق اطلاعات یا فیلترهای انتخاب‌شده وجود ندارد.
+                                    </p>
+
+                                </div>
+
+                            </td>
+                        </tr>
+
+                    {% endfor %}
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+
+        <!-- صفحه‌بندی -->
+        {% if page_obj.has_other_pages %}
+
+            <div class="p-3 border-top">
+
+                <nav aria-label="صفحه‌بندی محصولات">
+
+                    <ul class="pagination justify-content-center mb-0">
+
+                        {% if page_obj.has_previous %}
+                            <li class="page-item">
+                                <a
+                                    class="page-link"
+                                    href="?page={{ page_obj.previous_page_number }}{% if request.GET.q %}&q={{ request.GET.q|urlencode }}{% endif %}{% if request.GET.stock %}&stock={{ request.GET.stock }}{% endif %}"
+                                >
+                                    قبلی
+                                </a>
+                            </li>
+                        {% else %}
+                            <li class="page-item disabled">
+                                <span class="page-link">
+                                    قبلی
+                                </span>
+                            </li>
+                        {% endif %}
+
+
+                        <li class="page-item active">
+                            <span class="page-link">
+                                صفحه {{ page_obj.number }}
+                                از {{ page_obj.paginator.num_pages }}
+                            </span>
+                        </li>
+
+
+                        {% if page_obj.has_next %}
+                            <li class="page-item">
+                                <a
+                                    class="page-link"
+                                    href="?page={{ page_obj.next_page_number }}{% if request.GET.q %}&q={{ request.GET.q|urlencode }}{% endif %}{% if request.GET.stock %}&stock={{ request.GET.stock }}{% endif %}"
+                                >
+                                    بعدی
+                                </a>
+                            </li>
+                        {% else %}
+                            <li class="page-item disabled">
+                                <span class="page-link">
+                                    بعدی
+                                </span>
+                            </li>
+                        {% endif %}
+
+                    </ul>
+
+                </nav>
+
+            </div>
+
+        {% endif %}
 
     </div>
+
 </div>
 
 {% endblock %}
