@@ -57,6 +57,11 @@ def sync_products():
         else:
 
             product = extract_product_data(supplier_url)
+            print("pro ", product)
+            
+            
+            
+            print(product)
 
             if product is None:
                 continue

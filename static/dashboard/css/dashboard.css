@@ -256,3 +256,44 @@ body {
     background: var(--primary-color);
     border-color: var(--primary-color);
 }
+
+
+
+/* ==============================
+   Bootstrap overrides
+============================== */
+
+.btn-primary {
+    --bs-btn-bg: var(--primary-color);
+    --bs-btn-border-color: var(--primary-color);
+    --bs-btn-hover-bg: #e9650d;
+    --bs-btn-hover-border-color: #e9650d;
+    --bs-btn-active-bg: #d95d0c;
+    --bs-btn-active-border-color: #d95d0c;
+}
+
+.form-control:focus,
+.form-select:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 0.2rem rgba(249, 115, 22, 0.15);
+}
+
+.sidebar-link.active {
+    color: #ffffff;
+    background: var(--primary-color);
+}
+
+.table-responsive {
+    border-radius: 0 0 12px 12px;
+}
+
+@media (max-width: 767px) {
+    .products-table thead th,
+    .products-table tbody td {
+        padding: 12px;
+    }
+
+    .dashboard-header {
+        padding: 0 16px;
+    }
+}
