@@ -282,13 +282,13 @@
                             </td>
 
                             <td>
-                                {% if offer.supplier_stock > 0 %}
+                                {% if offer.variant.product.is_active  %}
                                     <span class="status-badge status-available">
-                                        موجود
+                                        فعال
                                     </span>
                                 {% else %}
                                     <span class="status-badge status-unavailable">
-                                        ناموجود
+                                        غیر فعال
                                     </span>
                                 {% endif %}
                             </td>
