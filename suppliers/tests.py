@@ -24,6 +24,8 @@ class UpdateOfferTest(TestCase):
         self.variant = ProductVariant.objects.create(
             product=self.product,
             sku="TEST-1",
+            price=1500,
+        
         )
 
         self.offer = SupplierOffer.objects.create(
