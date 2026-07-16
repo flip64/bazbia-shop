@@ -1,0 +1,113 @@
+<!-- تصاویر محصول -->
+<div class="dashboard-card mb-4">
+
+    <div
+        class="p-3 p-md-4 border-bottom
+               d-flex justify-content-between align-items-center gap-3"
+    >
+        <div>
+            <h2 class="h5 mb-1">
+                تصاویر محصول
+            </h2>
+
+            <div class="text-secondary small">
+                {{ product.images.count }} تصویر
+            </div>
+        </div>
+
+        <a
+            href="{% url 'dashboard:product_images_edit' product.pk %}"
+            class="btn btn-sm btn-outline-primary"
+        >
+            مدیریت تصاویر
+        </a>
+    </div>
+
+    <div class="p-3 p-md-4">
+
+        {% with product_images=product.images.all %}
+
+            {% if product_images %}
+
+                <div class="row g-3">
+
+                    {% for product_image in product_images %}
+
+                        <div class="col-6 col-md-4 col-lg-3 col-xl-2">
+
+                            <div class="border rounded p-2 h-100">
+
+                                <div
+                                    class="ratio ratio-1x1
+                                           bg-light rounded overflow-hidden"
+                                >
+                                    {% if product_image.image %}
+                                        <img
+                                            src="{{ product_image.image.url }}"
+                                            alt="{{ product_image.alt_text|default:product.name }}"
+                                            class="w-100 h-100 object-fit-contain"
+                                            loading="lazy"
+                                        >
+
+                                    {% elif product_image.source_url %}
+                                        <img
+                                            src="{{ product_image.source_url }}"
+                                            alt="{{ product_image.alt_text|default:product.name }}"
+                                            class="w-100 h-100 object-fit-contain"
+                                            loading="lazy"
+                                        >
+
+                                    {% else %}
+                                        <div
+                                            class="d-flex align-items-center
+                                                   justify-content-center
+                                                   text-secondary"
+                                        >
+                                            بدون تصویر
+                                        </div>
+                                    {% endif %}
+                                </div>
+
+                                <div class="mt-2">
+
+                                    {% if product_image.is_main %}
+                                        <span class="badge bg-primary">
+                                            تصویر اصلی
+                                        </span>
+                                    {% else %}
+                                        <span class="badge bg-light text-dark border">
+                                            تصویر فرعی
+                                        </span>
+                                    {% endif %}
+
+                                </div>
+
+                            </div>
+
+                        </div>
+
+                    {% endfor %}
+
+                </div>
+
+            {% else %}
+
+                <div class="empty-state py-4">
+
+                    <h3 class="h6 mb-2">
+                        تصویری ثبت نشده است
+                    </h3>
+
+                    <p class="text-secondary mb-0">
+                        این محصول هنوز تصویر ندارد.
+                    </p>
+
+                </div>
+
+            {% endif %}
+
+        {% endwith %}
+
+    </div>
+
+</div>
