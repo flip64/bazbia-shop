@@ -1,0 +1,104 @@
+<!-- اطلاعات اصلی محصول -->
+<div class="dashboard-card mb-4">
+
+    <div
+        class="p-3 p-md-4 border-bottom
+               d-flex justify-content-between align-items-center gap-3"
+    >
+
+        <h2 class="h5 mb-0">
+            اطلاعات اصلی محصول
+        </h2>
+
+        <a
+            href="{% url 'dashboard:product_info_edit' product.pk %}"
+            class="btn btn-sm btn-outline-primary"
+        >
+            ویرایش اطلاعات
+        </a>
+
+    </div>
+
+    <div class="p-3 p-md-4">
+
+        <div class="row g-4">
+
+            <div class="col-12 col-md-6 col-xl-4">
+                <div class="text-secondary small mb-1">
+                    نام محصول
+                </div>
+
+                <div class="fw-semibold">
+                    {{ product.name }}
+                </div>
+            </div>
+
+            <div class="col-12 col-md-6 col-xl-4">
+                <div class="text-secondary small mb-1">
+                    اسلاگ
+                </div>
+
+                <div class="fw-semibold">
+                    {{ product.slug }}
+                </div>
+            </div>
+
+            <div class="col-12 col-md-6 col-xl-4">
+                <div class="text-secondary small mb-1">
+                    دسته‌بندی
+                </div>
+
+                <div class="fw-semibold">
+                    {% if product.category %}
+                        {{ product.category }}
+                    {% else %}
+                        <span class="text-secondary">
+                            ثبت نشده
+                        </span>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="col-12 col-md-6 col-xl-4">
+                <div class="text-secondary small mb-1">
+                    وضعیت
+                </div>
+
+                <div>
+                    {% if product.is_active %}
+                        <span class="status-badge status-available">
+                            فعال
+                        </span>
+                    {% else %}
+                        <span class="status-badge status-unavailable">
+                            غیرفعال
+                        </span>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="col-12 col-md-6 col-xl-4">
+                <div class="text-secondary small mb-1">
+                    تاریخ ایجاد
+                </div>
+
+                <div class="fw-semibold">
+                    {{ product.created_at|date:"Y/m/d H:i" }}
+                </div>
+            </div>
+
+            <div class="col-12 col-md-6 col-xl-4">
+                <div class="text-secondary small mb-1">
+                    آخرین بروزرسانی
+                </div>
+
+                <div class="fw-semibold">
+                    {{ product.updated_at|date:"Y/m/d H:i" }}
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
