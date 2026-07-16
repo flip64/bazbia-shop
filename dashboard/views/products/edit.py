@@ -1,25 +1,47 @@
 # -*- coding: utf-8 -*-
+
+from django.contrib import messages
 from django.contrib.auth.decorators import login_required
-from django.db.models import Prefetch
-from django.shortcuts import get_object_or_404, render
+from django.shortcuts import get_object_or_404, redirect, render
 
-
-
+from dashboard.forms import ProductEditForm
+from products.models import Product
 
 
 @login_required
-def product_edit(request, pk):
-    """
-    ویرایش یک محصول.
-    """
+def product_info_edit(request, pk):
+    product = get_object_or_404(Product, pk=pk)
+
+    if request.method == "POST":
+        form = ProductEditForm(
+            request.POST,
+            instance=product,
+        )
+
+        if form.is_valid():
+            form.save()
+
+            messages.success(
+                request,
+                "اطلاعات اصلی محصول با موفقیت ویرایش شد.",
+            )
+
+            return redirect(
+                "dashboard:product_detail",
+                pk=product.pk,
+            )
+
+    else:
+        form = ProductEditForm(instance=product)
 
     context = {
-        "page_title": "ویرایش محصول",
-        "product_id": pk,
+        "page_title": f"ویرایش اطلاعات {product.name}",
+        "product": product,
+        "form": form,
     }
 
     return render(
         request,
-        "dashboard/pages/product_edit.html",
+        "dashboard/pages/product_edit/product_info_edit.html",
         context,
     )
