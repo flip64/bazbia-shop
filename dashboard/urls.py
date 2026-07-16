@@ -9,7 +9,6 @@ from dashboard.views import (
     operation_logs,
     price_history_list,
     product_detail,
-    product_edit,
     product_info_edit,
     product_images_edit,
     product_list,
