@@ -6,7 +6,6 @@ from .logs import operation_logs
 from .price_history import offer_price_history, price_history_list
 from .products import (
     product_detail,
-    product_edit,
     product_list,
     product_price_manager,
     product_profit_manager,
