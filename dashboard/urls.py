@@ -92,4 +92,27 @@ urlpatterns = [
         operation_logs,
         name="logs",
     ),
+    path(
+        "products/<int:pk>/edit/info/",
+         product_info_edit,
+         name="product_info_edit",
+    ),
+
+    path(
+        "products/<int:pk>/edit/images/",
+        product_images_edit,
+        name="product_images_edit",
+      ),
+
+    path(
+        "products/<int:pk>/edit/specifications/",
+        product_specifications_edit,
+        name="product_specifications_edit",
+    ),
+
+    path(
+        "products/<int:pk>/edit/tags/",
+        product_tags_edit,
+        name="product_tags_edit",
+     ),
 ]
