@@ -32,7 +32,7 @@ def sync_variant_price_from_offer(
     قیمت فروش واریانت را از پیشنهاد اصلی تأمین‌کننده
     به‌روزرسانی می‌کند.
     """
-
+    print(can_sync_variant_from_offer)
     if can_sync_variant_from_offer(offer):
         return False
 
