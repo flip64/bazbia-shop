@@ -11,8 +11,13 @@ from suppliers.services.variant_stock_sync import (
     sync_variant_stock_from_offer,
 )
 
+from products.services.product_stock_sync import (
+    sync_product_stock_from_variants,
+)
+
 from .helpers import to_decimal, to_stock
 from .history import save_price_history
+
 
 
 def update_offer(
@@ -95,13 +100,20 @@ def update_offer(
     )
 
     # فقط زمانی که قیمت خرید تغییر کرده باشد،
-    # قیمت فروش واریانت دوباره محاسبه می‌شود.
-    if price_changed:
-        sync_variant_price_from_offer(offer)
+# قیمت فروش واریانت دوباره محاسبه می‌شود.
+if price_changed:
+    sync_variant_price_from_offer(offer)
 
-    # فقط زمانی که موجودی تأمین‌کننده تغییر کرده باشد،
-    # موجودی واریانت هماهنگ می‌شود.
-    if stock_changed:
-        sync_variant_stock_from_offer(offer)
+# فقط زمانی که موجودی تأمین‌کننده تغییر کرده باشد،
+# موجودی واریانت هماهنگ می‌شود.
+if stock_changed:
+    variant_stock_changed = sync_variant_stock_from_offer(offer)
 
-    return price_changed or stock_changed
+    # فقط اگر موجودی خود واریانت واقعاً تغییر کرده باشد،
+    # موجودی محصول از مجموع واریانت‌ها محاسبه می‌شود.
+    if variant_stock_changed:
+        sync_product_stock_from_variants(
+            offer.variant.product
+        )
+
+return price_changed or stock_changed
