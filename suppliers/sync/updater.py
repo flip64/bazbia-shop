@@ -19,7 +19,6 @@ from .helpers import to_decimal, to_stock
 from .history import save_price_history
 
 
-
 def update_offer(
     offer: SupplierOffer,
     item,
@@ -27,35 +26,6 @@ def update_offer(
     """
     اطلاعات جدید تأمین‌کننده را با SupplierOffer مقایسه و
     تغییرات قیمت و موجودی را اعمال می‌کند.
-
-    روند اجرا
-    ---------
-    1. تبدیل قیمت و موجودی ورودی به نوع استاندارد.
-    2. تشخیص تغییر قیمت خرید و موجودی تأمین‌کننده.
-    3. ثبت تاریخچه در صورت تغییر قیمت خرید.
-    4. ذخیره تغییرات SupplierOffer.
-    5. هماهنگ‌سازی قیمت ProductVariant در صورت تغییر قیمت.
-    6. هماهنگ‌سازی موجودی ProductVariant در صورت تغییر موجودی.
-
-    Parameters
-    ----------
-    offer : SupplierOffer
-        پیشنهاد موجود تأمین‌کننده که باید به‌روزرسانی شود.
-
-    item
-        اطلاعات استانداردشده محصول تأمین‌کننده.
-        انتظار می‌رود دارای ویژگی‌های price و quantity باشد.
-
-    Returns
-    -------
-    bool
-        True اگر قیمت یا موجودی تغییر کرده باشد.
-        False اگر قیمت و موجودی بدون تغییر باشند.
-
-    Notes
-    -----
-    حتی اگر قیمت و موجودی تغییر نکرده باشند، زمان آخرین مشاهده
-    و آخرین بررسی SupplierOffer ذخیره می‌شود.
     """
 
     new_price = to_decimal(item.price)
@@ -100,20 +70,20 @@ def update_offer(
     )
 
     # فقط زمانی که قیمت خرید تغییر کرده باشد،
-# قیمت فروش واریانت دوباره محاسبه می‌شود.
-if price_changed:
-    sync_variant_price_from_offer(offer)
+    # قیمت فروش واریانت دوباره محاسبه می‌شود.
+    if price_changed:
+        sync_variant_price_from_offer(offer)
 
-# فقط زمانی که موجودی تأمین‌کننده تغییر کرده باشد،
-# موجودی واریانت هماهنگ می‌شود.
-if stock_changed:
-    variant_stock_changed = sync_variant_stock_from_offer(offer)
+    # فقط زمانی که موجودی تأمین‌کننده تغییر کرده باشد،
+    # موجودی واریانت هماهنگ می‌شود.
+    if stock_changed:
+        variant_stock_changed = sync_variant_stock_from_offer(offer)
 
-    # فقط اگر موجودی خود واریانت واقعاً تغییر کرده باشد،
-    # موجودی محصول از مجموع واریانت‌ها محاسبه می‌شود.
-    if variant_stock_changed:
-        sync_product_stock_from_variants(
-            offer.variant.product
-        )
+        # فقط اگر موجودی خود واریانت واقعاً تغییر کرده باشد،
+        # موجودی محصول از مجموع واریانت‌ها محاسبه می‌شود.
+        if variant_stock_changed:
+            sync_product_stock_from_variants(
+                offer.variant.product
+            )
 
-return price_changed or stock_changed
+    return price_changed or stock_changed
