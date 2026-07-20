@@ -13,7 +13,7 @@ def sync_variant_stock_from_offer(
     به‌روزرسانی می‌کند.
     """
 
-    if can_sync_variant_from_offer(offer):
+    if not can_sync_variant_from_offer(offer):
         return False
 
     variant = offer.variant
