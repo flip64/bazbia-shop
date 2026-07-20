@@ -18,6 +18,90 @@ from products.services.product_stock import (
     calculate_product_stock,
 )
 
+# ------------------------------
+# دسته‌بندی‌ها
+# ------------------------------
+class CategorySerializer(serializers.ModelSerializer):
+    subcategories = serializers.SerializerMethodField()
+
+    parent_id = serializers.IntegerField(
+        source="parent.id",
+        read_only=True,
+    )
+
+    image = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Category
+        fields = [
+            "id",
+            "name",
+            "slug",
+            "image",
+            "parent_id",
+            "subcategories",
+        ]
+
+    def get_image(self, obj):
+        request = self.context.get("request")
+
+        if not obj.image:
+            return None
+
+        if request:
+            return request.build_absolute_uri(
+                obj.image.url
+            )
+
+        return obj.image.url
+
+    def get_subcategories(self, obj):
+        return CategorySerializer(
+            obj.subcategories.all(),
+            many=True,
+            context=self.context,
+        ).data
+
+
+# ------------------------------
+# تگ‌ها
+# ------------------------------
+class TagSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Tag
+        fields = [
+            "name",
+        ]
+
+
+# ------------------------------
+# مشخصات محصول
+# ------------------------------
+class ProductSpecificationSerializer(
+    serializers.ModelSerializer
+):
+    class Meta:
+        model = ProductSpecification
+        fields = [
+            "name",
+            "value",
+        ]
+
+
+# ------------------------------
+# ویدئوهای محصول
+# ------------------------------
+class ProductVideoSerializer(
+    serializers.ModelSerializer
+):
+    class Meta:
+        model = ProductVideo
+        fields = [
+            "video",
+            "caption",
+        ]
+
+
 
 class ProductImageSerializer(serializers.ModelSerializer):
     class Meta:
