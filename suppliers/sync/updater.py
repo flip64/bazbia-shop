@@ -3,15 +3,15 @@
 from django.utils import timezone
 
 from suppliers.models import SupplierOffer
-from suppliers.services.offer_updater import update_supplier_offer
+from suppliers.services.offer_updater import (
+    update_supplier_offer,
+)
 from suppliers.services.variant_price_sync import (
     sync_variant_price_from_offer,
 )
 from suppliers.services.variant_stock_sync import (
     sync_variant_stock_from_offer,
 )
-
-
 
 from .helpers import to_decimal, to_stock
 from .history import save_price_history
@@ -22,15 +22,20 @@ def update_offer(
     item,
 ) -> bool:
     """
-    اطلاعات جدید تأمین‌کننده را با SupplierOffer مقایسه و
-    تغییرات قیمت و موجودی را اعمال می‌کند.
+    اطلاعات جدید تأمین‌کننده را با SupplierOffer مقایسه می‌کند،
+    تغییرات را ذخیره می‌کند و واریانت مرتبط را همگام می‌سازد.
     """
 
     new_price = to_decimal(item.price)
     new_stock = to_stock(item.quantity)
 
-    price_changed = offer.purchase_price != new_price
-    stock_changed = offer.supplier_stock != new_stock
+    price_changed = (
+        offer.purchase_price != new_price
+    )
+
+    stock_changed = (
+        offer.supplier_stock != new_stock
+    )
 
     changed_fields = []
 
@@ -42,15 +47,18 @@ def update_offer(
         )
 
         offer.purchase_price = new_price
-        changed_fields.append("purchase_price")
+        changed_fields.append(
+            "purchase_price"
+        )
 
     if stock_changed:
         offer.supplier_stock = new_stock
-        changed_fields.append("supplier_stock")
+        changed_fields.append(
+            "supplier_stock"
+        )
 
     checked_at = timezone.now()
 
-    # محصول در آخرین اطلاعات تأمین‌کننده مشاهده شده است.
     offer.last_seen = checked_at
     offer.last_checked = checked_at
 
@@ -67,16 +75,28 @@ def update_offer(
         update_fields=changed_fields,
     )
 
-    # فقط زمانی که قیمت خرید تغییر کرده باشد،
-    # قیمت فروش واریانت دوباره محاسبه می‌شود.
+    # قیمت فروش فقط در صورت تغییر قیمت خرید محاسبه می‌شود.
     if price_changed:
-        sync_variant_price_from_offer(offer)
+        variant_price_changed = (
+            sync_variant_price_from_offer(
+                offer
+            )
+        )
+    else:
+        variant_price_changed = False
 
-    # فقط زمانی که موجودی تأمین‌کننده تغییر کرده باشد،
-    # موجودی واریانت هماهنگ می‌شود.
-    if stock_changed:
-        variant_stock_changed = sync_variant_stock_from_offer(offer)
+    # موجودی واریانت در هر بار پردازش بررسی می‌شود.
+    variant_stock_changed = (
+        sync_variant_stock_from_offer(
+            offer
+        )
+    )
 
-        
-
-    return price_changed or stock_changed
+    return any(
+        [
+            price_changed,
+            stock_changed,
+            variant_price_changed,
+            variant_stock_changed,
+        ]
+    )
