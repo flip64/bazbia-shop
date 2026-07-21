@@ -5,20 +5,10 @@ from orders.models import Order, OrderItem, Cart, CartItem, SalesSummary
 # ==============================
 # 🎯 سریالایزر آیتم سبد خرید
 # ==============================
-from rest_framework import serializers
-
-from orders.models import (
-    Order,
-    OrderItem,
-    Cart,
-    CartItem,
-    SalesSummary,
-)
 
 
-# ==============================
-# آیتم سبد خرید
-# ==============================
+
+
 class CartItemSerializer(serializers.ModelSerializer):
     """
     اطلاعات کامل یک آیتم سبد خرید برای فرانت‌اند.
@@ -266,13 +256,3 @@ class SalesSummarySerializer(serializers.ModelSerializer):
             'period_end',
         ]
 
-
-# ==============================
-# 🎯 سریالایزر ورودی برای افزودن/ویرایش آیتم سبد
-# ==============================
-class CartItemInputSerializer(serializers.Serializer):
-    """
-    سریالایزر ساده برای افزودن یا بروزرسانی آیتم در سبد خرید
-    """
-    variant_id = serializers.IntegerField(required=True)
-    quantity = serializers.IntegerField(min_value=1, default=1)
