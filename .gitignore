@@ -18,6 +18,7 @@ __pycache__/
 
 # Django
 *.log
+logs/
 db.sqlite3
 media/
 
