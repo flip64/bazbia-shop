@@ -39,6 +39,7 @@ class CategorySerializer(serializers.ModelSerializer):
             "slug",
             "image",
             "parent_id",
+            "product_count",
             "subcategories",
         ]
 
@@ -62,6 +63,10 @@ class CategorySerializer(serializers.ModelSerializer):
             context=self.context,
         ).data
 
+
+
+    def get_product_count(self, obj):
+        return obj.products.filter(is_active=True).count()
 
 # ------------------------------
 # تگ‌ها
