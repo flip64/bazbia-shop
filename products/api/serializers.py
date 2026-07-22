@@ -23,7 +23,7 @@ from products.services.product_stock import (
 # ------------------------------
 class CategorySerializer(serializers.ModelSerializer):
     subcategories = serializers.SerializerMethodField()
-
+    product_count = serializers.SerializerMethodField()
     parent_id = serializers.IntegerField(
         source="parent.id",
         read_only=True,
