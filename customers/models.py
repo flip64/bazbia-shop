@@ -67,6 +67,8 @@ class Customer(models.Model):
 
     def __str__(self):
         return self.phone or self.user.username
+
+
 # ==============================
 # مدل تضمین‌های مشتری (CustomerGuarantee)
 # ==============================
@@ -144,10 +146,65 @@ class CustomerAddress(models.Model):
 # ==============================
 
 class OTP(models.Model):
-    phone = models.CharField(max_length=15)
-    code = models.CharField(max_length=6)
-    created_at = models.DateTimeField(default=timezone.now)
-    session_id = models.UUIDField(default=uuid.uuid4, editable=False)
+    class Purpose(models.TextChoices):
+        LOGIN = "login", "ورود"
+        SET_PASSWORD = "set_password", "تنظیم رمز"
+        VERIFY_PHONE = "verify_phone", "تأیید شماره موبایل"
+
+    phone = models.CharField(
+        max_length=11,
+        db_index=True,
+        verbose_name="شماره موبایل",
+    )
+
+    code_hash = models.CharField(
+        max_length=128,
+        verbose_name="هش کد تأیید",
+    )
+
+    purpose = models.CharField(
+        max_length=20,
+        choices=Purpose.choices,
+        default=Purpose.LOGIN,
+        verbose_name="هدف",
+    )
+
+    session_id = models.UUIDField(
+        default=uuid.uuid4,
+        editable=False,
+        unique=True,
+    )
+
+    expires_at = models.DateTimeField(
+        verbose_name="زمان انقضا",
+    )
+
+    attempts = models.PositiveSmallIntegerField(
+        default=0,
+        verbose_name="تعداد تلاش",
+    )
+
+    is_used = models.BooleanField(
+        default=False,
+        verbose_name="استفاده شده",
+    )
+
+    created_at = models.DateTimeField(
+        auto_now_add=True,
+    )
+
+    verified_at = models.DateTimeField(
+        blank=True,
+        null=True,
+    )
+
+    class Meta:
+        ordering = ["-created_at"]
+        indexes = [
+            models.Index(
+                fields=["phone", "purpose", "is_used"],
+            ),
+        ]
 
     def __str__(self):
-        return f"{self.phone} - {self.code}"
+        return f"{self.phone} - {self.purpose}"
