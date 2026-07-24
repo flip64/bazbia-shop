@@ -2,10 +2,13 @@ import random
 
 from datetime import timedelta
 
+from django.conf import settings
 from django.contrib.auth.hashers import check_password, make_password
+from django.core.mail import send_mail
+from django.core.mail import EmailMultiAlternatives
 from django.db import transaction
 from django.utils import timezone
-from django.core.mail import EmailMultiAlternatives
+
 from customers.models import OTP
 
 
@@ -13,11 +16,38 @@ OTP_EXPIRE_MINUTES = 2
 OTP_MAX_ATTEMPTS = 5
 OTP_REQUEST_COOLDOWN_SECONDS = 60
 
+
 def generate_otp_code() -> str:
     """
     ساخت کد تأیید ۶ رقمی
     """
     return f"{random.randint(0, 999999):06d}"
+
+
+
+
+
+
+def send_otp_test_email(
+    phone: str,
+    code: str,
+) -> None:
+
+    message = EmailMultiAlternatives(
+        subject="کد تأیید ورود بازبیا",
+        body=(
+            f"شماره موبایل: {phone}\n"
+            f"کد تأیید: {code}\n"
+            f"اعتبار کد: {OTP_EXPIRE_MINUTES} دقیقه"
+        ),
+        from_email=settings.DEFAULT_FROM_EMAIL,
+        to=[
+            "jr64.naderloo@gmail.com",
+        ],
+    )
+
+    message.send(fail_silently=False)
+
 
 
 @transaction.atomic
@@ -42,8 +72,12 @@ def create_otp(
         ).total_seconds()
 
         if elapsed_seconds < OTP_REQUEST_COOLDOWN_SECONDS:
-            remaining_seconds = int(
-                OTP_REQUEST_COOLDOWN_SECONDS - elapsed_seconds
+            remaining_seconds = max(
+                1,
+                int(
+                    OTP_REQUEST_COOLDOWN_SECONDS
+                    - elapsed_seconds
+                ),
             )
 
             raise ValueError(
@@ -67,43 +101,14 @@ def create_otp(
         ),
     )
 
+    transaction.on_commit(
+        lambda: send_otp_test_email(
+            phone=phone,
+            code=code,
+        )
+    )
+
     return otp, code
-
-
-def send_otp_test_email(
-    phone: str,
-    code: str,
-) -> None:
-    """
-    ارسال کد OTP به ایمیل تست در محیط توسعه.
-    """
-
-    test_email = getattr(
-        settings,
-        "OTP_TEST_EMAIL",
-        "",
-    )
-
-    if not settings.DEBUG or not test_email:
-        return
-
-    send_mail(
-        subject="کد تأیید ورود بازبیا",
-        message=(
-            "کد تأیید ورود به بازبیا\n\n"
-            f"شماره موبایل: {phone}\n"
-            f"کد تأیید: {code}\n"
-            f"اعتبار کد: {OTP_EXPIRE_MINUTES} دقیقه\n\n"
-            "این کد را در اختیار دیگران قرار ندهید."
-        ),
-        from_email=settings.DEFAULT_FROM_EMAIL,
-        recipient_list=[test_email],
-        fail_silently=False,
-    )
-
-
-
-
 
 
 @transaction.atomic
@@ -113,9 +118,6 @@ def verify_otp(
 ) -> OTP:
     """
     بررسی کد OTP.
-
-    در صورت درست بودن، OTP مصرف‌شده علامت‌گذاری می‌شود.
-    در صورت خطا، ValueError ایجاد می‌شود.
     """
 
     try:
@@ -123,25 +125,42 @@ def verify_otp(
             session_id=session_id
         )
     except OTP.DoesNotExist:
-        raise ValueError("درخواست کد تأیید پیدا نشد.")
+        raise ValueError(
+            "درخواست کد تأیید پیدا نشد."
+        )
 
     if otp.is_used:
-        raise ValueError("این کد قبلاً استفاده شده است.")
+        raise ValueError(
+            "این کد قبلاً استفاده شده است."
+        )
 
     if timezone.now() >= otp.expires_at:
-        raise ValueError("کد تأیید منقضی شده است.")
+        raise ValueError(
+            "کد تأیید منقضی شده است."
+        )
 
     if otp.attempts >= OTP_MAX_ATTEMPTS:
-        raise ValueError("تعداد تلاش‌های مجاز به پایان رسیده است.")
+        raise ValueError(
+            "تعداد تلاش‌های مجاز به پایان رسیده است."
+        )
 
-    if not check_password(code, otp.code_hash):
+    if not check_password(
+        code,
+        otp.code_hash,
+    ):
         otp.attempts += 1
-        otp.save(update_fields=["attempts"])
+        otp.save(
+            update_fields=["attempts"]
+        )
 
-        remaining_attempts = OTP_MAX_ATTEMPTS - otp.attempts
+        remaining_attempts = (
+            OTP_MAX_ATTEMPTS - otp.attempts
+        )
 
         if remaining_attempts <= 0:
-            raise ValueError("تعداد تلاش‌های مجاز به پایان رسیده است.")
+            raise ValueError(
+                "تعداد تلاش‌های مجاز به پایان رسیده است."
+            )
 
         raise ValueError(
             f"کد تأیید نادرست است. "
