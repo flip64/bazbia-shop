@@ -121,17 +121,14 @@ def merge_guest_cart_into_user_cart(
             update_fields=["is_active"],
         )
 
-
 def get_user_cart(request):
     """
-    دریافت سبد خرید کاربر یا مهمان.
+    دریافت یا ایجاد سبد خرید فعال کاربر یا مهمان.
 
-    اگر کاربر وارد حساب شده باشد و سبد مهمان فعالی
-    با session_key ارسالی وجود داشته باشد، سبد مهمان
-    در سبد کاربر ادغام می‌شود.
+    این تابع فقط سبد مناسب را برمی‌گرداند و هیچ عملیات
+    ادغامی انجام نمی‌دهد. ادغام سبد مهمان فقط از طریق
+    MergeCartView انجام می‌شود.
     """
-
-    session_key = get_request_session_key(request)
 
     # کاربر واردشده
     if request.user.is_authenticated:
@@ -140,26 +137,11 @@ def get_user_cart(request):
             is_active=True,
         )
 
-        guest_cart = (
-            Cart.objects
-            .filter(
-                session_key=session_key,
-                user__isnull=True,
-                is_active=True,
-            )
-            .exclude(pk=user_cart.pk)
-            .first()
-        )
-
-        if guest_cart:
-            merge_guest_cart_into_user_cart(
-                guest_cart=guest_cart,
-                user_cart=user_cart,
-            )
-
         return user_cart
 
     # کاربر مهمان
+    session_key = get_request_session_key(request)
+
     guest_cart, _ = Cart.objects.get_or_create(
         session_key=session_key,
         user=None,
@@ -167,6 +149,7 @@ def get_user_cart(request):
     )
 
     return guest_cart
+
 
 
 def cart_response_data(
