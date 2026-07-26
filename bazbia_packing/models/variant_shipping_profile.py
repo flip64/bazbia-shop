@@ -1,28 +1,3 @@
-"""
-مدل مشخصات فیزیکی و بسته‌بندی تنوع محصول.
-
-این فایل اطلاعات موردنیاز برای عملیات زیر را نگهداری می‌کند:
-
-- محاسبه وزن واقعی سفارش
-- محاسبه وزن حجمی مرسوله
-- انتخاب کارتن مناسب
-- تشخیص کالاهای شکستنی
-- تشخیص کالاهای نیازمند بسته‌بندی جداگانه
-- آماده‌سازی اطلاعات برای سرویس‌های پستی
-- استفاده در موتور بسته‌بندی بازبیا
-
-مشخصات فیزیکی به ProductVariant متصل شده‌اند، زیرا ممکن است
-تنوع‌های مختلف یک محصول وزن و ابعاد متفاوتی داشته باشند.
-
-مثال:
-
-    شامپو ۵۰۰ میلی‌لیتری
-    شامپو ۱۰۰۰ میلی‌لیتری
-
-این دو تنوع متعلق به یک محصول هستند، اما وزن و ابعاد بسته‌بندی
-آن‌ها یکسان نیست.
-"""
-
 from decimal import Decimal
 from typing import Optional
 
@@ -33,25 +8,12 @@ from django.db import models
 
 class VariantShippingProfile(models.Model):
     """
-    مشخصات فیزیکی و ارسال یک تنوع محصول.
+    مشخصات فیزیکی و قوانین بسته‌بندی هر ProductVariant.
 
-    هر ProductVariant حداکثر یک پروفایل ارسال دارد. این رابطه
-    به‌صورت OneToOne تعریف شده است.
-
-    واحدهای استاندارد این مدل:
-
+    واحدها:
     - وزن: گرم
-    - طول: سانتی‌متر
-    - عرض: سانتی‌متر
-    - ارتفاع: سانتی‌متر
+    - ابعاد: سانتی‌متر
     - حجم: سانتی‌متر مکعب
-
-    ابعاد باید مربوط به محصول در حالت آماده قرارگیری در بسته
-    ارسال باشند، نه صرفاً ابعاد ظاهری محصول بدون بسته‌بندی.
-
-    برای مثال، اگر یک محصول داخل جعبه کارخانه قرار دارد، ابعاد
-    همان جعبه کارخانه ثبت می‌شود. وزن و فضای بسته‌بندی حفاظتی
-    اضافه نیز می‌تواند جداگانه ثبت شود.
     """
 
     variant = models.OneToOneField(
@@ -59,11 +21,11 @@ class VariantShippingProfile(models.Model):
         on_delete=models.CASCADE,
         related_name="shipping_profile",
         verbose_name="تنوع محصول",
-        help_text=(
-            "تنوع محصولی که این مشخصات فیزیکی و ارسال "
-            "به آن تعلق دارد."
-        ),
     )
+
+    # =========================================================
+    # مشخصات فیزیکی
+    # =========================================================
 
     weight_grams = models.PositiveIntegerField(
         null=True,
@@ -72,13 +34,12 @@ class VariantShippingProfile(models.Model):
             MinValueValidator(
                 1,
                 message="وزن محصول باید بیشتر از صفر باشد.",
-            ),
+            )
         ],
         verbose_name="وزن محصول به گرم",
         help_text=(
-            "وزن یک واحد از این تنوع محصول به گرم. "
-            "این مقدار شامل بسته‌بندی اصلی محصول است، "
-            "اما بسته‌بندی حفاظتی اضافه را شامل نمی‌شود."
+            "وزن یک واحد محصول همراه با بسته‌بندی کارخانه، "
+            "بدون بسته‌بندی حفاظتی بازبیا."
         ),
     )
 
@@ -87,17 +48,8 @@ class VariantShippingProfile(models.Model):
         decimal_places=2,
         null=True,
         blank=True,
-        validators=[
-            MinValueValidator(
-                Decimal("0.01"),
-                message="طول محصول باید بیشتر از صفر باشد.",
-            ),
-        ],
-        verbose_name="طول بسته به سانتی‌متر",
-        help_text=(
-            "طول یک واحد محصول در حالت آماده بسته‌بندی "
-            "و بر حسب سانتی‌متر."
-        ),
+        validators=[MinValueValidator(Decimal("0.01"))],
+        verbose_name="طول به سانتی‌متر",
     )
 
     width_cm = models.DecimalField(
@@ -105,17 +57,8 @@ class VariantShippingProfile(models.Model):
         decimal_places=2,
         null=True,
         blank=True,
-        validators=[
-            MinValueValidator(
-                Decimal("0.01"),
-                message="عرض محصول باید بیشتر از صفر باشد.",
-            ),
-        ],
-        verbose_name="عرض بسته به سانتی‌متر",
-        help_text=(
-            "عرض یک واحد محصول در حالت آماده بسته‌بندی "
-            "و بر حسب سانتی‌متر."
-        ),
+        validators=[MinValueValidator(Decimal("0.01"))],
+        verbose_name="عرض به سانتی‌متر",
     )
 
     height_cm = models.DecimalField(
@@ -123,16 +66,119 @@ class VariantShippingProfile(models.Model):
         decimal_places=2,
         null=True,
         blank=True,
-        validators=[
-            MinValueValidator(
-                Decimal("0.01"),
-                message="ارتفاع محصول باید بیشتر از صفر باشد.",
-            ),
-        ],
-        verbose_name="ارتفاع بسته به سانتی‌متر",
+        validators=[MinValueValidator(Decimal("0.01"))],
+        verbose_name="ارتفاع به سانتی‌متر",
+    )
+
+    # =========================================================
+    # جهت قرارگیری و قابلیت چرخش
+    # =========================================================
+
+    can_rotate = models.BooleanField(
+        default=True,
+        verbose_name="قابل چرخش",
         help_text=(
-            "ارتفاع یک واحد محصول در حالت آماده بسته‌بندی "
-            "و بر حسب سانتی‌متر."
+            "اگر فعال باشد موتور می‌تواند جهت محصول را "
+            "برای پیدا کردن چیدمان مناسب تغییر دهد."
+        ),
+    )
+
+    must_remain_upright = models.BooleanField(
+        default=False,
+        verbose_name="باید ایستاده بماند",
+        help_text=(
+            "محصول نباید روی پهلو یا وارونه قرار بگیرد. "
+            "چرخش افقی طول و عرض همچنان می‌تواند مجاز باشد."
+        ),
+    )
+
+    can_turn_upside_down = models.BooleanField(
+        default=True,
+        verbose_name="قابل وارونه شدن",
+        help_text="آیا محصول می‌تواند به‌صورت وارونه قرار بگیرد؟",
+    )
+
+    # =========================================================
+    # شکنندگی و قابلیت روی‌هم‌چینی
+    # =========================================================
+
+    is_fragile = models.BooleanField(
+        default=False,
+        verbose_name="شکستنی",
+    )
+
+    can_stack_on_others = models.BooleanField(
+        default=True,
+        verbose_name="قابل قرارگیری روی محصولات دیگر",
+        help_text=(
+            "آیا این محصول می‌تواند روی محصول دیگری "
+            "قرار داده شود؟"
+        ),
+    )
+
+    can_have_items_on_top = models.BooleanField(
+        default=True,
+        verbose_name="قابل تحمل محصول روی خود",
+        help_text=(
+            "آیا می‌توان محصولات دیگر را روی این محصول قرار داد؟"
+        ),
+    )
+
+    max_top_load_grams = models.PositiveIntegerField(
+        null=True,
+        blank=True,
+        verbose_name="حداکثر وزن قابل تحمل روی محصول",
+        help_text=(
+            "حداکثر وزن مجاز محصولات قرارگرفته روی این کالا "
+            "به گرم. خالی یعنی محدودیت عددی ثبت نشده است."
+        ),
+    )
+
+    # =========================================================
+    # نوع و ماهیت محصول
+    # =========================================================
+
+    is_liquid = models.BooleanField(
+        default=False,
+        verbose_name="مایع",
+    )
+
+    is_food = models.BooleanField(
+        default=False,
+        verbose_name="خوراکی",
+    )
+
+    is_chemical = models.BooleanField(
+        default=False,
+        verbose_name="شیمیایی یا شوینده",
+    )
+
+    is_hazardous = models.BooleanField(
+        default=False,
+        verbose_name="دارای محدودیت حمل",
+        help_text=(
+            "برای کالاهایی که حمل آن‌ها نیازمند قوانین خاص است."
+        ),
+    )
+
+    # =========================================================
+    # بسته‌بندی حفاظتی
+    # =========================================================
+
+    requires_bubble_wrap = models.BooleanField(
+        default=False,
+        verbose_name="نیازمند ضربه‌گیر",
+    )
+
+    padding_cm = models.DecimalField(
+        max_digits=5,
+        decimal_places=2,
+        default=Decimal("0.00"),
+        validators=[MinValueValidator(Decimal("0.00"))],
+        verbose_name="حاشیه حفاظتی در هر طرف",
+        help_text=(
+            "فضای اضافه موردنیاز در هر طرف محصول به سانتی‌متر. "
+            "مثلاً مقدار ۱ یعنی دو سانتی‌متر به هر بُعد اضافه می‌شود."
         ),
     )
 
@@ -140,57 +186,45 @@ class VariantShippingProfile(models.Model):
         default=0,
         verbose_name="وزن بسته‌بندی حفاظتی اضافه",
         help_text=(
-            "وزن تقریبی ضربه‌گیر، نایلون، فوم یا سایر مواد "
-            "بسته‌بندی اضافه برای هر واحد محصول، به گرم."
+            "وزن فوم، نایلون، ضربه‌گیر و بسته‌بندی اضافی "
+            "برای هر واحد محصول."
         ),
     )
 
-    is_fragile = models.BooleanField(
-        default=False,
-        verbose_name="کالای شکستنی",
-        help_text=(
-            "اگر محصول شکستنی است و به مراقبت یا ضربه‌گیر "
-            "بیشتری نیاز دارد، این گزینه فعال شود."
-        ),
-    )
+    # =========================================================
+    # جداسازی و ناسازگاری
+    # =========================================================
 
     requires_separate_package = models.BooleanField(
         default=False,
         verbose_name="نیازمند بسته‌بندی جداگانه",
+    )
+
+    compatibility_group = models.CharField(
+        max_length=50,
+        blank=True,
+        default="",
+        verbose_name="گروه سازگاری بسته‌بندی",
         help_text=(
-            "اگر محصول نباید همراه سایر محصولات در یک کارتن "
-            "قرار بگیرد، این گزینه فعال شود."
+            "برای گروه‌بندی کالاها مانند food، chemical، "
+            "liquid یا fragile."
         ),
     )
 
-    can_rotate = models.BooleanField(
-        default=True,
-        verbose_name="قابل چرخش در بسته",
-        help_text=(
-            "آیا محصول هنگام چیدمان داخل کارتن می‌تواند "
-            "در جهت‌های مختلف چرخانده شود؟ برای محصولاتی "
-            "مانند مایعات یا کالاهای دارای جهت نگهداری خاص، "
-            "این گزینه غیرفعال شود."
-        ),
-    )
-
-    is_liquid = models.BooleanField(
-        default=False,
-        verbose_name="کالای مایع",
-        help_text=(
-            "اگر محصول حاوی مایع است، این گزینه فعال شود. "
-            "این اطلاعات می‌تواند برای محدودیت چرخش و "
-            "بسته‌بندی ضدنشت استفاده شود."
-        ),
-    )
+    # =========================================================
+    # مدیریت
+    # =========================================================
 
     is_active = models.BooleanField(
         default=True,
         verbose_name="فعال",
-        help_text=(
-            "اگر غیرفعال باشد، موتور بسته‌بندی نباید از "
-            "این پروفایل برای محاسبات جدید استفاده کند."
-        ),
+    )
+
+    notes = models.TextField(
+        blank=True,
+        default="",
+        verbose_name="توضیحات بسته‌بندی",
+        help_text="توضیحات ویژه برای انباردار یا موتور بسته‌بندی.",
     )
 
     created_at = models.DateTimeField(
@@ -212,34 +246,12 @@ class VariantShippingProfile(models.Model):
         ]
 
     def __str__(self) -> str:
-        """
-        نمایش خوانای مدل در پنل مدیریت و Shell.
-
-        نمونه خروجی:
-
-            مشخصات ارسال شامپو یک لیتری - SKU-1001
-        """
-
         return f"مشخصات ارسال {self.variant}"
 
     def clean(self) -> None:
-        """
-        اعتبارسنجی منطقی اطلاعات مدل.
-
-        Django به‌صورت پیش‌فرض validatorهای هر فیلد را اجرا
-        می‌کند، اما این متد برای اعتبارسنجی‌هایی است که به
-        ارتباط چند فیلد با یکدیگر وابسته‌اند.
-
-        قوانین فعلی:
-
-        1. اگر یکی از ابعاد وارد شود، هر سه بعد باید وارد شوند.
-        2. کالای مایع به‌صورت پیش‌فرض نباید قابل چرخش باشد.
-        3. وزن بسته‌بندی اضافه بدون وزن اصلی قابل استفاده نیست.
-        """
-
         super().clean()
 
-        errors: dict[str, str] = {}
+        errors = {}
 
         dimensions = [
             self.length_cm,
@@ -247,15 +259,15 @@ class VariantShippingProfile(models.Model):
             self.height_cm,
         ]
 
-        entered_dimensions_count = sum(
-            dimension is not None
-            for dimension in dimensions
+        entered_dimensions = sum(
+            value is not None
+            for value in dimensions
         )
 
-        if entered_dimensions_count not in (0, 3):
+        # ابعاد باید یا کاملاً خالی یا کاملاً پر باشند.
+        if entered_dimensions not in (0, 3):
             message = (
-                "برای ثبت ابعاد، طول، عرض و ارتفاع باید "
-                "همگی وارد شوند."
+                "طول، عرض و ارتفاع باید همگی با هم وارد شوند."
             )
 
             if self.length_cm is None:
@@ -272,45 +284,56 @@ class VariantShippingProfile(models.Model):
             and self.weight_grams is None
         ):
             errors["extra_packaging_weight_grams"] = (
-                "برای ثبت وزن بسته‌بندی اضافه، ابتدا وزن "
-                "اصلی محصول را وارد کنید."
+                "برای ثبت وزن بسته‌بندی اضافه، "
+                "وزن اصلی محصول را نیز وارد کنید."
             )
 
-        if self.is_liquid and self.can_rotate:
-            errors["can_rotate"] = (
-                "برای کالای مایع بهتر است امکان چرخاندن "
-                "در بسته غیرفعال باشد."
+        if self.must_remain_upright and self.can_turn_upside_down:
+            errors["can_turn_upside_down"] = (
+                "محصولی که باید ایستاده بماند "
+                "نمی‌تواند وارونه شود."
+            )
+
+        if (
+            not self.can_have_items_on_top
+            and self.max_top_load_grams not in (None, 0)
+        ):
+            errors["max_top_load_grams"] = (
+                "وقتی قرار دادن محصول روی این کالا ممنوع است، "
+                "حداکثر وزن روی محصول باید خالی یا صفر باشد."
+            )
+
+        if self.is_liquid and not self.must_remain_upright:
+            errors["must_remain_upright"] = (
+                "کالای مایع باید در حالت ایستاده بسته‌بندی شود."
+            )
+
+        if self.is_liquid and self.can_turn_upside_down:
+            errors["can_turn_upside_down"] = (
+                "کالای مایع نباید وارونه قرار بگیرد."
+            )
+
+        if self.is_fragile and not self.requires_bubble_wrap:
+            errors["requires_bubble_wrap"] = (
+                "برای کالای شکستنی، نیاز به ضربه‌گیر را فعال کنید."
             )
 
         if errors:
             raise ValidationError(errors)
 
     def save(self, *args, **kwargs) -> None:
-        """
-        ذخیره مدل پس از اجرای اعتبارسنجی کامل.
-
-        اجرای full_clean باعث می‌شود اعتبارسنجی‌های فیلدها
-        و متد clean حتی خارج از Django Admin نیز اجرا شوند.
-        """
-
         self.full_clean()
-
         super().save(*args, **kwargs)
+
+    # =========================================================
+    # مشخصات محاسباتی
+    # =========================================================
 
     @property
     def has_complete_dimensions(self) -> bool:
-        """
-        بررسی کامل بودن طول، عرض و ارتفاع.
-
-        Returns:
-            bool:
-                اگر هر سه بعد مقدار معتبر داشته باشند True
-                و در غیر این صورت False برمی‌گرداند.
-        """
-
         return all(
-            dimension is not None and dimension > 0
-            for dimension in [
+            value is not None and value > 0
+            for value in [
                 self.length_cm,
                 self.width_cm,
                 self.height_cm,
@@ -319,10 +342,6 @@ class VariantShippingProfile(models.Model):
 
     @property
     def has_weight(self) -> bool:
-        """
-        بررسی ثبت بودن وزن اصلی محصول.
-        """
-
         return (
             self.weight_grams is not None
             and self.weight_grams > 0
@@ -330,16 +349,6 @@ class VariantShippingProfile(models.Model):
 
     @property
     def is_complete(self) -> bool:
-        """
-        بررسی کامل بودن اطلاعات ضروری ارسال.
-
-        یک پروفایل زمانی کامل محسوب می‌شود که:
-
-        - فعال باشد
-        - وزن محصول ثبت شده باشد
-        - طول، عرض و ارتفاع ثبت شده باشند
-        """
-
         return (
             self.is_active
             and self.has_weight
@@ -348,19 +357,6 @@ class VariantShippingProfile(models.Model):
 
     @property
     def volume_cm3(self) -> Optional[Decimal]:
-        """
-        محاسبه حجم یک واحد محصول به سانتی‌متر مکعب.
-
-        فرمول:
-
-            حجم = طول × عرض × ارتفاع
-
-        Returns:
-            Decimal | None:
-                اگر ابعاد کامل باشند حجم برگردانده می‌شود؛
-                در غیر این صورت None برمی‌گردد.
-        """
-
         if not self.has_complete_dimensions:
             return None
 
@@ -372,19 +368,6 @@ class VariantShippingProfile(models.Model):
 
     @property
     def total_weight_grams(self) -> Optional[int]:
-        """
-        محاسبه وزن نهایی یک واحد برای بسته‌بندی.
-
-        وزن نهایی برابر است با:
-
-            وزن محصول + وزن بسته‌بندی حفاظتی اضافه
-
-        Returns:
-            int | None:
-                اگر وزن اصلی ثبت شده باشد وزن نهایی به گرم
-                برگردانده می‌شود؛ در غیر این صورت None.
-        """
-
         if not self.has_weight:
             return None
 
@@ -393,53 +376,55 @@ class VariantShippingProfile(models.Model):
             + self.extra_packaging_weight_grams
         )
 
+    @property
+    def effective_length_cm(self) -> Optional[Decimal]:
+        if self.length_cm is None:
+            return None
+
+        return self.length_cm + (self.padding_cm * 2)
+
+    @property
+    def effective_width_cm(self) -> Optional[Decimal]:
+        if self.width_cm is None:
+            return None
+
+        return self.width_cm + (self.padding_cm * 2)
+
+    @property
+    def effective_height_cm(self) -> Optional[Decimal]:
+        if self.height_cm is None:
+            return None
+
+        return self.height_cm + (self.padding_cm * 2)
+
+    @property
+    def effective_volume_cm3(self) -> Optional[Decimal]:
+        if not self.has_complete_dimensions:
+            return None
+
+        return (
+            self.effective_length_cm
+            * self.effective_width_cm
+            * self.effective_height_cm
+        )
+
     def calculate_volumetric_weight_grams(
         self,
         divisor: Decimal = Decimal("5000"),
     ) -> Optional[int]:
-        """
-        محاسبه وزن حجمی یک واحد محصول.
-
-        بسیاری از شرکت‌های حمل‌ونقل برای کالاهای سبک اما حجیم
-        از وزن حجمی استفاده می‌کنند.
-
-        فرمول رایج با ابعاد سانتی‌متر:
-
-            وزن حجمی کیلوگرم =
-                طول × عرض × ارتفاع ÷ ضریب حجمی
-
-        ضریب حجمی بسته به شرکت حمل‌ونقل ممکن است متفاوت باشد؛
-        برای مثال 5000 یا 6000.
-
-        Args:
-            divisor:
-                ضریب محاسبه وزن حجمی. مقدار پیش‌فرض 5000 است.
-
-        Returns:
-            int | None:
-                وزن حجمی به گرم یا None در صورت ناقص بودن
-                ابعاد.
-
-        Raises:
-            ValueError:
-                اگر ضریب صفر یا منفی باشد.
-        """
-
         if divisor <= 0:
             raise ValueError(
                 "ضریب وزن حجمی باید بیشتر از صفر باشد."
             )
 
-        volume = self.volume_cm3
+        volume = self.effective_volume_cm3
 
         if volume is None:
             return None
 
-        volumetric_weight_kg = volume / divisor
-
         volumetric_weight_grams = (
-            volumetric_weight_kg * Decimal("1000")
-        )
+            volume / divisor
+        ) * Decimal("1000")
 
         return int(
             volumetric_weight_grams.to_integral_value(
@@ -451,23 +436,7 @@ class VariantShippingProfile(models.Model):
         self,
         divisor: Decimal = Decimal("5000"),
     ) -> Optional[int]:
-        """
-        محاسبه وزن قابل محاسبه برای شرکت حمل‌ونقل.
-
-        شرکت حمل‌ونقل معمولاً بیشترین مقدار میان وزن واقعی
-        و وزن حجمی را برای تعیین هزینه استفاده می‌کند.
-
-        Args:
-            divisor:
-                ضریب محاسبه وزن حجمی.
-
-        Returns:
-            int | None:
-                بیشترین مقدار وزن واقعی و حجمی به گرم.
-        """
-
         actual_weight = self.total_weight_grams
-
         volumetric_weight = (
             self.calculate_volumetric_weight_grams(
                 divisor=divisor,
