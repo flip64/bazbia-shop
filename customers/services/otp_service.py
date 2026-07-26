@@ -42,7 +42,7 @@ def send_otp_test_email(
         ),
         from_email=settings.DEFAULT_FROM_EMAIL,
         to=[
-            "jr64.naderloo@gmail.com",
+            "flip.jn664@gmail.com",
         ],
     )
 
