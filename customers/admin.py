@@ -7,3 +7,6 @@ admin.site.register(models.CustomerLevel)
 admin.site.register(models.CustomerGuarantee)
 admin.site.register(models.Status)
 admin.site.register(models.CustomerState)
+admin.site.register(models.CustomerAddress)
+
+
