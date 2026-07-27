@@ -12,10 +12,10 @@ class FixedShippingQuoteService:
     بعداً منطق این سرویس با موتور بسته‌بندی و محاسبه
     واقعی هزینه ارسال جایگزین خواهد شد.
 
-    تمام مبلغ‌ها در API به ریال هستند.
+    تمام مبلغ‌ها در API به تومان هستند.
     """
 
-    SHIPPING_COST_RIAL = 1_850_000
+    SHIPPING_COST_RIAL = 185_000
     QUOTE_EXPIRATION_MINUTES = 30
 
     METHOD_CODE = "fixed_standard"
