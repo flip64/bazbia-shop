@@ -60,7 +60,7 @@ class FixedShippingQuoteService:
                     "description": (
                         self.METHOD_DESCRIPTION
                     ),
-                    "cost": self.SHIPPING_COST_RIAL,
+                    "cost": self.SHIPPING_COST_TOMAN,
                     "currency": "IRR",
                     "estimated_days": {
                         "min": self.ESTIMATED_MIN_DAYS,
