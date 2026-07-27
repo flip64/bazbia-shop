@@ -15,7 +15,7 @@ class FixedShippingQuoteService:
     تمام مبلغ‌ها در API به ریال هستند.
     """
 
-    SHIPPING_COST_RIAL = 850_000
+    SHIPPING_COST_RIAL = 1_850_000
     QUOTE_EXPIRATION_MINUTES = 30
 
     METHOD_CODE = "fixed_standard"
