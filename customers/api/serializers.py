@@ -2,18 +2,52 @@ import re
 
 from django.contrib.auth import authenticate
 from rest_framework import serializers
-from customers.models import (Customer,CustomerAddress)
+
+from customers.models import CustomerAddress
+
 
 IRAN_PHONE_PATTERN = re.compile(r"^09\d{9}$")
+
+
+def normalize_digits(value: str) -> str:
+    """
+    تبدیل اعداد فارسی و عربی به اعداد انگلیسی.
+    """
+
+    persian_digits = "۰۱۲۳۴۵۶۷۸۹"
+    arabic_digits = "٠١٢٣٤٥٦٧٨٩"
+    english_digits = "0123456789"
+
+    translation_table = str.maketrans(
+        persian_digits + arabic_digits,
+        english_digits + english_digits,
+    )
+
+    return str(value).translate(
+        translation_table
+    ).strip()
 
 
 def validate_phone_number(phone: str) -> str:
     """
     اعتبارسنجی و یکسان‌سازی شماره موبایل ایران.
+
+    ورودی‌های قابل قبول:
+
+    - 09123456789
+    - +989123456789
+    - 989123456789
+    - شماره دارای فاصله یا خط تیره
+    - شماره دارای اعداد فارسی یا عربی
     """
 
-    phone = phone.strip()
-    phone = phone.replace(" ", "").replace("-", "")
+    phone = normalize_digits(phone)
+
+    phone = (
+        phone
+        .replace(" ", "")
+        .replace("-", "")
+    )
 
     if phone.startswith("+98"):
         phone = f"0{phone[3:]}"
@@ -30,16 +64,24 @@ def validate_phone_number(phone: str) -> str:
 
 
 class RequestOTPSerializer(serializers.Serializer):
+    """
+    دریافت شماره موبایل برای ارسال کد تأیید.
+    """
+
     phone = serializers.CharField(
         max_length=15,
         trim_whitespace=True,
     )
 
-    def validate_phone(self, value):
+    def validate_phone(self, value: str) -> str:
         return validate_phone_number(value)
 
 
 class VerifyOTPSerializer(serializers.Serializer):
+    """
+    اعتبارسنجی کد تأیید OTP.
+    """
+
     session_id = serializers.UUIDField()
 
     code = serializers.CharField(
@@ -48,7 +90,9 @@ class VerifyOTPSerializer(serializers.Serializer):
         trim_whitespace=True,
     )
 
-    def validate_code(self, value):
+    def validate_code(self, value: str) -> str:
+        value = normalize_digits(value)
+
         if not value.isdigit():
             raise serializers.ValidationError(
                 "کد تأیید باید فقط شامل عدد باشد."
@@ -58,6 +102,10 @@ class VerifyOTPSerializer(serializers.Serializer):
 
 
 class LoginSerializer(serializers.Serializer):
+    """
+    ورود کاربر با شماره موبایل و رمز عبور.
+    """
+
     phone = serializers.CharField(
         max_length=15,
         trim_whitespace=True,
@@ -68,7 +116,7 @@ class LoginSerializer(serializers.Serializer):
         trim_whitespace=False,
     )
 
-    def validate_phone(self, value):
+    def validate_phone(self, value: str) -> str:
         return validate_phone_number(value)
 
     def validate(self, attrs):
@@ -83,97 +131,120 @@ class LoginSerializer(serializers.Serializer):
         if user is None:
             raise serializers.ValidationError(
                 {
-                    "detail": "شماره موبایل یا رمز عبور اشتباه است."
+                    "detail": (
+                        "شماره موبایل یا رمز عبور اشتباه است."
+                    )
                 }
             )
 
         if not user.is_active:
             raise serializers.ValidationError(
                 {
-                    "detail": "حساب کاربری شما غیرفعال است."
+                    "detail": (
+                        "حساب کاربری شما غیرفعال است."
+                    )
                 }
             )
 
         attrs["user"] = user
 
         return attrs
-    
+
 
 class LogoutSerializer(serializers.Serializer):
+    """
+    دریافت Refresh Token برای خروج کاربر.
+    """
+
     refresh = serializers.CharField(
         write_only=True,
         trim_whitespace=False,
     )
 
-from rest_framework import serializers
 
-from customers.models import CustomerAddress
-
-
-class CustomerAddressSerializer(serializers.ModelSerializer):
+class CustomerAddressSerializer(
+    serializers.ModelSerializer
+):
     """
     Serializer مربوط به آدرس‌های مشتری.
 
     این Serializer برای عملیات زیر استفاده می‌شود:
 
-    - نمایش آدرس‌های مشتری واردشده
+    - نمایش آدرس‌های مشتری
     - ثبت آدرس جدید
     - ویرایش آدرس
     - انتخاب آدرس پیش‌فرض
 
     فیلد customer از سمت کاربر دریافت نمی‌شود.
-    مشتری در View و از طریق request.user تعیین خواهد شد.
+    مشتری در View و بر اساس request.user تعیین می‌شود.
     """
 
     class Meta:
-    model = CustomerAddress
+        model = CustomerAddress
 
-    fields = [
-        "id",
-        "title",
-        "recipient_name",
-        "recipient_phone",
-        "province",
-        "city",
-        "address",
-        "postal_code",
-        "is_default",
-        "created_at",
-        "updated_at",
-    ]
+        fields = [
+            "id",
+            "title",
+            "recipient_name",
+            "recipient_phone",
+            "province",
+            "city",
+            "address",
+            "postal_code",
+            "is_default",
+            "created_at",
+            "updated_at",
+        ]
 
-    read_only_fields = [
-        "id",
-        "created_at",
-        "updated_at",
-    ]
+        read_only_fields = [
+            "id",
+            "created_at",
+            "updated_at",
+        ]
 
-    extra_kwargs = {
-        "recipient_name": {
-            "required": True,
-            "allow_blank": False,
-        },
-        "recipient_phone": {
-            "required": True,
-            "allow_blank": False,
-        },
-        "province": {
-            "required": True,
-            "allow_blank": False,
-        },
-        "city": {
-            "required": True,
-            "allow_blank": False,
-        },
-        "address": {
-            "required": True,
-            "allow_blank": False,
-        },
-        "postal_code": {
-            "required": True,
-            "allow_blank": False,
-        },
-    }
+        extra_kwargs = {
+            "title": {
+                "required": False,
+                "allow_blank": True,
+            },
+            "recipient_name": {
+                "required": True,
+                "allow_blank": False,
+            },
+            "recipient_phone": {
+                "required": True,
+                "allow_blank": False,
+            },
+            "province": {
+                "required": True,
+                "allow_blank": False,
+            },
+            "city": {
+                "required": True,
+                "allow_blank": False,
+            },
+            "address": {
+                "required": True,
+                "allow_blank": False,
+            },
+            "postal_code": {
+                "required": True,
+                "allow_blank": False,
+            },
+            "is_default": {
+                "required": False,
+            },
+        }
+
+    def validate_title(
+        self,
+        value: str,
+    ) -> str:
+        """
+        پاک‌سازی عنوان آدرس.
+        """
+
+        return value.strip()
 
     def validate_recipient_name(
         self,
@@ -198,44 +269,25 @@ class CustomerAddressSerializer(serializers.ModelSerializer):
     ) -> str:
         """
         اعتبارسنجی شماره موبایل تحویل‌گیرنده.
-
-        شماره موبایل باید:
-
-        - فقط شامل عدد باشد
-        - با 09 شروع شود
-        - دقیقاً 11 رقم داشته باشد
         """
 
-        value = self.normalize_digits(value)
-
-        if not value.isdigit():
-            raise serializers.ValidationError(
-                "شماره موبایل فقط باید شامل عدد باشد."
-            )
-
-        if not value.startswith("09"):
-            raise serializers.ValidationError(
-                "شماره موبایل باید با 09 شروع شود."
-            )
-
-        if len(value) != 11:
-            raise serializers.ValidationError(
-                "شماره موبایل باید دقیقاً ۱۱ رقم باشد."
-            )
-
-        return value
+        return validate_phone_number(value)
 
     def validate_postal_code(
         self,
         value: str,
     ) -> str:
         """
-        اعتبارسنجی کد پستی.
-
-        کد پستی باید دقیقاً 10 رقم باشد.
+        اعتبارسنجی کد پستی ۱۰ رقمی.
         """
 
-        value = self.normalize_digits(value)
+        value = normalize_digits(value)
+
+        value = (
+            value
+            .replace(" ", "")
+            .replace("-", "")
+        )
 
         if not value.isdigit():
             raise serializers.ValidationError(
@@ -254,7 +306,7 @@ class CustomerAddressSerializer(serializers.ModelSerializer):
         value: str,
     ) -> str:
         """
-        پاک‌سازی و اعتبارسنجی نام استان.
+        اعتبارسنجی نام استان.
         """
 
         value = value.strip()
@@ -271,7 +323,7 @@ class CustomerAddressSerializer(serializers.ModelSerializer):
         value: str,
     ) -> str:
         """
-        پاک‌سازی و اعتبارسنجی نام شهر.
+        اعتبارسنجی نام شهر.
         """
 
         value = value.strip()
@@ -299,31 +351,3 @@ class CustomerAddressSerializer(serializers.ModelSerializer):
             )
 
         return value
-
-    @staticmethod
-    def normalize_digits(value: str) -> str:
-        """
-        تبدیل اعداد فارسی و عربی به اعداد انگلیسی.
-
-        نمونه:
-
-            ۰۹۱۲۳۴۵۶۷۸۹
-            ٠٩١٢٣٤٥٦٧٨٩
-
-        به:
-
-            09123456789
-        """
-
-        persian_digits = "۰۱۲۳۴۵۶۷۸۹"
-        arabic_digits = "٠١٢٣٤٥٦٧٨٩"
-        english_digits = "0123456789"
-
-        translation_table = str.maketrans(
-            persian_digits + arabic_digits,
-            english_digits + english_digits,
-        )
-
-        return str(value).translate(
-            translation_table
-        ).strip()
