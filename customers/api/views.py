@@ -9,7 +9,11 @@ from rest_framework.views import APIView
 
 from rest_framework_simplejwt.tokens import RefreshToken
 
+from rest_framework import permissions, viewsets
+from rest_framework.exceptions import ValidationError
 
+from customers.models import CustomerAddress
+from customers.api.serializers import CustomerAddressSerializer
 
 from customers.api.serializers import (
     LoginSerializer,
@@ -253,5 +257,55 @@ class LogoutView(APIView):
         )
     
 
-    
+class CustomerAddressViewSet(viewsets.ModelViewSet):
+    """
+    مدیریت آدرس‌های مشتری واردشده.
+
+    هر کاربر فقط آدرس‌های متعلق به پروفایل مشتری خودش
+    را مشاهده، ثبت، ویرایش و حذف می‌کند.
+    """
+
+    serializer_class = CustomerAddressSerializer
+    permission_classes = [
+        permissions.IsAuthenticated,
+    ]
+
+    def get_queryset(self):
+        customer = getattr(
+            self.request.user,
+            "customer_profile",
+            None,
+        )
+
+        if customer is None:
+            return CustomerAddress.objects.none()
+
+        return (
+            CustomerAddress.objects
+            .filter(customer=customer)
+            .order_by(
+                "-is_default",
+                "-updated_at",
+            )
+        )
+
+    def perform_create(self, serializer):
+        customer = getattr(
+            self.request.user,
+            "customer_profile",
+            None,
+        )
+
+        if customer is None:
+            raise ValidationError(
+                {
+                    "detail": (
+                        "برای این کاربر پروفایل مشتری ایجاد نشده است."
+                    )
+                }
+            )
+
+        serializer.save(
+            customer=customer
+        )
 
