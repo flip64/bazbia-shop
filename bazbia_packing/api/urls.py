@@ -1,7 +1,27 @@
 from django.urls import path
-from .views import PackingAPIView
+
+from bazbia_packing.api.views import (
+    CartShippingQuoteAPIView,
+    ExternalPackingAPIView,
+)
+
+
+app_name = "bazbia_packing"
+
 
 urlpatterns = [
-    path("pack/", PackingAPIView.as_view(), name="pack-items"),
-]
+    # API عمومی برای شرکت‌ها و سرویس‌های خارجی
+    # فعلاً غیرفعال است.
+    path(
+        "external/calculate/",
+        ExternalPackingAPIView.as_view(),
+        name="external-packing-calculate",
+    ),
 
+    # API داخلی فروشگاه بازبیا
+    path(
+        "checkout/cart-quote/",
+        CartShippingQuoteAPIView.as_view(),
+        name="checkout-cart-shipping-quote",
+    ),
+]
