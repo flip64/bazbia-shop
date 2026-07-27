@@ -15,7 +15,7 @@ class FixedShippingQuoteService:
     تمام مبلغ‌ها در API به تومان هستند.
     """
 
-    SHIPPING_COST_RIAL = 185_000
+    SHIPPING_COST_TOMAN = 185_000
     QUOTE_EXPIRATION_MINUTES = 30
 
     METHOD_CODE = "fixed_standard"
