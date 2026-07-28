@@ -2,6 +2,7 @@ from django.urls import path
 
 from payments.api.views import (
     CreatePaymentView,
+    VerifyPaymentView,
 )
 
 
@@ -13,5 +14,10 @@ urlpatterns = [
         "create/",
         CreatePaymentView.as_view(),
         name="payment-create",
+    ),
+    path(
+        "verify/",
+        VerifyPaymentView.as_view(),
+        name="payment-verify",
     ),
 ]
