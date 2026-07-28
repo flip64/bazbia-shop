@@ -305,4 +305,7 @@ CSRF_TRUSTED_ORIGINS = [
     "http://127.0.0.1:5173"
 ]
 
+PAYMENT_CALLBACK_URL = (
+    "https://bazbia.ir/payment/verify"
+)
  
