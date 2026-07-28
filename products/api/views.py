@@ -86,22 +86,26 @@ class ProductFilterMixin:
         # مرتب سازی
         ordering = self.request.query_params.get("ordering")
 
-        if ordering == "newest":
+        if ordering == "-created_at":
             queryset = queryset.order_by("-created_at")
 
-        elif ordering == "oldest":
+        elif ordering == "created_at":
             queryset = queryset.order_by("created_at")
 
-        elif ordering == "price_asc":
-            queryset = queryset.order_by("min_price")
+        elif ordering == "price":
+            queryset = queryset.order_by("variants__price").order_by("min_price")
 
-        elif ordering == "price_desc":
-            queryset = queryset.order_by("-min_price")
+        elif ordering == "-price":
+            queryset = queryset.order_by("-variants__price").order_by("-min_price")
 
         else:
             queryset = queryset.order_by("-id")
 
         return queryset.distinct()
+
+
+
+
 
 
 
