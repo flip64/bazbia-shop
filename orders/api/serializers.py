@@ -256,3 +256,37 @@ class SalesSummarySerializer(serializers.ModelSerializer):
             'period_end',
         ]
 
+
+
+# ==============================
+# ورودی ثبت سفارش
+# ==============================
+class CreateOrderSerializer(serializers.Serializer):
+    """
+    اطلاعاتی که فرانت برای ثبت نهایی سفارش ارسال می‌کند.
+
+    مبلغ کالاها و هزینه ارسال از فرانت دریافت نمی‌شوند؛
+    بک‌اند آن‌ها را دوباره محاسبه می‌کند.
+    """
+
+    address_id = serializers.IntegerField(
+        min_value=1,
+        required=True,
+    )
+
+    shipping_quote_id = serializers.CharField(
+        max_length=100,
+        required=True,
+        allow_blank=False,
+    )
+
+    shipping_method_code = serializers.CharField(
+        max_length=50,
+        required=True,
+        allow_blank=False,
+    )
+
+    payment_method = serializers.ChoiceField(
+        choices=Order.PAYMENT_METHOD_CHOICES,
+        required=True,
+    )
