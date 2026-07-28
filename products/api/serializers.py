@@ -201,9 +201,13 @@ class ProductListSerializer(serializers.ModelSerializer):
         return url
 
     def get_price(self, obj):
-        variant = obj.variants.order_by('price').first()
-        return int(variant.price) if variant and variant.price else None
-
+      
+      if hasattr(obj, "min_price"):
+        return int(obj.min_price)
+      
+      variant = obj.variants.order_by("price").first()
+      return int(variant.price) if variant else None
+       
     def get_discount_price(self, obj):
         variant = obj.variants.exclude(discount_price__isnull=True).order_by('discount_price').first()
         return int(variant.discount_price) if variant and variant.discount_price else None

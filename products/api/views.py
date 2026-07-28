@@ -4,6 +4,7 @@ from rest_framework.response import Response
 from django.http import JsonResponse, HttpResponseBadRequest
 from django.views.decorators.csrf import csrf_exempt
 from django.db import transaction
+from django.db.models import Min
 import json
 
 from products.models import Product, Category, SpecialProduct
@@ -24,6 +25,11 @@ class ProductFilterMixin:
 
     def apply_filters(self, queryset):
 
+        queryset = queryset.annotate(
+           min_price=Min("variants__price")   
+         ) 
+        
+
         # دسته بندی
         category = self.request.query_params.get("category")
         if category:
@@ -31,12 +37,16 @@ class ProductFilterMixin:
                 category__slug=category
             )
 
+
+
         # تگ
         tag = self.request.query_params.get("tag")
         if tag:
             queryset = queryset.filter(
                 tags__slug=tag
             )
+
+
 
         # جستجو
         search = self.request.query_params.get("search")
@@ -83,10 +93,10 @@ class ProductFilterMixin:
             queryset = queryset.order_by("created_at")
 
         elif ordering == "price_asc":
-            queryset = queryset.order_by("variants__price")
+            queryset = queryset.order_by("min_price")
 
         elif ordering == "price_desc":
-            queryset = queryset.order_by("-variants__price")
+            queryset = queryset.order_by("-min_price")
 
         else:
             queryset = queryset.order_by("-id")
