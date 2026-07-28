@@ -5,36 +5,180 @@ from django.conf import settings
 # ================ضثف۱۲ثضفغاض۲  ۴۳۲ث==============
 # مدل سفارش (Order)
 # ==============================
+from django.conf import settings
+from django.db import models
+
+
 class Order(models.Model):
+    STATUS_PENDING = "pending"
+    STATUS_CANCELLED = "cancelled"
+    STATUS_PAID = "paid"
+    STATUS_SHIPPED = "shipped"
+    STATUS_COMPLETED = "completed"
+
     STATUS_CHOICES = [
-        ('pending', 'در انتظار پرداخت (رزرو)'),
-        ('cancelled', 'لغو شده (آزاد شدن رزرو)'),
-        ('paid', 'پرداخت شده'),
-        ('shipped', 'ارسال شده'),
-        ('completed', 'تحویل داده شده'),
+        (
+            STATUS_PENDING,
+            "در انتظار پرداخت"
+        ),
+        (
+            STATUS_CANCELLED,
+            "لغو شده"
+        ),
+        (
+            STATUS_PAID,
+            "پرداخت شده"
+        ),
+        (
+            STATUS_SHIPPED,
+            "ارسال شده"
+        ),
+        (
+            STATUS_COMPLETED,
+            "تحویل داده شده"
+        ),
+    ]
+
+    PAYMENT_ONLINE = "online"
+    PAYMENT_COD = "cod"
+
+    PAYMENT_METHOD_CHOICES = [
+        (
+            PAYMENT_ONLINE,
+            "پرداخت آنلاین"
+        ),
+        (
+            PAYMENT_COD,
+            "پرداخت در محل"
+        ),
     ]
 
     user = models.ForeignKey(
-        settings.AUTH_USER_MODEL, on_delete=models.CASCADE,
-        related_name='orders'
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="orders"
     )
 
     status = models.CharField(
-        max_length=20, choices=STATUS_CHOICES,
-        default='pending'
+        max_length=20,
+        choices=STATUS_CHOICES,
+        default=STATUS_PENDING,
+        db_index=True
+    )
+
+    # آدرس اصلی انتخاب‌شده توسط مشتری
+    shipping_address = models.ForeignKey(
+        "customers.CustomerAddress",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="orders"
+    )
+
+    # نسخه ثابت آدرس در لحظه ثبت سفارش
+    shipping_address_snapshot = models.JSONField(
+        default=dict,
+        blank=True
+    )
+
+    shipping_method_code = models.CharField(
+        max_length=50,
+        blank=True,
+        default=""
+    )
+
+    shipping_method_title = models.CharField(
+        max_length=100,
+        blank=True,
+        default=""
+    )
+
+    shipping_quote_id = models.CharField(
+        max_length=100,
+        blank=True,
+        default=""
+    )
+
+    payment_method = models.CharField(
+        max_length=20,
+        choices=PAYMENT_METHOD_CHOICES,
+        default=PAYMENT_ONLINE
+    )
+
+    # تمام مبلغ‌ها در پروژه بازبیا به تومان هستند
+    items_total = models.DecimalField(
+        max_digits=14,
+        decimal_places=2,
+        default=0,
+        help_text="جمع مبلغ کالاها به تومان"
+    )
+
+    shipping_cost = models.DecimalField(
+        max_digits=14,
+        decimal_places=2,
+        default=0,
+        help_text="هزینه ارسال به تومان"
+    )
+
+    discount_amount = models.DecimalField(
+        max_digits=14,
+        decimal_places=2,
+        default=0,
+        help_text="مجموع تخفیف سفارش به تومان"
     )
 
     total_price = models.DecimalField(
-        max_digits=12, decimal_places=2,
-        help_text='جمع کل سفارش پس از تخفیف'
+        max_digits=14,
+        decimal_places=2,
+        default=0,
+        help_text="مبلغ نهایی قابل پرداخت به تومان"
     )
 
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
+    created_at = models.DateTimeField(
+        auto_now_add=True
+    )
+
+    updated_at = models.DateTimeField(
+        auto_now=True
+    )
+
+    class Meta:
+        ordering = ["-created_at"]
+        indexes = [
+            models.Index(
+                fields=["user", "status"]
+            ),
+            models.Index(
+                fields=["created_at"]
+            ),
+        ]
+
+    def calculate_total_price(self):
+        """
+        محاسبه مبلغ قابل پرداخت سفارش.
+
+        items_total + shipping_cost - discount_amount
+        """
+        total = (
+            self.items_total
+            + self.shipping_cost
+            - self.discount_amount
+        )
+
+        return max(total, 0)
+
+    def save(self, *args, **kwargs):
+        self.total_price = (
+            self.calculate_total_price()
+        )
+
+        super().save(*args, **kwargs)
 
     def __str__(self):
-        return f"Order #{self.id} - {self.user}"
-
+        return (
+            f"Order #{self.pk} - "
+            f"{self.user}"
+        )
 
 # ==============================
 # مدل آیتم‌های سفارش (OrderItem)
