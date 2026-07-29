@@ -19,14 +19,15 @@ class CreatePaymentView(
     generics.GenericAPIView
 ):
     """
-    ساخت درخواست پرداخت برای سفارش.
+    ساخت درخواست پرداخت برای یک سفارش.
 
-    POST /api/payments/create/
+    Endpoint:
+        POST /api/payments/create/
 
     Body:
-    {
-        "order_id": 12
-    }
+        {
+            "order_id": 12
+        }
     """
 
     permission_classes = [
@@ -43,37 +44,45 @@ class CreatePaymentView(
         *args,
         **kwargs,
     ):
-        input_serializer = (
-            self.get_serializer(
-                data=request.data,
-            )
+        input_serializer = self.get_serializer(
+            data=request.data,
         )
 
         input_serializer.is_valid(
             raise_exception=True,
         )
 
-        order_id = (
-            input_serializer
-            .validated_data["order_id"]
-        )
+        order_id = input_serializer.validated_data[
+            "order_id"
+        ]
 
         order = get_object_or_404(
-            Order,
+            Order.objects.select_related(
+                "user",
+            ),
             id=order_id,
             user=request.user,
         )
 
-        callback_url = (
-            getattr(
-                settings,
-                "PAYMENT_CALLBACK_URL",
-                (
-                    "http://localhost:5173/"
-                    "payment/verify"
+        callback_url = getattr(
+            settings,
+            "PAYMENT_CALLBACK_URL",
+            "",
+        ).strip()
+
+        if not callback_url:
+            return Response(
+                {
+                    "error": (
+                        "آدرس بازگشت پرداخت "
+                        "در تنظیمات سرور تعریف نشده است."
+                    ),
+                },
+                status=(
+                    status
+                    .HTTP_500_INTERNAL_SERVER_ERROR
                 ),
             )
-        )
 
         try:
             result = PaymentCreateService(
@@ -92,21 +101,23 @@ class CreatePaymentView(
                 ),
             )
 
+        payment_data = PaymentSerializer(
+            result.payment,
+            context={
+                "request": request,
+            },
+        ).data
+
         return Response(
             {
                 "message": (
                     "درخواست پرداخت "
                     "با موفقیت ایجاد شد."
                 ),
-                "payment_url":
-                    result.payment_url,
-                "payment":
-                    PaymentSerializer(
-                        result.payment,
-                        context={
-                            "request": request,
-                        },
-                    ).data,
+                "payment_url": (
+                    result.payment_url
+                ),
+                "payment": payment_data,
             },
             status=status.HTTP_201_CREATED,
         )
