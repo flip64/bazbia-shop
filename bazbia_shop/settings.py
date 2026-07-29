@@ -305,7 +305,43 @@ CSRF_TRUSTED_ORIGINS = [
     "http://127.0.0.1:5173"
 ]
 
-PAYMENT_CALLBACK_URL = (
-    "https://bazbia.ir/payment/verify"
-)
+
  
+# =========================================================
+# Payment Gateway
+# =========================================================
+
+PAYMENT_GATEWAY = os.getenv(
+    "PAYMENT_GATEWAY",
+    "mock",
+).strip().lower()
+
+
+ZARINPAL_MERCHANT_ID = os.getenv(
+    "ZARINPAL_MERCHANT_ID",
+    "",
+).strip()
+
+
+ZARINPAL_CURRENCY = os.getenv(
+    "ZARINPAL_CURRENCY",
+    "IRT",
+).strip().upper()
+
+
+PAYMENT_CALLBACK_URL = os.getenv(
+    "PAYMENT_CALLBACK_URL",
+    (
+        "https://bazbia.ir/"
+        "payment/callback"
+    ),
+).strip()
+
+
+PAYMENT_FRONTEND_RESULT_URL = os.getenv(
+    "PAYMENT_FRONTEND_RESULT_URL",
+    (
+        "https://bazbia.ir/"
+        "payment/result"
+    ),
+).strip()
