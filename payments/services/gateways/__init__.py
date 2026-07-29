@@ -1,9 +1,12 @@
+from .gateway_factory import (
+    UnsupportedPaymentGatewayError,
+    get_payment_gateway,
+)
 from .mock_gateway import (
     MockPaymentGateway,
     PaymentRequestResult,
     PaymentVerifyResult,
 )
-
 from .zarinpal_gateway import (
     ZarinpalGateway,
     ZarinpalGatewayError,
@@ -13,6 +16,8 @@ from .zarinpal_gateway import (
 
 
 __all__ = [
+    "get_payment_gateway",
+    "UnsupportedPaymentGatewayError",
     "MockPaymentGateway",
     "PaymentRequestResult",
     "PaymentVerifyResult",
