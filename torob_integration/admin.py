@@ -1,4 +1,5 @@
 from django.contrib import admin
+from django.utils import timezone
 from django.utils.html import format_html
 
 from .models import TorobRequestLog, TorobVariantConfig
@@ -136,6 +137,9 @@ class TorobVariantConfigAdmin(admin.ModelAdmin):
     def price_display(self, obj):
         variant = obj.variant
 
+        if variant.price is None:
+            return "-"
+
         if (
             variant.discount_price is not None
             and variant.discount_price > 0
@@ -161,10 +165,13 @@ class TorobVariantConfigAdmin(admin.ModelAdmin):
 
         return str(obj.variant.product_id)
 
-    @admin.action(description="فعال‌کردن واریانت‌های انتخاب‌شده در ترب")
+    @admin.action(
+        description="فعال‌کردن واریانت‌های انتخاب‌شده در ترب"
+    )
     def enable_selected_variants(self, request, queryset):
         updated = queryset.update(
             is_enabled=True,
+            torob_updated_at=timezone.now(),
         )
 
         self.message_user(
@@ -172,10 +179,13 @@ class TorobVariantConfigAdmin(admin.ModelAdmin):
             f"{updated} واریانت برای ترب فعال شد.",
         )
 
-    @admin.action(description="غیرفعال‌کردن واریانت‌های انتخاب‌شده در ترب")
+    @admin.action(
+        description="غیرفعال‌کردن واریانت‌های انتخاب‌شده در ترب"
+    )
     def disable_selected_variants(self, request, queryset):
         updated = queryset.update(
             is_enabled=False,
+            torob_updated_at=timezone.now(),
         )
 
         self.message_user(
@@ -183,10 +193,10 @@ class TorobVariantConfigAdmin(admin.ModelAdmin):
             f"{updated} واریانت در ترب غیرفعال شد.",
         )
 
-    @admin.action(description="ثبت تغییر جدید برای واریانت‌های انتخاب‌شده")
+    @admin.action(
+        description="ثبت تغییر جدید برای واریانت‌های انتخاب‌شده"
+    )
     def touch_selected_variants(self, request, queryset):
-        from django.utils import timezone
-
         updated = queryset.update(
             torob_updated_at=timezone.now(),
         )
