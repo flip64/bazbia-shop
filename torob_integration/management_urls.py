@@ -1,6 +1,6 @@
 from django.urls import path
 
-from .management_views import torob_variant_management
+from .views import torob_variant_management
 
 
 app_name = "torob_management"
