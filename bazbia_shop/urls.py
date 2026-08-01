@@ -32,6 +32,8 @@ urlpatterns = [
     path('accounts/', include(('core.urls', 'core'), namespace='core')),# آدرس‌های مربوط به login/signup
     path('orders/', include(('orders.urls', 'orders'), namespace='orders')),# آدرس‌های مربوط به orders
     path('dashboard/', include(('dashboard.urls', 'dashboard'), namespace='dashboard')),# آدرس‌های مربوط به مدیریت
+    path('torob_management/', include(('torob_integration.urls', 'torob_management'), namespace='torob_management')),# آدرس‌های مربوط به مدیریت
+
 
 
 
