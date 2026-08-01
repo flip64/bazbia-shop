@@ -8,9 +8,6 @@ from rest_framework.exceptions import AuthenticationFailed
 class TorobServiceUser:
     """
     هویت سیستمی برای درخواست‌های معتبر ترب.
-
-    این کلاس کاربر دیتابیس نیست؛ فقط برای هماهنگی
-    با سیستم authentication در DRF استفاده می‌شود.
     """
 
     is_authenticated = True
@@ -26,12 +23,10 @@ class TorobServiceUser:
 
 class TorobJWTAuthentication(BaseAuthentication):
     """
-    اعتبارسنجی JWT ارسال‌شده توسط ترب با کلید عمومی Ed25519.
+    اعتبارسنجی JWT ترب با کلید عمومی Ed25519.
     """
 
     TOKEN_HEADER = "X-Torob-Token"
-    TOKEN_VERSION_HEADER = "X-Torob-Token-Version"
-
     SUPPORTED_ALGORITHM = "EdDSA"
 
     def authenticate(self, request):
@@ -51,9 +46,15 @@ class TorobJWTAuthentication(BaseAuthentication):
             "",
         ).strip()
 
-        token_version = request.headers.get(
-            self.TOKEN_VERSION_HEADER,
-            "",
+        token_version = (
+            request.headers.get(
+                "X-Torob-Token-Version",
+                "",
+            )
+            or request.headers.get(
+                "C-Torob-Token-Version",
+                "",
+            )
         ).strip()
 
         if not token:
