@@ -12,7 +12,7 @@ from torob_integration.services import (
 )
 
 from .serializers import TorobRequestSerializer
-
+from .authentication import TorobJWTAuthentication
 
 class TorobProductsAPIView(APIView):
     """
@@ -39,9 +39,14 @@ class TorobProductsAPIView(APIView):
         }
     """
 
-    authentication_classes = []
-    permission_classes = []
 
+
+
+    authentication_classes = [
+    TorobJWTAuthentication,
+        ]
+
+    permission_classes = []
     def post(self, request, *args, **kwargs):
         started_at = time.perf_counter()
 
