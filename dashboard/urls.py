@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-
+from dashboard.views.torob_views import torob_variant_management
 from django.urls import path
 from dashboard.views import (
     dashboard_home,
@@ -131,5 +131,12 @@ path(
     "products/images/<int:image_id>/delete/",
     product_image_delete,
     name="product_image_delete",
+),
+
+
+path(
+    "torob/variants/",
+    torob_variant_management,
+    name="torob-variants",
 ),
 ]
