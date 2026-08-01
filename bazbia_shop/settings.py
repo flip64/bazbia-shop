@@ -372,3 +372,19 @@ MCowBQYDK2VwAyEAt6Mu4T0pBORY11W+QeM35UsmLO3vsf+6yKpFDEImFk0=
 -----END PUBLIC KEY-----
 """.strip()
 
+
+
+
+SMS_PROVIDER = os.getenv("SMS_PROVIDER", "sms_ir")
+SMS_IR_API_KEY = os.getenv("SMS_IR_API_KEY", "")
+SMS_IR_OTP_TEMPLATE_ID = int(
+    os.getenv("SMS_IR_OTP_TEMPLATE_ID", "0")
+)
+SMS_IR_OTP_PARAMETER = os.getenv(
+    "SMS_IR_OTP_PARAMETER",
+    "CODE",
+)
+
+SMS_REQUEST_TIMEOUT = int(
+    os.getenv("SMS_REQUEST_TIMEOUT", "10")
+)
