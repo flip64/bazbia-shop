@@ -358,3 +358,17 @@ MEDIA_BASE_URL = os.getenv(
     "MEDIA_BASE_URL",
     "https://backend.bazbia.ir",
 ).rstrip("/")
+
+
+TOROB_JWT_ENABLED = True
+
+TOROB_JWT_AUDIENCE = "backend.bazbia.ir"
+
+TOROB_JWT_TOKEN_VERSION = "1"
+
+TOROB_JWT_PUBLIC_KEY = """
+-----BEGIN PUBLIC KEY-----
+MCowBQYDK2VwAyEAt6Mu4T0pBORY11W+QeM35UsmLO3vsf+6yKpFDEImFk0=
+-----END PUBLIC KEY-----
+""".strip()
+
