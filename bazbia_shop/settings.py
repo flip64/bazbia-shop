@@ -87,7 +87,7 @@ INSTALLED_APPS = [
     'schema_viewer',
     'bazbia_packing',
     'dashboard',
-    'torob_integration',
+    'torob_integration.apps.TorobIntegrationConfig',
     
 
 ]
