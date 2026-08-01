@@ -347,3 +347,14 @@ PAYMENT_FRONTEND_RESULT_URL = os.getenv(
         "payment/result"
     ),
 ).strip()
+
+
+STOREFRONT_BASE_URL = os.getenv(
+    "STOREFRONT_BASE_URL",
+    "https://bazbia.ir",
+).rstrip("/")
+
+MEDIA_BASE_URL = os.getenv(
+    "MEDIA_BASE_URL",
+    "https://backend.bazbia.ir",
+).rstrip("/")
