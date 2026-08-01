@@ -1,0 +1,653 @@
+{% extends "admin/base_site.html" %}
+{% load humanize %}
+
+{% block title %}
+مدیریت محصولات ترب
+{% endblock %}
+
+{% block extrastyle %}
+{{ block.super }}
+
+<style>
+    .torob-page {
+        direction: rtl;
+        padding: 24px;
+    }
+
+    .torob-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+        margin-bottom: 24px;
+        flex-wrap: wrap;
+    }
+
+    .torob-title {
+        margin: 0;
+        font-size: 24px;
+        font-weight: 700;
+    }
+
+    .torob-subtitle {
+        margin: 6px 0 0;
+        color: #6b7280;
+    }
+
+    .torob-stats {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(150px, 1fr));
+        gap: 16px;
+        margin-bottom: 24px;
+    }
+
+    .torob-stat {
+        background: #ffffff;
+        border: 1px solid #e5e7eb;
+        border-radius: 12px;
+        padding: 16px;
+    }
+
+    .torob-stat__label {
+        color: #6b7280;
+        font-size: 13px;
+        margin-bottom: 8px;
+    }
+
+    .torob-stat__value {
+        font-size: 24px;
+        font-weight: 700;
+        color: #111827;
+    }
+
+    .torob-filters {
+        display: grid;
+        grid-template-columns: minmax(220px, 2fr) repeat(2, minmax(160px, 1fr)) auto;
+        gap: 12px;
+        align-items: end;
+        background: #ffffff;
+        border: 1px solid #e5e7eb;
+        border-radius: 12px;
+        padding: 16px;
+        margin-bottom: 20px;
+    }
+
+    .torob-field label {
+        display: block;
+        margin-bottom: 6px;
+        font-size: 13px;
+        font-weight: 600;
+    }
+
+    .torob-field input,
+    .torob-field select {
+        width: 100%;
+        min-height: 42px;
+        box-sizing: border-box;
+        border: 1px solid #d1d5db;
+        border-radius: 8px;
+        padding: 8px 10px;
+        background: #ffffff;
+    }
+
+    .torob-button {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 42px;
+        border: 0;
+        border-radius: 8px;
+        padding: 8px 16px;
+        cursor: pointer;
+        text-decoration: none;
+        font-weight: 600;
+    }
+
+    .torob-button--primary {
+        background: #059669;
+        color: #ffffff;
+    }
+
+    .torob-button--secondary {
+        background: #e5e7eb;
+        color: #111827;
+    }
+
+    .torob-button--danger {
+        background: #dc2626;
+        color: #ffffff;
+    }
+
+    .torob-actions {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        flex-wrap: wrap;
+        margin-bottom: 16px;
+    }
+
+    .torob-table-wrapper {
+        overflow-x: auto;
+        background: #ffffff;
+        border: 1px solid #e5e7eb;
+        border-radius: 12px;
+    }
+
+    .torob-table {
+        width: 100%;
+        border-collapse: collapse;
+        min-width: 1050px;
+    }
+
+    .torob-table th,
+    .torob-table td {
+        padding: 12px;
+        text-align: right;
+        border-bottom: 1px solid #e5e7eb;
+        vertical-align: middle;
+    }
+
+    .torob-table th {
+        background: #f9fafb;
+        font-size: 13px;
+        white-space: nowrap;
+    }
+
+    .torob-table tr:last-child td {
+        border-bottom: 0;
+    }
+
+    .torob-product {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        min-width: 260px;
+    }
+
+    .torob-product__image {
+        width: 56px;
+        height: 56px;
+        border-radius: 8px;
+        object-fit: cover;
+        background: #f3f4f6;
+        flex-shrink: 0;
+    }
+
+    .torob-product__name {
+        font-weight: 700;
+        margin-bottom: 4px;
+    }
+
+    .torob-product__meta {
+        color: #6b7280;
+        font-size: 12px;
+    }
+
+    .torob-badge {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 999px;
+        padding: 4px 10px;
+        font-size: 12px;
+        font-weight: 700;
+        white-space: nowrap;
+    }
+
+    .torob-badge--enabled {
+        color: #047857;
+        background: #d1fae5;
+    }
+
+    .torob-badge--disabled {
+        color: #6b7280;
+        background: #f3f4f6;
+    }
+
+    .torob-badge--eligible {
+        color: #1d4ed8;
+        background: #dbeafe;
+    }
+
+    .torob-badge--warning {
+        color: #b45309;
+        background: #fef3c7;
+    }
+
+    .torob-badge--danger {
+        color: #b91c1c;
+        background: #fee2e2;
+    }
+
+    .torob-attributes {
+        max-width: 260px;
+        color: #4b5563;
+        font-size: 13px;
+    }
+
+    .torob-pagination {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 8px;
+        margin-top: 20px;
+        flex-wrap: wrap;
+    }
+
+    .torob-pagination a,
+    .torob-pagination span {
+        display: inline-flex;
+        min-width: 36px;
+        height: 36px;
+        align-items: center;
+        justify-content: center;
+        border-radius: 8px;
+        border: 1px solid #d1d5db;
+        padding: 0 10px;
+        text-decoration: none;
+    }
+
+    .torob-pagination__current {
+        background: #059669;
+        color: #ffffff;
+        border-color: #059669 !important;
+    }
+
+    .torob-empty {
+        padding: 48px 20px;
+        text-align: center;
+        color: #6b7280;
+    }
+
+    @media (max-width: 900px) {
+        .torob-stats {
+            grid-template-columns: 1fr;
+        }
+
+        .torob-filters {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="torob-page">
+
+    <div class="torob-header">
+        <div>
+            <h1 class="torob-title">
+                مدیریت محصولات ترب
+            </h1>
+
+            <p class="torob-subtitle">
+                فعال یا غیرفعال‌کردن واریانت‌های قابل ارسال به TorobAPI
+            </p>
+        </div>
+    </div>
+
+    {% if messages %}
+        {% for message in messages %}
+            <div class="messagelist">
+                <div class="{{ message.tags }}">
+                    {{ message }}
+                </div>
+            </div>
+        {% endfor %}
+    {% endif %}
+
+    <div class="torob-stats">
+        <div class="torob-stat">
+            <div class="torob-stat__label">
+                فعال برای ترب
+            </div>
+
+            <div class="torob-stat__value">
+                {{ enabled_count|intcomma }}
+            </div>
+        </div>
+
+        <div class="torob-stat">
+            <div class="torob-stat__label">
+                واجد شرایط فعال‌سازی
+            </div>
+
+            <div class="torob-stat__value">
+                {{ eligible_count|intcomma }}
+            </div>
+        </div>
+
+        <div class="torob-stat">
+            <div class="torob-stat__label">
+                نتایج فیلترشده
+            </div>
+
+            <div class="torob-stat__value">
+                {{ filtered_count|intcomma }}
+            </div>
+        </div>
+    </div>
+
+    <form method="get" class="torob-filters">
+
+        <div class="torob-field">
+            <label for="search">
+                جستجو
+            </label>
+
+            <input
+                id="search"
+                type="text"
+                name="search"
+                value="{{ search }}"
+                placeholder="نام محصول، SKU یا شناسه واریانت"
+            >
+        </div>
+
+        <div class="torob-field">
+            <label for="torob_status">
+                وضعیت ترب
+            </label>
+
+            <select
+                id="torob_status"
+                name="torob_status"
+            >
+                <option value="">
+                    همه
+                </option>
+
+                <option
+                    value="enabled"
+                    {% if torob_status == "enabled" %}selected{% endif %}
+                >
+                    فعال
+                </option>
+
+                <option
+                    value="disabled"
+                    {% if torob_status == "disabled" %}selected{% endif %}
+                >
+                    غیرفعال
+                </option>
+            </select>
+        </div>
+
+        <div class="torob-field">
+            <label for="stock_status">
+                وضعیت فروش
+            </label>
+
+            <select
+                id="stock_status"
+                name="stock_status"
+            >
+                <option value="">
+                    همه
+                </option>
+
+                <option
+                    value="available"
+                    {% if stock_status == "available" %}selected{% endif %}
+                >
+                    قابل فروش
+                </option>
+
+                <option
+                    value="unavailable"
+                    {% if stock_status == "unavailable" %}selected{% endif %}
+                >
+                    غیرقابل فروش
+                </option>
+            </select>
+        </div>
+
+        <div>
+            <button
+                type="submit"
+                class="torob-button torob-button--primary"
+            >
+                اعمال فیلتر
+            </button>
+
+            <a
+                href="{% url 'dashboard:torob-variants' %}"
+                class="torob-button torob-button--secondary"
+            >
+                پاک‌کردن
+            </a>
+        </div>
+    </form>
+
+    <form method="post">
+        {% csrf_token %}
+
+        <div class="torob-actions">
+            <button
+                type="submit"
+                name="action"
+                value="enable"
+                class="torob-button torob-button--primary"
+            >
+                فعال‌کردن انتخاب‌شده‌ها
+            </button>
+
+            <button
+                type="submit"
+                name="action"
+                value="disable"
+                class="torob-button torob-button--danger"
+            >
+                غیرفعال‌کردن انتخاب‌شده‌ها
+            </button>
+        </div>
+
+        <div class="torob-table-wrapper">
+            <table class="torob-table">
+                <thead>
+                    <tr>
+                        <th>
+                            <input
+                                type="checkbox"
+                                id="select-all"
+                            >
+                        </th>
+
+                        <th>محصول</th>
+                        <th>واریانت</th>
+                        <th>قیمت</th>
+                        <th>موجودی</th>
+                        <th>وضعیت ترب</th>
+                        <th>آمادگی ارسال</th>
+                        <th>تصویر</th>
+                        <th>page_unique</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    {% for row in variant_rows %}
+                        <tr>
+                            <td>
+                                <input
+                                    type="checkbox"
+                                    name="selected_variants"
+                                    value="{{ row.variant.id }}"
+                                    class="variant-checkbox"
+                                >
+                            </td>
+
+                            <td>
+                                <div class="torob-product">
+                                    {% with first_variant_image=row.variant.images.all.0 %}
+                                        {% with first_product_image=row.variant.product.images.all.0 %}
+                                            {% if first_variant_image and first_variant_image.image %}
+                                                <img
+                                                    src="{{ first_variant_image.image.url }}"
+                                                    alt=""
+                                                    class="torob-product__image"
+                                                >
+                                            {% elif first_product_image and first_product_image.image %}
+                                                <img
+                                                    src="{{ first_product_image.image.url }}"
+                                                    alt=""
+                                                    class="torob-product__image"
+                                                >
+                                            {% else %}
+                                                <div class="torob-product__image"></div>
+                                            {% endif %}
+                                        {% endwith %}
+                                    {% endwith %}
+
+                                    <div>
+                                        <div class="torob-product__name">
+                                            {{ row.variant.product.name }}
+                                        </div>
+
+                                        <div class="torob-product__meta">
+                                            محصول #{{ row.variant.product.id }}
+
+                                            {% if row.variant.product.category %}
+                                                ـ {{ row.variant.product.category.name }}
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+                            </td>
+
+                            <td>
+                                <div>
+                                    شناسه: {{ row.variant.id }}
+                                </div>
+
+                                {% if row.variant.sku %}
+                                    <div class="torob-product__meta">
+                                        SKU: {{ row.variant.sku }}
+                                    </div>
+                                {% endif %}
+
+                                {% if row.attributes_text %}
+                                    <div class="torob-attributes">
+                                        {{ row.attributes_text }}
+                                    </div>
+                                {% endif %}
+                            </td>
+
+                            <td>
+                                {{ row.variant.price|intcomma }}
+                            </td>
+
+                            <td>
+                                {% if row.variant.stock > 0 %}
+                                    <span class="torob-badge torob-badge--eligible">
+                                        {{ row.variant.stock|intcomma }}
+                                    </span>
+                                {% else %}
+                                    <span class="torob-badge torob-badge--danger">
+                                        ناموجود
+                                    </span>
+                                {% endif %}
+                            </td>
+
+                            <td>
+                                {% if row.is_enabled %}
+                                    <span class="torob-badge torob-badge--enabled">
+                                        فعال
+                                    </span>
+                                {% else %}
+                                    <span class="torob-badge torob-badge--disabled">
+                                        غیرفعال
+                                    </span>
+                                {% endif %}
+                            </td>
+
+                            <td>
+                                {% if row.is_eligible %}
+                                    <span class="torob-badge torob-badge--eligible">
+                                        آماده
+                                    </span>
+                                {% else %}
+                                    <span class="torob-badge torob-badge--warning">
+                                        نیاز به اصلاح
+                                    </span>
+                                {% endif %}
+                            </td>
+
+                            <td>
+                                {% if row.has_image %}
+                                    <span class="torob-badge torob-badge--enabled">
+                                        دارد
+                                    </span>
+                                {% else %}
+                                    <span class="torob-badge torob-badge--danger">
+                                        ندارد
+                                    </span>
+                                {% endif %}
+                            </td>
+
+                            <td>
+                                {% if row.config %}
+                                    {{ row.config.page_unique }}
+                                {% else %}
+                                    {{ row.variant.id }}
+                                {% endif %}
+                            </td>
+                        </tr>
+                    {% empty %}
+                        <tr>
+                            <td colspan="9">
+                                <div class="torob-empty">
+                                    هیچ واریانتی پیدا نشد.
+                                </div>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </form>
+
+    {% if page_obj.paginator.num_pages > 1 %}
+        <div class="torob-pagination">
+
+            {% if page_obj.has_previous %}
+                <a href="?page=1&search={{ search|urlencode }}&torob_status={{ torob_status }}&stock_status={{ stock_status }}">
+                    ابتدا
+                </a>
+
+                <a href="?page={{ page_obj.previous_page_number }}&search={{ search|urlencode }}&torob_status={{ torob_status }}&stock_status={{ stock_status }}">
+                    قبلی
+                </a>
+            {% endif %}
+
+            <span class="torob-pagination__current">
+                {{ page_obj.number }}
+                از
+                {{ page_obj.paginator.num_pages }}
+            </span>
+
+            {% if page_obj.has_next %}
+                <a href="?page={{ page_obj.next_page_number }}&search={{ search|urlencode }}&torob_status={{ torob_status }}&stock_status={{ stock_status }}">
+                    بعدی
+                </a>
+
+                <a href="?page={{ page_obj.paginator.num_pages }}&search={{ search|urlencode }}&torob_status={{ torob_status }}&stock_status={{ stock_status }}">
+                    انتها
+                </a>
+            {% endif %}
+        </div>
+    {% endif %}
+</div>
+
+<script>
+    const selectAll = document.getElementById("select-all");
+    const checkboxes = document.querySelectorAll(".variant-checkbox");
+
+    if (selectAll) {
+        selectAll.addEventListener("change", function () {
+            checkboxes.forEach(function (checkbox) {
+                checkbox.checked = selectAll.checked;
+            });
+        });
+    }
+</script>
+{% endblock %}
