@@ -11,8 +11,9 @@ from torob_integration.services import (
     TorobResponseBuilder,
 )
 
-from .serializers import TorobRequestSerializer
 from .authentication import TorobJWTAuthentication
+from .serializers import TorobRequestSerializer
+
 
 class TorobProductsAPIView(APIView):
     """
@@ -39,14 +40,12 @@ class TorobProductsAPIView(APIView):
         }
     """
 
-
-
-
     authentication_classes = [
-    TorobJWTAuthentication,
-        ]
+        TorobJWTAuthentication,
+    ]
 
     permission_classes = []
+
     def post(self, request, *args, **kwargs):
         started_at = time.perf_counter()
 
@@ -369,13 +368,24 @@ class TorobProductsAPIView(APIView):
         """
         داده‌های اولیه ثبت لاگ درخواست.
 
-        خود JWT کامل داخل دیتابیس ذخیره نمی‌شود.
+        توکن کامل JWT هرگز در دیتابیس ذخیره نمی‌شود.
         """
 
         request_body = request.data
 
         if not isinstance(request_body, dict):
             request_body = {}
+
+        token_version = (
+            request.headers.get(
+                "X-Torob-Token-Version",
+                "",
+            )
+            or request.headers.get(
+                "C-Torob-Token-Version",
+                "",
+            )
+        )
 
         return {
             "request_type": (
@@ -388,15 +398,10 @@ class TorobProductsAPIView(APIView):
             "products_count": 0,
             "total_products": 0,
             "requested_items_count": 0,
-            "auth_status": (
-                TorobRequestLog
-                .AuthStatus
-                .NOT_CHECKED
+            "auth_status": cls.get_auth_status(
+                request
             ),
-            "token_version": request.headers.get(
-                "C-Torob-Token-Version",
-                "",
-            )[:20],
+            "token_version": token_version[:20],
             "ip_address": cls.get_client_ip(
                 request
             ),
@@ -407,12 +412,44 @@ class TorobProductsAPIView(APIView):
         }
 
     @staticmethod
+    def get_auth_status(request) -> str:
+        """
+        تعیین وضعیت اعتبارسنجی JWT برای ثبت در لاگ.
+        """
+
+        auth_data = getattr(
+            request,
+            "auth",
+            None,
+        )
+
+        if not isinstance(auth_data, dict):
+            return (
+                TorobRequestLog
+                .AuthStatus
+                .NOT_CHECKED
+            )
+
+        if auth_data.get("auth_status") == "valid":
+            return (
+                TorobRequestLog
+                .AuthStatus
+                .VALID
+            )
+
+        return (
+            TorobRequestLog
+            .AuthStatus
+            .NOT_CHECKED
+        )
+
+    @staticmethod
     def get_client_ip(request) -> str | None:
         """
         دریافت IP درخواست‌کننده.
 
-        اگر پروژه پشت reverse proxy است،
-        X-Forwarded-For بررسی می‌شود.
+        اگر پروژه پشت reverse proxy باشد،
+        اولین IP داخل X-Forwarded-For خوانده می‌شود.
         """
 
         forwarded_for = request.META.get(
@@ -420,14 +457,22 @@ class TorobProductsAPIView(APIView):
         )
 
         if forwarded_for:
-            return forwarded_for.split(",")[0].strip()
+            return forwarded_for.split(
+                ","
+            )[0].strip()
 
-        return request.META.get("REMOTE_ADDR")
+        return request.META.get(
+            "REMOTE_ADDR"
+        )
 
     @staticmethod
     def calculate_duration_ms(
         started_at: float,
     ) -> int:
+        """
+        محاسبه مدت پردازش درخواست بر حسب میلی‌ثانیه.
+        """
+
         duration_seconds = (
             time.perf_counter() - started_at
         )
@@ -445,7 +490,8 @@ class TorobProductsAPIView(APIView):
         """
         تبدیل خطاهای DRF به متن ساده مطابق فرمت ترب.
 
-        خروجی نهایی در View:
+        خروجی نهایی:
+
             {
                 "error": "error message"
             }
@@ -473,7 +519,9 @@ class TorobProductsAPIView(APIView):
         return str(errors)
 
     @staticmethod
-    def create_log_safely(log_data: dict) -> None:
+    def create_log_safely(
+        log_data: dict,
+    ) -> None:
         """
         خطای ثبت لاگ نباید پاسخ اصلی API را خراب کند.
         """
