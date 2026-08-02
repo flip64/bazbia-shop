@@ -92,9 +92,17 @@ def create_images(product, product_data):
             temp = NamedTemporaryFile(delete=True)
             temp.write(response.content)
             temp.flush()
+            
 
-            filename = os.path.basename(url.split("?")[0])
+            path = url.split("?")[0]
+            ext = os.path.splitext(path)[1].lower()
 
+            if not ext:
+                ext = ".jpg"
+
+
+
+            filename = f"{product.slug}-{product.images.count() + 1}{ext}"
             image = ProductImage(
                 product=product,
                 source_url=url,
@@ -104,6 +112,28 @@ def create_images(product, product_data):
 
         except Exception as e:
             print(f"خطا در دانلود تصویر {url}: {e}")
+
+
+    
+    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 def create_videos(product, product_data):
