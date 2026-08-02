@@ -53,6 +53,14 @@ class ProductData(object):
         self.supplier_url = None
         self.supplier_product_code = None
 
+
+        # ==========================
+        # وضعیت محصول  
+        # ==========================
+        self.is_active = True
+
+
+
         # ==========================
         # اطلاعات تکمیلی
         # ==========================

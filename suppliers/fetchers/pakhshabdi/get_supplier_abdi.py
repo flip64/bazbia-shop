@@ -1,4 +1,4 @@
-from suppliers.data.supplier_data import SupplierData
+from suppliers.services.SupplierData import SupplierData
 from suppliers.services.get_supplier import get_supplier
 from suppliers.services.create_supplier import create_supplier
 

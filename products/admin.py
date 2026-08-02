@@ -1,7 +1,7 @@
 from django.contrib import admin
 from .models import (
     Product, ProductImage, ProductSpecification, ProductVariant,
-    ProductVideo, Category, SpecialProduct, Attribute, AttributeValue
+    ProductVideo, Category, SpecialProduct, Attribute, AttributeValue,Tag
 )
 
 # ===========================
@@ -89,3 +89,12 @@ class SpecialProductAdmin(admin.ModelAdmin):
     list_display = ('product', 'title', 'start_date', 'end_date', 'is_active')
     search_fields = ('product__name', 'title')
     list_filter = ('is_active',)
+
+
+
+# ===========================
+# TAGS Admin
+# ===========================
+@admin.register(Tag)
+class TagAdmin(admin.ModelAdmin):
+        list_display = ('name', 'slug')

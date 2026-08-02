@@ -1,5 +1,5 @@
 from suppliers.models import Supplier
-from suppliers.data.supplier_data import SupplierData
+from suppliers.services.SupplierData import SupplierData
 
 
 def create_supplier(data: SupplierData) -> Supplier:
