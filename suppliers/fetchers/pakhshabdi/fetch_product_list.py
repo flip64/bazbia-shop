@@ -11,7 +11,7 @@ import logging
 
 from logging.handlers import RotatingFileHandler
 from multiprocessing.dummy import Pool as ThreadPool
-from suppliers.fetchers.pakhshabdi.utils import check_product
+from utils import check_product
 BASE_URL = "https://pakhshabdi.com/sitemap_index.xml"
 
 HEADERS = {
