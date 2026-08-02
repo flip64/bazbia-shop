@@ -16,7 +16,7 @@ BASE_DIR = os.path.dirname(
 
 DATA_DIR = os.path.join(
     BASE_DIR,
-    "scrap_abdisite",
+    "pakhshabdi",
     "data"
 )
 

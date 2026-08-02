@@ -12,20 +12,25 @@ from suppliers.fetchers.pakhshabdi.sync.json_loader import load_available_produc
 from suppliers.fetchers.pakhshabdi.sync.find_offer import find_offer_by_url
 from suppliers.fetchers.pakhshabdi.sync.create_product_from_url import create_product_from_url
 from suppliers.fetchers.pakhshabdi.sync.updater import update_offer
-
+from suppliers.fetchers.pakhshabdi.get_supplier_abdi  import get_supplier_abdi
 
 
 
 products = load_available_products()
 
 for item in products:
-    offer = find_offer_by_url(item["url"])
 
+    suppler = get_supplier_abdi()
+    offer = find_offer_by_url(suppler , item["url"])
+    print(offer.supplier_url)
+    print(item["url"])
+    print('*'*20)
+
+    print(offer.purchase_price)
+    print(item["price"])
+    print('*'*50)
     if offer:
-        update_offer(
-            offer,
-            price=item["price"],
-            stock=item["stock"],
-        )
+     if offer.purchase_price == item["price"]:        
+       print("tagir nakardeh")
     else:
         create_product_from_url(item["url"])

@@ -3,7 +3,7 @@ from suppliers.services.get_supplier import get_supplier
 from suppliers.services.create_supplier import create_supplier
 
 
-def get_or_create_supplier():
+def get_supplier_abdi():
     supplier = get_supplier("پخش عبدی")
 
     if supplier is None:
