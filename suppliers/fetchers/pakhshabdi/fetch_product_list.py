@@ -11,7 +11,7 @@ import logging
 
 from logging.handlers import RotatingFileHandler
 from multiprocessing.dummy import Pool as ThreadPool
-from utils import check_product
+from suppliers.fetchers.pakhshabdi.utils import check_product
 BASE_URL = "https://pakhshabdi.com/sitemap_index.xml"
 
 HEADERS = {
@@ -109,7 +109,7 @@ def main():
     results.sort(key=lambda x: x["name"])
 
     BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-    DATA_DIR = os.path.join(BASE_DIR , "data" , "pakhshabdi" )
+    DATA_DIR = os.path.join(BASE_DIR , "data"  )
 
     if not os.path.exists(DATA_DIR):
         os.makedirs(DATA_DIR)
