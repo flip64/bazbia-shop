@@ -263,7 +263,7 @@ class TorobRequestLogAdmin(admin.ModelAdmin):
         "-created_at",
     )
 
-    date_hierarchy = "created_at"
+  #  date_hierarchy = "created_at"
 
     list_per_page = 100
 
