@@ -14,7 +14,6 @@ BASE_DIR = os.path.dirname(
     )
 )
 
-
 DATA_DIR = os.path.join(
     BASE_DIR,
     "scrap_abdisite",
@@ -23,7 +22,6 @@ DATA_DIR = os.path.join(
 
 
 def get_latest_available_file():
-
     files = [
         f for f in os.listdir(DATA_DIR)
         if f.startswith("available") and f.endswith(".json")
@@ -43,13 +41,13 @@ def get_latest_available_file():
 
 
 def load_available_products():
-
     path = get_latest_available_file()
 
     if not path:
         warning("available_products.json پیدا نشد.")
         return []
 
-    info("Loading {}".format(os.path.basename(path)))
+    info(f"Loading {os.path.basename(path)}")
 
-    with open(path, "r", encoding="utf
+    with open(path, "r", encoding="utf-8") as f:
+        return json.load(f)
