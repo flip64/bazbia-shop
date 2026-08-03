@@ -1,0 +1,54 @@
+{% extends "dashboard/base.html" %}
+
+{% block title %}
+مدیریت سفارش‌ها | بازبیا
+{% endblock %}
+
+{% block content %}
+
+<div class="container-fluid">
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="h3 mb-1">
+                مدیریت سفارش‌ها
+            </h1>
+
+            <p class="text-muted mb-0">
+                مشاهده و مدیریت سفارش‌های فروشگاه
+            </p>
+        </div>
+    </div>
+
+    <div class="alert alert-success">
+        صفحه سفارش‌ها با موفقیت متصل شد.
+        تعداد سفارش‌ها:
+        {{ paginator.count }}
+    </div>
+
+    {% for order in orders %}
+        <div class="card mb-2">
+            <div class="card-body">
+                سفارش شماره {{ order.id }}
+                -
+                {{ order.get_status_display }}
+                -
+                {{ order.total_price }} تومان
+
+                <a
+                    href="{% url 'dashboard:order_detail' order.id %}"
+                    class="btn btn-sm btn-primary"
+                >
+                    مشاهده
+                </a>
+            </div>
+        </div>
+    {% empty %}
+        <div class="alert alert-warning">
+            هنوز سفارشی ثبت نشده است.
+        </div>
+    {% endfor %}
+
+</div>
+
+{% endblock %}
