@@ -9,10 +9,35 @@
     <nav class="sidebar-nav">
 
         <a
-            class="sidebar-link"
+            class="
+                sidebar-link
+                {% if request.resolver_match.url_name == 'home' %}
+                    active
+                {% endif %}
+            "
             href="{% url 'dashboard:home' %}"
         >
             داشبورد
+        </a>
+
+        <div class="sidebar-title">
+            سفارش‌ها
+        </div>
+
+        <a
+            class="
+                sidebar-link
+                {% if request.resolver_match.url_name == 'order_list' %}
+                    active
+                {% elif request.resolver_match.url_name == 'order_detail' %}
+                    active
+                {% elif request.resolver_match.url_name == 'order_status_update' %}
+                    active
+                {% endif %}
+            "
+            href="{% url 'dashboard:order_list' %}"
+        >
+            مدیریت سفارش‌ها
         </a>
 
         <div class="sidebar-title">
@@ -20,17 +45,25 @@
         </div>
 
         {% for supplier in suppliers %}
-    <a
-        class="sidebar-link"
-        href="{% url 'dashboard:supplier_products' supplier.slug %}"
-    >
-        {{ supplier.name }}
-    </a>
-{% empty %}
-    <span class="sidebar-empty">
-        تأمین‌کننده‌ای وجود ندارد
-    </span>
-{% endfor %}
+            <a
+                class="
+                    sidebar-link
+                    {% if request.resolver_match.url_name == 'supplier_products' %}
+                        {% if request.resolver_match.kwargs.slug == supplier.slug %}
+                            active
+                        {% endif %}
+                    {% endif %}
+                "
+                href="{% url 'dashboard:supplier_products' supplier.slug %}"
+            >
+                {{ supplier.name }}
+            </a>
+        {% empty %}
+            <span class="sidebar-empty">
+                تأمین‌کننده‌ای وجود ندارد
+            </span>
+        {% endfor %}
+
     </nav>
 
 </aside>
