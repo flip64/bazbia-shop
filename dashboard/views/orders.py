@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*-
+# dashboard/views/orders.py
 
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
@@ -7,7 +7,6 @@ from django.db.models import Count, Q, Sum
 from django.db.models.functions import Coalesce
 from django.http import Http404
 from django.shortcuts import get_object_or_404, redirect, render
-from django.utils import timezone
 from django.views.decorators.http import require_POST
 
 from orders.models import Order
@@ -15,8 +14,9 @@ from orders.models import Order
 
 def _staff_access_required(request):
     """
-    کنترل دسترسی کاربران داشبورد.
+    فقط کاربران staff اجازه ورود به صفحات مدیریت سفارش‌ها را دارند.
     """
+
     if not request.user.is_staff:
         raise Http404
 
@@ -24,17 +24,17 @@ def _staff_access_required(request):
 @login_required
 def order_list(request):
     """
-    نمایش و فیلتر فهرست سفارش‌های فروشگاه.
+    نمایش لیست سفارش‌ها با امکان جستجو، فیلتر،
+    مرتب‌سازی و صفحه‌بندی.
     """
 
     _staff_access_required(request)
 
-    orders_queryset = (
+    queryset = (
         Order.objects
         .select_related(
             "user",
             "shipping_address",
-            "shipping_address__customer",
         )
         .annotate(
             order_items_count=Count(
@@ -49,7 +49,11 @@ def order_list(request):
     )
 
     search = request.GET.get("search", "").strip()
-    selected_status = request.GET.get("status", "").strip()
+    selected_status = request.GET.get(
+        "status",
+        "",
+    ).strip()
+
     selected_payment_method = request.GET.get(
         "payment_method",
         "",
@@ -61,7 +65,7 @@ def order_list(request):
     ).strip()
 
     if search:
-        search_filters = (
+        search_query = (
             Q(user__username__icontains=search)
             | Q(user__first_name__icontains=search)
             | Q(user__last_name__icontains=search)
@@ -77,11 +81,9 @@ def order_list(request):
         )
 
         if search.isdigit():
-            search_filters |= Q(pk=int(search))
+            search_query |= Q(pk=int(search))
 
-        orders_queryset = orders_queryset.filter(
-            search_filters
-        )
+        queryset = queryset.filter(search_query)
 
     valid_statuses = {
         value
@@ -89,7 +91,7 @@ def order_list(request):
     }
 
     if selected_status in valid_statuses:
-        orders_queryset = orders_queryset.filter(
+        queryset = queryset.filter(
             status=selected_status
         )
     else:
@@ -101,7 +103,7 @@ def order_list(request):
     }
 
     if selected_payment_method in valid_payment_methods:
-        orders_queryset = orders_queryset.filter(
+        queryset = queryset.filter(
             payment_method=selected_payment_method
         )
     else:
@@ -110,43 +112,39 @@ def order_list(request):
     allowed_orderings = {
         "-created_at",
         "created_at",
-        "-total_price",
-        "total_price",
         "-updated_at",
         "updated_at",
+        "-total_price",
+        "total_price",
     }
 
     if selected_ordering not in allowed_orderings:
         selected_ordering = "-created_at"
 
-    orders_queryset = orders_queryset.order_by(
-        selected_ordering
-    )
+    queryset = queryset.order_by(selected_ordering)
 
-    paginator = Paginator(
-        orders_queryset,
-        25,
-    )
+    paginator = Paginator(queryset, 25)
 
-    page_number = request.GET.get("page")
-    page_obj = paginator.get_page(page_number)
+    page_obj = paginator.get_page(
+        request.GET.get("page")
+    )
 
     statistics = {
         "all": Order.objects.count(),
         "pending": Order.objects.filter(
-            status=Order.STATUS_PENDING
+            status="pending"
         ).count(),
         "paid": Order.objects.filter(
-            status=Order.STATUS_PAID
+            status="paid"
         ).count(),
         "shipped": Order.objects.filter(
-            status=Order.STATUS_SHIPPED
+            status="shipped"
         ).count(),
         "completed": Order.objects.filter(
-            status=Order.STATUS_COMPLETED
+            status="completed"
         ).count(),
         "cancelled": Order.objects.filter(
-            status=Order.STATUS_CANCELLED
+            status="cancelled"
         ).count(),
     }
 
@@ -179,7 +177,12 @@ def order_list(request):
 @login_required
 def order_detail(request, pk):
     """
-    نمایش جزئیات کامل یک سفارش.
+    نمایش اطلاعات کامل یک سفارش شامل:
+    - مشتری
+    - آدرس ارسال
+    - اقلام سفارش
+    - مبالغ سفارش
+    - وضعیت سفارش
     """
 
     _staff_access_required(request)
@@ -189,19 +192,89 @@ def order_detail(request, pk):
         .select_related(
             "user",
             "shipping_address",
-            "shipping_address__customer",
         )
         .prefetch_related(
             "items",
             "items__variant",
             "items__variant__product",
+            "items__variant__attributes",
         ),
         pk=pk,
     )
 
+    order_items = list(order.items.all())
+
+    total_quantity = 0
+    calculated_items_total = 0
+
+    for item in order_items:
+        item.line_total = item.price * item.quantity
+
+        total_quantity += item.quantity
+        calculated_items_total += item.line_total
+
+    # اسنپ‌شات آدرس در زمان ثبت سفارش اولویت دارد.
+    shipping_address_data = (
+        order.shipping_address_snapshot or {}
+    )
+
+    # برای سفارش‌های قدیمی که اسنپ‌شات ندارند،
+    # اطلاعات از آدرس متصل به سفارش خوانده می‌شود.
+    if (
+        not shipping_address_data
+        and order.shipping_address
+    ):
+        address_object = order.shipping_address
+
+        shipping_address_data = {
+            "title": getattr(
+                address_object,
+                "title",
+                "",
+            ),
+            "recipient_name": getattr(
+                address_object,
+                "recipient_name",
+                "",
+            ),
+            "recipient_phone": getattr(
+                address_object,
+                "recipient_phone",
+                "",
+            ),
+            "province": getattr(
+                address_object,
+                "province",
+                "",
+            ),
+            "city": getattr(
+                address_object,
+                "city",
+                "",
+            ),
+            "address": getattr(
+                address_object,
+                "address",
+                "",
+            ),
+            "postal_code": getattr(
+                address_object,
+                "postal_code",
+                "",
+            ),
+        }
+
     context = {
         "page_title": f"سفارش شماره {order.pk}",
         "order": order,
+        "order_items": order_items,
+        "total_quantity": total_quantity,
+        "calculated_items_total": (
+            calculated_items_total
+        ),
+        "shipping_address_data": (
+            shipping_address_data
+        ),
         "status_choices": Order.STATUS_CHOICES,
     }
 
@@ -247,9 +320,7 @@ def order_status_update(request, pk):
             pk=order.pk,
         )
 
-    old_status = order.status
-
-    if old_status == new_status:
+    if order.status == new_status:
         messages.info(
             request,
             "وضعیت سفارش تغییری نکرد.",
@@ -260,9 +331,11 @@ def order_status_update(request, pk):
             pk=order.pk,
         )
 
-    order.status = new_status
-    order.updated_at = timezone.now()
+    previous_status_display = (
+        order.get_status_display()
+    )
 
+    order.status = new_status
     order.save(
         update_fields=[
             "status",
@@ -274,8 +347,9 @@ def order_status_update(request, pk):
         request,
         (
             f"وضعیت سفارش شماره {order.pk} "
-            f"از «{dict(Order.STATUS_CHOICES).get(old_status)}» "
-            f"به «{order.get_status_display()}» تغییر کرد."
+            f"از «{previous_status_display}» "
+            f"به «{order.get_status_display()}» "
+            "تغییر کرد."
         ),
     )
 
