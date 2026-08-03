@@ -1,88 +1,985 @@
 {% extends "dashboard/base.html" %}
 
 {% block title %}
-سفارش شماره {{ order.id }} | بازبیا
+مدیریت سفارش‌ها | داشبورد بازبیا
 {% endblock %}
 
 {% block content %}
 
-<div class="container-fluid">
+<style>
+    .orders-page {
+        direction: rtl;
+    }
 
-    <div class="mb-4">
+    .page-heading {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+        margin-bottom: 24px;
+    }
+
+    .page-heading h1 {
+        font-size: 1.6rem;
+        font-weight: 800;
+        margin: 0 0 6px;
+        color: #1f2937;
+    }
+
+    .page-heading p {
+        color: #6b7280;
+        margin: 0;
+    }
+
+    .statistics-grid {
+        display: grid;
+        grid-template-columns: repeat(6, minmax(150px, 1fr));
+        gap: 14px;
+        margin-bottom: 22px;
+    }
+
+    .stat-card {
+        position: relative;
+        overflow: hidden;
+        background: #ffffff;
+        border: 1px solid #e5e7eb;
+        border-radius: 15px;
+        padding: 18px;
+        text-decoration: none;
+        color: inherit;
+        transition:
+            transform 0.18s ease,
+            box-shadow 0.18s ease,
+            border-color 0.18s ease;
+    }
+
+    .stat-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 25px rgba(15, 23, 42, 0.08);
+        color: inherit;
+    }
+
+    .stat-card.active {
+        border-color: #059669;
+        box-shadow: 0 0 0 2px rgba(5, 150, 105, 0.12);
+    }
+
+    .stat-card-label {
+        display: block;
+        color: #6b7280;
+        font-size: 0.84rem;
+        margin-bottom: 10px;
+    }
+
+    .stat-card-value {
+        display: block;
+        color: #111827;
+        font-size: 1.65rem;
+        font-weight: 800;
+        line-height: 1;
+    }
+
+    .stat-card-all {
+        border-right: 4px solid #374151;
+    }
+
+    .stat-card-pending {
+        border-right: 4px solid #f59e0b;
+    }
+
+    .stat-card-paid {
+        border-right: 4px solid #2563eb;
+    }
+
+    .stat-card-shipped {
+        border-right: 4px solid #7c3aed;
+    }
+
+    .stat-card-completed {
+        border-right: 4px solid #059669;
+    }
+
+    .stat-card-cancelled {
+        border-right: 4px solid #dc2626;
+    }
+
+    .filter-card {
+        background: #ffffff;
+        border: 1px solid #e5e7eb;
+        border-radius: 15px;
+        padding: 20px;
+        margin-bottom: 22px;
+    }
+
+    .filter-card-title {
+        font-size: 1rem;
+        font-weight: 700;
+        color: #374151;
+        margin-bottom: 16px;
+    }
+
+    .filter-actions {
+        display: flex;
+        align-items: flex-end;
+        gap: 8px;
+        height: 100%;
+    }
+
+    .orders-table-card {
+        background: #ffffff;
+        border: 1px solid #e5e7eb;
+        border-radius: 15px;
+        overflow: hidden;
+    }
+
+    .orders-table-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        padding: 18px 20px;
+        border-bottom: 1px solid #e5e7eb;
+    }
+
+    .orders-table-header h2 {
+        font-size: 1.05rem;
+        font-weight: 800;
+        color: #1f2937;
+        margin: 0;
+    }
+
+    .orders-count {
+        color: #6b7280;
+        font-size: 0.88rem;
+    }
+
+    .orders-table {
+        margin-bottom: 0;
+        vertical-align: middle;
+        white-space: nowrap;
+    }
+
+    .orders-table thead th {
+        background: #f8fafc;
+        color: #475569;
+        font-size: 0.82rem;
+        font-weight: 700;
+        border-bottom: 1px solid #e5e7eb;
+        padding: 14px 12px;
+    }
+
+    .orders-table tbody td {
+        color: #374151;
+        font-size: 0.88rem;
+        padding: 14px 12px;
+        border-color: #f1f5f9;
+    }
+
+    .orders-table tbody tr:hover {
+        background: #f8fafc;
+    }
+
+    .order-number {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 58px;
+        height: 32px;
+        background: #ecfdf5;
+        color: #047857;
+        border-radius: 8px;
+        font-weight: 800;
+        text-decoration: none;
+    }
+
+    .order-number:hover {
+        background: #d1fae5;
+        color: #065f46;
+    }
+
+    .customer-name {
+        display: block;
+        font-weight: 700;
+        color: #1f2937;
+        margin-bottom: 4px;
+    }
+
+    .customer-phone {
+        display: block;
+        direction: ltr;
+        text-align: right;
+        color: #6b7280;
+        font-size: 0.78rem;
+    }
+
+    .status-badge {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 90px;
+        border-radius: 999px;
+        padding: 6px 10px;
+        font-size: 0.76rem;
+        font-weight: 700;
+    }
+
+    .status-pending {
+        color: #92400e;
+        background: #fef3c7;
+    }
+
+    .status-paid {
+        color: #1e40af;
+        background: #dbeafe;
+    }
+
+    .status-shipped {
+        color: #5b21b6;
+        background: #ede9fe;
+    }
+
+    .status-completed {
+        color: #065f46;
+        background: #d1fae5;
+    }
+
+    .status-cancelled {
+        color: #991b1b;
+        background: #fee2e2;
+    }
+
+    .status-default {
+        color: #374151;
+        background: #e5e7eb;
+    }
+
+    .payment-badge {
+        display: inline-flex;
+        align-items: center;
+        border-radius: 8px;
+        padding: 5px 9px;
+        font-size: 0.76rem;
+        font-weight: 700;
+    }
+
+    .payment-online {
+        color: #075985;
+        background: #e0f2fe;
+    }
+
+    .payment-cod {
+        color: #9a3412;
+        background: #ffedd5;
+    }
+
+    .order-price {
+        font-weight: 800;
+        color: #111827;
+    }
+
+    .order-date {
+        color: #475569;
+        font-size: 0.82rem;
+    }
+
+    .order-time {
+        display: block;
+        color: #94a3b8;
+        font-size: 0.74rem;
+        margin-top: 3px;
+    }
+
+    .empty-orders {
+        padding: 60px 20px;
+        text-align: center;
+    }
+
+    .empty-orders-icon {
+        font-size: 3rem;
+        margin-bottom: 14px;
+    }
+
+    .empty-orders h3 {
+        font-size: 1.1rem;
+        font-weight: 800;
+        color: #374151;
+        margin-bottom: 8px;
+    }
+
+    .empty-orders p {
+        color: #6b7280;
+        margin-bottom: 18px;
+    }
+
+    .pagination-wrapper {
+        display: flex;
+        justify-content: center;
+        padding: 20px;
+        border-top: 1px solid #e5e7eb;
+    }
+
+    .pagination {
+        margin-bottom: 0;
+        gap: 4px;
+    }
+
+    .pagination .page-link {
+        min-width: 38px;
+        height: 38px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 8px;
+        color: #374151;
+        border-color: #e5e7eb;
+    }
+
+    .pagination .page-item.active .page-link {
+        background: #059669;
+        border-color: #059669;
+        color: #ffffff;
+    }
+
+    .pagination .page-item.disabled .page-link {
+        color: #9ca3af;
+        background: #f9fafb;
+    }
+
+    @media (max-width: 1400px) {
+        .statistics-grid {
+            grid-template-columns: repeat(3, minmax(150px, 1fr));
+        }
+    }
+
+    @media (max-width: 768px) {
+        .page-heading {
+            align-items: flex-start;
+            flex-direction: column;
+        }
+
+        .statistics-grid {
+            grid-template-columns: repeat(2, minmax(130px, 1fr));
+        }
+
+        .filter-actions {
+            margin-top: 8px;
+        }
+
+        .orders-table-header {
+            align-items: flex-start;
+            flex-direction: column;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .statistics-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+
+<div class="container-fluid orders-page">
+
+    <div class="page-heading">
+        <div>
+            <h1>مدیریت سفارش‌ها</h1>
+
+            <p>
+                مشاهده، جستجو و مدیریت سفارش‌های ثبت‌شده فروشگاه
+            </p>
+        </div>
+
         <a
             href="{% url 'dashboard:order_list' %}"
-            class="btn btn-outline-secondary btn-sm"
+            class="btn btn-outline-secondary"
         >
-            بازگشت به سفارش‌ها
+            تازه‌سازی
         </a>
     </div>
 
-    <div class="card">
-        <div class="card-body">
-
-            <h1 class="h4">
-                سفارش شماره {{ order.id }}
-            </h1>
-
-            <p>
-                مشتری:
-                {{ order.user.get_full_name|default:order.user.username }}
-            </p>
-
-            <p>
-                وضعیت:
-                {{ order.get_status_display }}
-            </p>
-
-            <p>
-                مبلغ:
-                {{ order.total_price }} تومان
-            </p>
-
-            <form
-                method="post"
-                action="{% url 'dashboard:order_status_update' order.id %}"
+    {% if messages %}
+        {% for message in messages %}
+            <div
+                class="alert
+                {% if message.tags == 'success' %}
+                    alert-success
+                {% elif message.tags == 'error' %}
+                    alert-danger
+                {% elif message.tags == 'warning' %}
+                    alert-warning
+                {% else %}
+                    alert-info
+                {% endif %}
+                alert-dismissible fade show"
+                role="alert"
             >
-                {% csrf_token %}
+                {{ message }}
 
-                <div class="row align-items-end">
+                <button
+                    type="button"
+                    class="btn-close"
+                    data-bs-dismiss="alert"
+                    aria-label="بستن"
+                ></button>
+            </div>
+        {% endfor %}
+    {% endif %}
 
-                    <div class="col-md-4">
-                        <label class="form-label">
-                            تغییر وضعیت
-                        </label>
+    <div class="statistics-grid">
 
-                        <select
-                            name="status"
-                            class="form-select"
-                            required
+        <a
+            href="{% url 'dashboard:order_list' %}"
+            class="
+                stat-card
+                stat-card-all
+                {% if not selected_status %}active{% endif %}
+            "
+        >
+            <span class="stat-card-label">
+                همه سفارش‌ها
+            </span>
+
+            <span class="stat-card-value">
+                {{ statistics.all }}
+            </span>
+        </a>
+
+        <a
+            href="{% url 'dashboard:order_list' %}?status=pending"
+            class="
+                stat-card
+                stat-card-pending
+                {% if selected_status == 'pending' %}active{% endif %}
+            "
+        >
+            <span class="stat-card-label">
+                در انتظار بررسی
+            </span>
+
+            <span class="stat-card-value">
+                {{ statistics.pending }}
+            </span>
+        </a>
+
+        <a
+            href="{% url 'dashboard:order_list' %}?status=paid"
+            class="
+                stat-card
+                stat-card-paid
+                {% if selected_status == 'paid' %}active{% endif %}
+            "
+        >
+            <span class="stat-card-label">
+                پرداخت‌شده
+            </span>
+
+            <span class="stat-card-value">
+                {{ statistics.paid }}
+            </span>
+        </a>
+
+        <a
+            href="{% url 'dashboard:order_list' %}?status=shipped"
+            class="
+                stat-card
+                stat-card-shipped
+                {% if selected_status == 'shipped' %}active{% endif %}
+            "
+        >
+            <span class="stat-card-label">
+                ارسال‌شده
+            </span>
+
+            <span class="stat-card-value">
+                {{ statistics.shipped }}
+            </span>
+        </a>
+
+        <a
+            href="{% url 'dashboard:order_list' %}?status=completed"
+            class="
+                stat-card
+                stat-card-completed
+                {% if selected_status == 'completed' %}active{% endif %}
+            "
+        >
+            <span class="stat-card-label">
+                تکمیل‌شده
+            </span>
+
+            <span class="stat-card-value">
+                {{ statistics.completed }}
+            </span>
+        </a>
+
+        <a
+            href="{% url 'dashboard:order_list' %}?status=cancelled"
+            class="
+                stat-card
+                stat-card-cancelled
+                {% if selected_status == 'cancelled' %}active{% endif %}
+            "
+        >
+            <span class="stat-card-label">
+                لغوشده
+            </span>
+
+            <span class="stat-card-value">
+                {{ statistics.cancelled }}
+            </span>
+        </a>
+
+    </div>
+
+    <div class="filter-card">
+
+        <div class="filter-card-title">
+            جستجو و فیلتر سفارش‌ها
+        </div>
+
+        <form method="get">
+
+            <div class="row g-3">
+
+                <div class="col-xl-4 col-lg-6">
+                    <label
+                        for="order-search"
+                        class="form-label"
+                    >
+                        جستجو
+                    </label>
+
+                    <input
+                        id="order-search"
+                        type="search"
+                        name="search"
+                        value="{{ search }}"
+                        class="form-control"
+                        placeholder="شماره سفارش، نام مشتری یا موبایل"
+                    >
+                </div>
+
+                <div class="col-xl-2 col-lg-3 col-md-6">
+                    <label
+                        for="order-status"
+                        class="form-label"
+                    >
+                        وضعیت سفارش
+                    </label>
+
+                    <select
+                        id="order-status"
+                        name="status"
+                        class="form-select"
+                    >
+                        <option value="">
+                            همه وضعیت‌ها
+                        </option>
+
+                        {% for value, label in status_choices %}
+                            <option
+                                value="{{ value }}"
+                                {% if selected_status == value %}
+                                    selected
+                                {% endif %}
+                            >
+                                {{ label }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="col-xl-2 col-lg-3 col-md-6">
+                    <label
+                        for="payment-method"
+                        class="form-label"
+                    >
+                        روش پرداخت
+                    </label>
+
+                    <select
+                        id="payment-method"
+                        name="payment_method"
+                        class="form-select"
+                    >
+                        <option value="">
+                            همه روش‌ها
+                        </option>
+
+                        {% for value, label in payment_method_choices %}
+                            <option
+                                value="{{ value }}"
+                                {% if selected_payment_method == value %}
+                                    selected
+                                {% endif %}
+                            >
+                                {{ label }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="col-xl-2 col-lg-6 col-md-6">
+                    <label
+                        for="order-ordering"
+                        class="form-label"
+                    >
+                        مرتب‌سازی
+                    </label>
+
+                    <select
+                        id="order-ordering"
+                        name="ordering"
+                        class="form-select"
+                    >
+                        <option
+                            value="-created_at"
+                            {% if selected_ordering == '-created_at' %}
+                                selected
+                            {% endif %}
                         >
-                            {% for value, label in status_choices %}
-                                <option
-                                    value="{{ value }}"
-                                    {% if order.status == value %}
-                                        selected
-                                    {% endif %}
-                                >
-                                    {{ label }}
-                                </option>
-                            {% endfor %}
-                        </select>
-                    </div>
+                            جدیدترین
+                        </option>
 
-                    <div class="col-md-auto">
+                        <option
+                            value="created_at"
+                            {% if selected_ordering == 'created_at' %}
+                                selected
+                            {% endif %}
+                        >
+                            قدیمی‌ترین
+                        </option>
+
+                        <option
+                            value="-total_price"
+                            {% if selected_ordering == '-total_price' %}
+                                selected
+                            {% endif %}
+                        >
+                            بیشترین مبلغ
+                        </option>
+
+                        <option
+                            value="total_price"
+                            {% if selected_ordering == 'total_price' %}
+                                selected
+                            {% endif %}
+                        >
+                            کمترین مبلغ
+                        </option>
+
+                        <option
+                            value="-updated_at"
+                            {% if selected_ordering == '-updated_at' %}
+                                selected
+                            {% endif %}
+                        >
+                            آخرین تغییر
+                        </option>
+                    </select>
+                </div>
+
+                <div class="col-xl-2 col-lg-6 col-md-6">
+                    <div class="filter-actions">
+
                         <button
                             type="submit"
-                            class="btn btn-success"
+                            class="btn btn-success flex-grow-1"
                         >
-                            ذخیره وضعیت
+                            اعمال فیلتر
                         </button>
+
+                        <a
+                            href="{% url 'dashboard:order_list' %}"
+                            class="btn btn-outline-secondary"
+                            title="پاک‌کردن فیلترها"
+                        >
+                            ×
+                        </a>
+
                     </div>
+                </div>
+
+            </div>
+
+        </form>
+
+    </div>
+
+    <div class="orders-table-card">
+
+        <div class="orders-table-header">
+            <h2>
+                فهرست سفارش‌ها
+            </h2>
+
+            <span class="orders-count">
+                {{ paginator.count }} سفارش پیدا شد
+            </span>
+        </div>
+
+        {% if orders %}
+
+            <div class="table-responsive">
+
+                <table class="table orders-table">
+
+                    <thead>
+                        <tr>
+                            <th>شماره</th>
+                            <th>مشتری</th>
+                            <th>اقلام</th>
+                            <th>روش پرداخت</th>
+                            <th>مبلغ نهایی</th>
+                            <th>وضعیت</th>
+                            <th>تاریخ ثبت</th>
+                            <th>عملیات</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+
+                        {% for order in orders %}
+
+                            <tr>
+
+                                <td>
+                                    <a
+                                        href="{% url 'dashboard:order_detail' order.pk %}"
+                                        class="order-number"
+                                    >
+                                        #{{ order.pk }}
+                                    </a>
+                                </td>
+
+                                <td>
+                                    <span class="customer-name">
+                                        {% if order.user.get_full_name %}
+                                            {{ order.user.get_full_name }}
+                                        {% elif order.shipping_address_snapshot.recipient_name %}
+                                            {{ order.shipping_address_snapshot.recipient_name }}
+                                        {% else %}
+                                            {{ order.user.username }}
+                                        {% endif %}
+                                    </span>
+
+                                    <span class="customer-phone">
+                                        {% if order.shipping_address_snapshot.recipient_phone %}
+                                            {{ order.shipping_address_snapshot.recipient_phone }}
+                                        {% elif order.user.customer_profile.phone %}
+                                            {{ order.user.customer_profile.phone }}
+                                        {% else %}
+                                            بدون شماره تماس
+                                        {% endif %}
+                                    </span>
+                                </td>
+
+                                <td>
+                                    <strong>
+                                        {{ order.total_quantity }}
+                                    </strong>
+
+                                    <span class="text-muted">
+                                        عدد
+                                    </span>
+
+                                    <small class="d-block text-muted mt-1">
+                                        {{ order.order_items_count }}
+                                        ردیف کالا
+                                    </small>
+                                </td>
+
+                                <td>
+                                    {% if order.payment_method == "online" %}
+                                        <span class="payment-badge payment-online">
+                                            پرداخت آنلاین
+                                        </span>
+                                    {% elif order.payment_method == "cod" %}
+                                        <span class="payment-badge payment-cod">
+                                            پرداخت در محل
+                                        </span>
+                                    {% else %}
+                                        <span class="payment-badge status-default">
+                                            {{ order.get_payment_method_display }}
+                                        </span>
+                                    {% endif %}
+                                </td>
+
+                                <td>
+                                    <span class="order-price">
+                                        {{ order.total_price }}
+                                    </span>
+
+                                    <small class="text-muted">
+                                        تومان
+                                    </small>
+                                </td>
+
+                                <td>
+                                    {% if order.status == "pending" %}
+                                        <span class="status-badge status-pending">
+                                            {{ order.get_status_display }}
+                                        </span>
+
+                                    {% elif order.status == "paid" %}
+                                        <span class="status-badge status-paid">
+                                            {{ order.get_status_display }}
+                                        </span>
+
+                                    {% elif order.status == "shipped" %}
+                                        <span class="status-badge status-shipped">
+                                            {{ order.get_status_display }}
+                                        </span>
+
+                                    {% elif order.status == "completed" %}
+                                        <span class="status-badge status-completed">
+                                            {{ order.get_status_display }}
+                                        </span>
+
+                                    {% elif order.status == "cancelled" %}
+                                        <span class="status-badge status-cancelled">
+                                            {{ order.get_status_display }}
+                                        </span>
+
+                                    {% else %}
+                                        <span class="status-badge status-default">
+                                            {{ order.get_status_display }}
+                                        </span>
+                                    {% endif %}
+                                </td>
+
+                                <td>
+                                    <span class="order-date">
+                                        {{ order.created_at|date:"Y/m/d" }}
+                                    </span>
+
+                                    <span class="order-time">
+                                        ساعت
+                                        {{ order.created_at|date:"H:i" }}
+                                    </span>
+                                </td>
+
+                                <td>
+                                    <a
+                                        href="{% url 'dashboard:order_detail' order.pk %}"
+                                        class="btn btn-sm btn-outline-success"
+                                    >
+                                        مشاهده جزئیات
+                                    </a>
+                                </td>
+
+                            </tr>
+
+                        {% endfor %}
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+            {% if is_paginated %}
+
+                <div class="pagination-wrapper">
+
+                    <nav aria-label="صفحه‌بندی سفارش‌ها">
+
+                        <ul class="pagination">
+
+                            {% if page_obj.has_previous %}
+                                <li class="page-item">
+                                    <a
+                                        class="page-link"
+                                        href="?page={{ page_obj.previous_page_number }}&search={{ search|urlencode }}&status={{ selected_status|urlencode }}&payment_method={{ selected_payment_method|urlencode }}&ordering={{ selected_ordering|urlencode }}"
+                                    >
+                                        قبلی
+                                    </a>
+                                </li>
+                            {% else %}
+                                <li class="page-item disabled">
+                                    <span class="page-link">
+                                        قبلی
+                                    </span>
+                                </li>
+                            {% endif %}
+
+                            {% for page_number in paginator.page_range %}
+
+                                {% if page_number == page_obj.number %}
+
+                                    <li class="page-item active">
+                                        <span class="page-link">
+                                            {{ page_number }}
+                                        </span>
+                                    </li>
+
+                                {% elif page_number >= page_obj.number|add:"-2" and page_number <= page_obj.number|add:"2" %}
+
+                                    <li class="page-item">
+                                        <a
+                                            class="page-link"
+                                            href="?page={{ page_number }}&search={{ search|urlencode }}&status={{ selected_status|urlencode }}&payment_method={{ selected_payment_method|urlencode }}&ordering={{ selected_ordering|urlencode }}"
+                                        >
+                                            {{ page_number }}
+                                        </a>
+                                    </li>
+
+                                {% endif %}
+
+                            {% endfor %}
+
+                            {% if page_obj.has_next %}
+                                <li class="page-item">
+                                    <a
+                                        class="page-link"
+                                        href="?page={{ page_obj.next_page_number }}&search={{ search|urlencode }}&status={{ selected_status|urlencode }}&payment_method={{ selected_payment_method|urlencode }}&ordering={{ selected_ordering|urlencode }}"
+                                    >
+                                        بعدی
+                                    </a>
+                                </li>
+                            {% else %}
+                                <li class="page-item disabled">
+                                    <span class="page-link">
+                                        بعدی
+                                    </span>
+                                </li>
+                            {% endif %}
+
+                        </ul>
+
+                    </nav>
 
                 </div>
-            </form>
 
-        </div>
+            {% endif %}
+
+        {% else %}
+
+            <div class="empty-orders">
+
+                <div class="empty-orders-icon">
+                    📦
+                </div>
+
+                <h3>
+                    سفارشی پیدا نشد
+                </h3>
+
+                <p>
+                    سفارشی مطابق با جستجو یا فیلترهای انتخاب‌شده وجود ندارد.
+                </p>
+
+                <a
+                    href="{% url 'dashboard:order_list' %}"
+                    class="btn btn-outline-success"
+                >
+                    نمایش همه سفارش‌ها
+                </a>
+
+            </div>
+
+        {% endif %}
+
     </div>
 
 </div>
