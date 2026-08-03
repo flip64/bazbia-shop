@@ -88,7 +88,7 @@ INSTALLED_APPS = [
     'bazbia_packing',
     'dashboard',
     'torob_integration.apps.TorobIntegrationConfig',
-    
+    "contact",
 
 ]
 MIDDLEWARE = [
