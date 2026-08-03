@@ -21,6 +21,9 @@ from dashboard.views import (
     supplier_products,
     sync_dashboard,
     product_image_delete,
+    order_detail,
+    order_list,
+    order_status_update,
 )
 
 app_name = "dashboard"
@@ -139,4 +142,20 @@ path(
     torob_variant_management,
     name="torob-variants",
 ),
+
+        path(
+        "orders/",
+        order_list,
+        name="order_list",
+    ),
+    path(
+        "orders/<int:pk>/",
+        order_detail,
+        name="order_detail",
+    ),
+    path(
+        "orders/<int:pk>/status/",
+        order_status_update,
+        name="order_status_update",
+    ),
 ]
