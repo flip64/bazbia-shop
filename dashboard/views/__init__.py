@@ -34,6 +34,11 @@ from .suppliers import (
 
 from .sync import sync_dashboard
 
+from .orders import (
+    order_detail,
+    order_list,
+    order_status_update,
+)
 
 __all__ = [
     "dashboard_home",
@@ -55,7 +60,9 @@ __all__ = [
     "product_tags_edit",
     "product_variants_edit",
     "product_images_edit",
-    "product_image_delete"
-
+    "product_image_delete",
+    "order_list",
+    "order_detail",
+    "order_status_update",
 ]
 
