@@ -1,53 +1,89 @@
 {% extends "dashboard/base.html" %}
 
 {% block title %}
-مدیریت سفارش‌ها | بازبیا
+سفارش شماره {{ order.id }} | بازبیا
 {% endblock %}
 
 {% block content %}
 
 <div class="container-fluid">
 
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <div>
-            <h1 class="h3 mb-1">
-                مدیریت سفارش‌ها
+    <div class="mb-4">
+        <a
+            href="{% url 'dashboard:order_list' %}"
+            class="btn btn-outline-secondary btn-sm"
+        >
+            بازگشت به سفارش‌ها
+        </a>
+    </div>
+
+    <div class="card">
+        <div class="card-body">
+
+            <h1 class="h4">
+                سفارش شماره {{ order.id }}
             </h1>
 
-            <p class="text-muted mb-0">
-                مشاهده و مدیریت سفارش‌های فروشگاه
+            <p>
+                مشتری:
+                {{ order.user.get_full_name|default:order.user.username }}
             </p>
-        </div>
-    </div>
 
-    <div class="alert alert-success">
-        صفحه سفارش‌ها با موفقیت متصل شد.
-        تعداد سفارش‌ها:
-        {{ paginator.count }}
-    </div>
-
-    {% for order in orders %}
-        <div class="card mb-2">
-            <div class="card-body">
-                سفارش شماره {{ order.id }}
-                -
+            <p>
+                وضعیت:
                 {{ order.get_status_display }}
-                -
-                {{ order.total_price }} تومان
+            </p>
 
-                <a
-                    href="{% url 'dashboard:order_detail' order.id %}"
-                    class="btn btn-sm btn-primary"
-                >
-                    مشاهده
-                </a>
-            </div>
+            <p>
+                مبلغ:
+                {{ order.total_price }} تومان
+            </p>
+
+            <form
+                method="post"
+                action="{% url 'dashboard:order_status_update' order.id %}"
+            >
+                {% csrf_token %}
+
+                <div class="row align-items-end">
+
+                    <div class="col-md-4">
+                        <label class="form-label">
+                            تغییر وضعیت
+                        </label>
+
+                        <select
+                            name="status"
+                            class="form-select"
+                            required
+                        >
+                            {% for value, label in status_choices %}
+                                <option
+                                    value="{{ value }}"
+                                    {% if order.status == value %}
+                                        selected
+                                    {% endif %}
+                                >
+                                    {{ label }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="col-md-auto">
+                        <button
+                            type="submit"
+                            class="btn btn-success"
+                        >
+                            ذخیره وضعیت
+                        </button>
+                    </div>
+
+                </div>
+            </form>
+
         </div>
-    {% empty %}
-        <div class="alert alert-warning">
-            هنوز سفارشی ثبت نشده است.
-        </div>
-    {% endfor %}
+    </div>
 
 </div>
 
