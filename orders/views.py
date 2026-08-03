@@ -4,7 +4,7 @@ from .models import Cart
 
 User = get_user_model()
 
-def select_user_cart(request):
+def select_user_cartt(request):
     users = User.objects.all()
     selected_user = None
     cart_items = []
