@@ -11,52 +11,48 @@
         direction: rtl;
     }
 
-    .page-heading {
+    .orders-header {
         display: flex;
-        align-items: center;
         justify-content: space-between;
+        align-items: center;
         gap: 16px;
         margin-bottom: 24px;
     }
 
-    .page-heading h1 {
-        font-size: 1.6rem;
-        font-weight: 800;
+    .orders-header h1 {
         margin: 0 0 6px;
+        font-size: 1.55rem;
+        font-weight: 800;
         color: #1f2937;
     }
 
-    .page-heading p {
-        color: #6b7280;
+    .orders-header p {
         margin: 0;
+        color: #6b7280;
     }
 
     .statistics-grid {
         display: grid;
-        grid-template-columns: repeat(6, minmax(150px, 1fr));
+        grid-template-columns: repeat(6, minmax(140px, 1fr));
         gap: 14px;
         margin-bottom: 22px;
     }
 
     .stat-card {
-        position: relative;
-        overflow: hidden;
+        display: block;
+        padding: 18px;
         background: #ffffff;
         border: 1px solid #e5e7eb;
-        border-radius: 15px;
-        padding: 18px;
-        text-decoration: none;
+        border-radius: 14px;
         color: inherit;
-        transition:
-            transform 0.18s ease,
-            box-shadow 0.18s ease,
-            border-color 0.18s ease;
+        text-decoration: none;
+        transition: 0.2s ease;
     }
 
     .stat-card:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 10px 25px rgba(15, 23, 42, 0.08);
         color: inherit;
+        transform: translateY(-2px);
+        box-shadow: 0 8px 22px rgba(15, 23, 42, 0.08);
     }
 
     .stat-card.active {
@@ -66,112 +62,103 @@
 
     .stat-card-label {
         display: block;
+        margin-bottom: 10px;
         color: #6b7280;
         font-size: 0.84rem;
-        margin-bottom: 10px;
     }
 
     .stat-card-value {
         display: block;
-        color: #111827;
-        font-size: 1.65rem;
+        font-size: 1.6rem;
         font-weight: 800;
-        line-height: 1;
+        color: #111827;
     }
 
-    .stat-card-all {
+    .stat-all {
         border-right: 4px solid #374151;
     }
 
-    .stat-card-pending {
+    .stat-pending {
         border-right: 4px solid #f59e0b;
     }
 
-    .stat-card-paid {
+    .stat-paid {
         border-right: 4px solid #2563eb;
     }
 
-    .stat-card-shipped {
+    .stat-shipped {
         border-right: 4px solid #7c3aed;
     }
 
-    .stat-card-completed {
+    .stat-completed {
         border-right: 4px solid #059669;
     }
 
-    .stat-card-cancelled {
+    .stat-cancelled {
         border-right: 4px solid #dc2626;
     }
 
-    .filter-card {
+    .filter-card,
+    .orders-table-card {
         background: #ffffff;
         border: 1px solid #e5e7eb;
-        border-radius: 15px;
+        border-radius: 14px;
+    }
+
+    .filter-card {
         padding: 20px;
         margin-bottom: 22px;
     }
 
-    .filter-card-title {
-        font-size: 1rem;
-        font-weight: 700;
-        color: #374151;
+    .filter-title {
         margin-bottom: 16px;
-    }
-
-    .filter-actions {
-        display: flex;
-        align-items: flex-end;
-        gap: 8px;
-        height: 100%;
+        font-weight: 800;
+        color: #374151;
     }
 
     .orders-table-card {
-        background: #ffffff;
-        border: 1px solid #e5e7eb;
-        border-radius: 15px;
         overflow: hidden;
     }
 
-    .orders-table-header {
+    .table-card-header {
         display: flex;
-        align-items: center;
         justify-content: space-between;
+        align-items: center;
         gap: 12px;
         padding: 18px 20px;
         border-bottom: 1px solid #e5e7eb;
     }
 
-    .orders-table-header h2 {
+    .table-card-header h2 {
+        margin: 0;
         font-size: 1.05rem;
         font-weight: 800;
         color: #1f2937;
-        margin: 0;
     }
 
     .orders-count {
         color: #6b7280;
-        font-size: 0.88rem;
+        font-size: 0.85rem;
     }
 
     .orders-table {
-        margin-bottom: 0;
+        margin: 0;
         vertical-align: middle;
         white-space: nowrap;
     }
 
-    .orders-table thead th {
+    .orders-table th {
+        padding: 14px 12px;
         background: #f8fafc;
         color: #475569;
-        font-size: 0.82rem;
-        font-weight: 700;
-        border-bottom: 1px solid #e5e7eb;
-        padding: 14px 12px;
+        font-size: 0.8rem;
+        font-weight: 800;
     }
 
-    .orders-table tbody td {
-        color: #374151;
-        font-size: 0.88rem;
+    .orders-table td {
         padding: 14px 12px;
+        color: #374151;
+        font-size: 0.87rem;
         border-color: #f1f5f9;
     }
 
@@ -183,44 +170,39 @@
         display: inline-flex;
         align-items: center;
         justify-content: center;
-        min-width: 58px;
+        min-width: 60px;
         height: 32px;
+        border-radius: 8px;
         background: #ecfdf5;
         color: #047857;
-        border-radius: 8px;
         font-weight: 800;
         text-decoration: none;
     }
 
-    .order-number:hover {
-        background: #d1fae5;
-        color: #065f46;
-    }
-
     .customer-name {
         display: block;
+        margin-bottom: 4px;
         font-weight: 700;
         color: #1f2937;
-        margin-bottom: 4px;
     }
 
     .customer-phone {
         display: block;
         direction: ltr;
         text-align: right;
-        color: #6b7280;
         font-size: 0.78rem;
+        color: #6b7280;
     }
 
     .status-badge {
         display: inline-flex;
         align-items: center;
         justify-content: center;
-        min-width: 90px;
-        border-radius: 999px;
+        min-width: 95px;
         padding: 6px 10px;
-        font-size: 0.76rem;
-        font-weight: 700;
+        border-radius: 999px;
+        font-size: 0.75rem;
+        font-weight: 800;
     }
 
     .status-pending {
@@ -255,10 +237,9 @@
 
     .payment-badge {
         display: inline-flex;
-        align-items: center;
-        border-radius: 8px;
         padding: 5px 9px;
-        font-size: 0.76rem;
+        border-radius: 8px;
+        font-size: 0.75rem;
         font-weight: 700;
     }
 
@@ -273,42 +254,8 @@
     }
 
     .order-price {
-        font-weight: 800;
         color: #111827;
-    }
-
-    .order-date {
-        color: #475569;
-        font-size: 0.82rem;
-    }
-
-    .order-time {
-        display: block;
-        color: #94a3b8;
-        font-size: 0.74rem;
-        margin-top: 3px;
-    }
-
-    .empty-orders {
-        padding: 60px 20px;
-        text-align: center;
-    }
-
-    .empty-orders-icon {
-        font-size: 3rem;
-        margin-bottom: 14px;
-    }
-
-    .empty-orders h3 {
-        font-size: 1.1rem;
         font-weight: 800;
-        color: #374151;
-        margin-bottom: 8px;
-    }
-
-    .empty-orders p {
-        color: #6b7280;
-        margin-bottom: 18px;
     }
 
     .pagination-wrapper {
@@ -319,7 +266,7 @@
     }
 
     .pagination {
-        margin-bottom: 0;
+        margin: 0;
         gap: 4px;
     }
 
@@ -331,7 +278,6 @@
         justify-content: center;
         border-radius: 8px;
         color: #374151;
-        border-color: #e5e7eb;
     }
 
     .pagination .page-item.active .page-link {
@@ -340,34 +286,26 @@
         color: #ffffff;
     }
 
-    .pagination .page-item.disabled .page-link {
-        color: #9ca3af;
-        background: #f9fafb;
+    .empty-orders {
+        padding: 60px 20px;
+        text-align: center;
     }
 
     @media (max-width: 1400px) {
         .statistics-grid {
-            grid-template-columns: repeat(3, minmax(150px, 1fr));
+            grid-template-columns: repeat(3, minmax(140px, 1fr));
         }
     }
 
     @media (max-width: 768px) {
-        .page-heading {
+        .orders-header,
+        .table-card-header {
             align-items: flex-start;
             flex-direction: column;
         }
 
         .statistics-grid {
             grid-template-columns: repeat(2, minmax(130px, 1fr));
-        }
-
-        .filter-actions {
-            margin-top: 8px;
-        }
-
-        .orders-table-header {
-            align-items: flex-start;
-            flex-direction: column;
         }
     }
 
@@ -380,7 +318,7 @@
 
 <div class="container-fluid orders-page">
 
-    <div class="page-heading">
+    <div class="orders-header">
         <div>
             <h1>مدیریت سفارش‌ها</h1>
 
@@ -429,111 +367,57 @@
 
         <a
             href="{% url 'dashboard:order_list' %}"
-            class="
-                stat-card
-                stat-card-all
-                {% if not selected_status %}active{% endif %}
-            "
+            class="stat-card stat-all {% if not selected_status %}active{% endif %}"
         >
-            <span class="stat-card-label">
-                همه سفارش‌ها
-            </span>
-
-            <span class="stat-card-value">
-                {{ statistics.all }}
-            </span>
+            <span class="stat-card-label">همه سفارش‌ها</span>
+            <span class="stat-card-value">{{ statistics.all }}</span>
         </a>
 
         <a
             href="{% url 'dashboard:order_list' %}?status=pending"
-            class="
-                stat-card
-                stat-card-pending
-                {% if selected_status == 'pending' %}active{% endif %}
-            "
+            class="stat-card stat-pending {% if selected_status == 'pending' %}active{% endif %}"
         >
-            <span class="stat-card-label">
-                در انتظار بررسی
-            </span>
-
-            <span class="stat-card-value">
-                {{ statistics.pending }}
-            </span>
+            <span class="stat-card-label">در انتظار پرداخت</span>
+            <span class="stat-card-value">{{ statistics.pending }}</span>
         </a>
 
         <a
             href="{% url 'dashboard:order_list' %}?status=paid"
-            class="
-                stat-card
-                stat-card-paid
-                {% if selected_status == 'paid' %}active{% endif %}
-            "
+            class="stat-card stat-paid {% if selected_status == 'paid' %}active{% endif %}"
         >
-            <span class="stat-card-label">
-                پرداخت‌شده
-            </span>
-
-            <span class="stat-card-value">
-                {{ statistics.paid }}
-            </span>
+            <span class="stat-card-label">پرداخت‌شده</span>
+            <span class="stat-card-value">{{ statistics.paid }}</span>
         </a>
 
         <a
             href="{% url 'dashboard:order_list' %}?status=shipped"
-            class="
-                stat-card
-                stat-card-shipped
-                {% if selected_status == 'shipped' %}active{% endif %}
-            "
+            class="stat-card stat-shipped {% if selected_status == 'shipped' %}active{% endif %}"
         >
-            <span class="stat-card-label">
-                ارسال‌شده
-            </span>
-
-            <span class="stat-card-value">
-                {{ statistics.shipped }}
-            </span>
+            <span class="stat-card-label">ارسال‌شده</span>
+            <span class="stat-card-value">{{ statistics.shipped }}</span>
         </a>
 
         <a
             href="{% url 'dashboard:order_list' %}?status=completed"
-            class="
-                stat-card
-                stat-card-completed
-                {% if selected_status == 'completed' %}active{% endif %}
-            "
+            class="stat-card stat-completed {% if selected_status == 'completed' %}active{% endif %}"
         >
-            <span class="stat-card-label">
-                تکمیل‌شده
-            </span>
-
-            <span class="stat-card-value">
-                {{ statistics.completed }}
-            </span>
+            <span class="stat-card-label">تحویل داده‌شده</span>
+            <span class="stat-card-value">{{ statistics.completed }}</span>
         </a>
 
         <a
             href="{% url 'dashboard:order_list' %}?status=cancelled"
-            class="
-                stat-card
-                stat-card-cancelled
-                {% if selected_status == 'cancelled' %}active{% endif %}
-            "
+            class="stat-card stat-cancelled {% if selected_status == 'cancelled' %}active{% endif %}"
         >
-            <span class="stat-card-label">
-                لغوشده
-            </span>
-
-            <span class="stat-card-value">
-                {{ statistics.cancelled }}
-            </span>
+            <span class="stat-card-label">لغوشده</span>
+            <span class="stat-card-value">{{ statistics.cancelled }}</span>
         </a>
 
     </div>
 
     <div class="filter-card">
 
-        <div class="filter-card-title">
+        <div class="filter-title">
             جستجو و فیلتر سفارش‌ها
         </div>
 
@@ -555,7 +439,7 @@
                         name="search"
                         value="{{ search }}"
                         class="form-control"
-                        placeholder="شماره سفارش، نام مشتری یا موبایل"
+                        placeholder="شماره سفارش، نام یا شماره موبایل"
                     >
                 </div>
 
@@ -579,9 +463,7 @@
                         {% for value, label in status_choices %}
                             <option
                                 value="{{ value }}"
-                                {% if selected_status == value %}
-                                    selected
-                                {% endif %}
+                                {% if selected_status == value %}selected{% endif %}
                             >
                                 {{ label }}
                             </option>
@@ -609,9 +491,7 @@
                         {% for value, label in payment_method_choices %}
                             <option
                                 value="{{ value }}"
-                                {% if selected_payment_method == value %}
-                                    selected
-                                {% endif %}
+                                {% if selected_payment_method == value %}selected{% endif %}
                             >
                                 {{ label }}
                             </option>
@@ -619,7 +499,7 @@
                     </select>
                 </div>
 
-                <div class="col-xl-2 col-lg-6 col-md-6">
+                <div class="col-xl-2 col-lg-3 col-md-6">
                     <label
                         for="order-ordering"
                         class="form-label"
@@ -634,70 +514,55 @@
                     >
                         <option
                             value="-created_at"
-                            {% if selected_ordering == '-created_at' %}
-                                selected
-                            {% endif %}
+                            {% if selected_ordering == '-created_at' %}selected{% endif %}
                         >
                             جدیدترین
                         </option>
 
                         <option
                             value="created_at"
-                            {% if selected_ordering == 'created_at' %}
-                                selected
-                            {% endif %}
+                            {% if selected_ordering == 'created_at' %}selected{% endif %}
                         >
                             قدیمی‌ترین
                         </option>
 
                         <option
                             value="-total_price"
-                            {% if selected_ordering == '-total_price' %}
-                                selected
-                            {% endif %}
+                            {% if selected_ordering == '-total_price' %}selected{% endif %}
                         >
                             بیشترین مبلغ
                         </option>
 
                         <option
                             value="total_price"
-                            {% if selected_ordering == 'total_price' %}
-                                selected
-                            {% endif %}
+                            {% if selected_ordering == 'total_price' %}selected{% endif %}
                         >
                             کمترین مبلغ
                         </option>
 
                         <option
                             value="-updated_at"
-                            {% if selected_ordering == '-updated_at' %}
-                                selected
-                            {% endif %}
+                            {% if selected_ordering == '-updated_at' %}selected{% endif %}
                         >
                             آخرین تغییر
                         </option>
                     </select>
                 </div>
 
-                <div class="col-xl-2 col-lg-6 col-md-6">
-                    <div class="filter-actions">
+                <div class="col-xl-2 col-lg-3 col-md-6 d-flex align-items-end gap-2">
+                    <button
+                        type="submit"
+                        class="btn btn-success flex-grow-1"
+                    >
+                        اعمال
+                    </button>
 
-                        <button
-                            type="submit"
-                            class="btn btn-success flex-grow-1"
-                        >
-                            اعمال فیلتر
-                        </button>
-
-                        <a
-                            href="{% url 'dashboard:order_list' %}"
-                            class="btn btn-outline-secondary"
-                            title="پاک‌کردن فیلترها"
-                        >
-                            ×
-                        </a>
-
-                    </div>
+                    <a
+                        href="{% url 'dashboard:order_list' %}"
+                        class="btn btn-outline-secondary"
+                    >
+                        حذف
+                    </a>
                 </div>
 
             </div>
@@ -708,13 +573,11 @@
 
     <div class="orders-table-card">
 
-        <div class="orders-table-header">
-            <h2>
-                فهرست سفارش‌ها
-            </h2>
+        <div class="table-card-header">
+            <h2>فهرست سفارش‌ها</h2>
 
             <span class="orders-count">
-                {{ paginator.count }} سفارش پیدا شد
+                {{ paginator.count }} سفارش
             </span>
         </div>
 
@@ -775,13 +638,8 @@
                                 </td>
 
                                 <td>
-                                    <strong>
-                                        {{ order.total_quantity }}
-                                    </strong>
-
-                                    <span class="text-muted">
-                                        عدد
-                                    </span>
+                                    <strong>{{ order.total_quantity }}</strong>
+                                    عدد
 
                                     <small class="d-block text-muted mt-1">
                                         {{ order.order_items_count }}
@@ -849,14 +707,13 @@
                                 </td>
 
                                 <td>
-                                    <span class="order-date">
+                                    <span>
                                         {{ order.created_at|date:"Y/m/d" }}
                                     </span>
 
-                                    <span class="order-time">
-                                        ساعت
+                                    <small class="d-block text-muted mt-1">
                                         {{ order.created_at|date:"H:i" }}
-                                    </span>
+                                    </small>
                                 </td>
 
                                 <td>
@@ -864,7 +721,7 @@
                                         href="{% url 'dashboard:order_detail' order.pk %}"
                                         class="btn btn-sm btn-outline-success"
                                     >
-                                        مشاهده جزئیات
+                                        مشاهده
                                     </a>
                                 </td>
 
@@ -897,14 +754,11 @@
                                 </li>
                             {% else %}
                                 <li class="page-item disabled">
-                                    <span class="page-link">
-                                        قبلی
-                                    </span>
+                                    <span class="page-link">قبلی</span>
                                 </li>
                             {% endif %}
 
                             {% for page_number in paginator.page_range %}
-
                                 {% if page_number == page_obj.number %}
 
                                     <li class="page-item active">
@@ -925,7 +779,6 @@
                                     </li>
 
                                 {% endif %}
-
                             {% endfor %}
 
                             {% if page_obj.has_next %}
@@ -939,9 +792,7 @@
                                 </li>
                             {% else %}
                                 <li class="page-item disabled">
-                                    <span class="page-link">
-                                        بعدی
-                                    </span>
+                                    <span class="page-link">بعدی</span>
                                 </li>
                             {% endif %}
 
@@ -956,17 +807,12 @@
         {% else %}
 
             <div class="empty-orders">
-
-                <div class="empty-orders-icon">
-                    📦
-                </div>
-
-                <h3>
+                <h3 class="h5 mb-3">
                     سفارشی پیدا نشد
                 </h3>
 
-                <p>
-                    سفارشی مطابق با جستجو یا فیلترهای انتخاب‌شده وجود ندارد.
+                <p class="text-muted">
+                    سفارشی مطابق فیلترهای انتخاب‌شده وجود ندارد.
                 </p>
 
                 <a
@@ -975,7 +821,6 @@
                 >
                     نمایش همه سفارش‌ها
                 </a>
-
             </div>
 
         {% endif %}
