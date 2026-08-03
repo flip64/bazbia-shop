@@ -48,8 +48,7 @@ urlpatterns = [
     path('api/bazbia_packing/',include('bazbia_packing.api.urls')),
     path('api/promotions/', include('promotions.api.urls')),
     path('api/payments/',include('payments.api.urls')),
-    path("torob_api/",include("torob_integration.api.urls")),
-        
+    path("api/contact/", include("contact.api.urls")),
 ]
 
 if settings.DEBUG:
