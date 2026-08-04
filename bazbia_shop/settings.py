@@ -315,7 +315,7 @@ CSRF_TRUSTED_ORIGINS = [
 
 PAYMENT_GATEWAY = os.getenv(
     "PAYMENT_GATEWAY",
-    "mock",
+    "zarinpal",
 ).strip().lower()
 
 
