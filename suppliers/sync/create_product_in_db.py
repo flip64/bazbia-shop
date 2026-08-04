@@ -17,9 +17,7 @@ from suppliers.services.offer_creator import (
 from suppliers.services.variant_price_sync import (
     sync_variant_price_from_offer,
 )
-from suppliers.services.variant_stock_sync import (
-    sync_variant_stock_from_offer,
-)
+
 
 
 @transaction.atomic
