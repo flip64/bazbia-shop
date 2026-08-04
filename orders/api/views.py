@@ -51,9 +51,11 @@ from products.models import (
     ProductVariant,
 )
 
+from products.services.variant_stock import calculate_variant_available_stock
+
 
 # حداکثر تعداد مجاز از هر واریانت در سبد خرید
-MAX_CART_ITEM_QUANTITY = 10
+MAX_CART_ITEM_QUANTITY = 100
 
 
 # =========================================================
@@ -255,9 +257,15 @@ def merge_guest_cart_into_user_cart(
     )
 
     for guest_item in guest_items:
+        available_stock = (
+            calculate_variant_available_stock(
+                guest_item.variant
+            )
+        )
+
         allowed_guest_quantity = min(
             guest_item.quantity,
-            guest_item.variant.stock,
+            available_stock,
             MAX_CART_ITEM_QUANTITY,
         )
 
@@ -285,7 +293,7 @@ def merge_guest_cart_into_user_cart(
 
         allowed_quantity = min(
             new_quantity,
-            guest_item.variant.stock,
+            available_stock,
             MAX_CART_ITEM_QUANTITY,
         )
 
@@ -706,11 +714,19 @@ class AddToCartView(
             id=variant_id,
         )
 
-        if variant.stock <= 0:
+        available_stock = (
+            calculate_variant_available_stock(
+                variant
+            )
+        )
+
+        if available_stock <= 0:
             return Response(
                 {
-                    "error":
-                        "این کالا در حال حاضر ناموجود است.",
+                    "error": (
+                        "این کالا در حال حاضر "
+                        "ناموجود است."
+                    ),
                     "available_stock": 0,
                 },
                 status=
@@ -738,14 +754,16 @@ class AddToCartView(
             )
         )
 
-        if final_quantity > variant.stock:
+        if final_quantity > available_stock:
+            current_cart_quantity = (
+                0
+                if created
+                else cart_item.quantity
+            )
+
             available_to_add = max(
-                variant.stock
-                - (
-                    0
-                    if created
-                    else cart_item.quantity
-                ),
+                available_stock
+                - current_cart_quantity,
                 0,
             )
 
@@ -762,7 +780,7 @@ class AddToCartView(
                         "اضافه کنید."
                     ),
                     "available_stock":
-                        variant.stock,
+                        available_stock,
                 },
                 status=
                     status.HTTP_400_BAD_REQUEST,
@@ -895,19 +913,21 @@ class UpdateCartItemView(
             cart=cart,
         )
 
-        if (
-            quantity
-            > cart_item.variant.stock
-        ):
+        available_stock = (
+            calculate_variant_available_stock(
+                cart_item.variant
+            )
+        )
+
+        if quantity > available_stock:
             return Response(
                 {
                     "error": (
-                        f"فقط "
-                        f"{cart_item.variant.stock} "
+                        f"فقط {available_stock} "
                         "عدد موجود است."
                     ),
                     "available_stock":
-                        cart_item.variant.stock,
+                        available_stock,
                 },
                 status=
                     status.HTTP_400_BAD_REQUEST,
@@ -1184,22 +1204,25 @@ class CreateOrderView(
                     ),
                 )
 
-            if (
-                variant.stock
-                < cart_item.quantity
-            ):
+            available_stock = (
+                calculate_variant_available_stock(
+                    variant
+                )
+            )
+
+            if available_stock < cart_item.quantity:
                 return Response(
                     {
                         "error": (
                             f"محصول "
                             f"{variant.product.name} "
-                            f"فقط {variant.stock} "
-                            "عدد موجودی دارد."
+                            f"فقط {available_stock} "
+                            "عدد موجودی قابل سفارش دارد."
                         ),
                         "variant_id":
                             variant.id,
                         "available_stock":
-                            variant.stock,
+                            available_stock,
                     },
                     status=(
                         status

@@ -1,5 +1,8 @@
 from rest_framework import serializers
 from orders.models import Order, OrderItem, Cart, CartItem, SalesSummary
+from products.services.variant_stock import calculate_variant_available_stock
+
+
 
 # ==============================
 # ورودی ثبت سفارش
@@ -61,10 +64,7 @@ class CartItemSerializer(serializers.ModelSerializer):
         read_only=True,
     )
 
-    variant_stock = serializers.IntegerField(
-        source="variant.stock",
-        read_only=True,
-    )
+    variant_stock = serializers.SerializerMethodField()
 
     price = serializers.SerializerMethodField()
     total_price = serializers.SerializerMethodField()
@@ -145,6 +145,11 @@ class CartItemSerializer(serializers.ModelSerializer):
             )
 
         return image_url
+
+
+    def get_variant_stock(self, obj):
+     return calculate_variant_available_stock(obj.variant)
+
 
 
 # ==============================
