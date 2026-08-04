@@ -49,6 +49,6 @@ def create_product_from_productData(data):
     create_price_history(offer, data.price)
 
     sync_variant_price_from_offer(offer)
-    sync_variant_stock_from_offer(offer)
+    
 
     return product
