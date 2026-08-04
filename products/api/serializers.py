@@ -17,7 +17,9 @@ from products.models import (
 from products.services.product_stock import (
     calculate_product_stock,
 )
-
+from products.services.variant_stock import (
+    calculate_variant_available_stock,
+)
 # ------------------------------
 # دسته‌بندی‌ها
 # ------------------------------
@@ -140,6 +142,8 @@ class ProductVariantSerializer(serializers.ModelSerializer):
         read_only=True,
     )
 
+    stock = serializers.SerializerMethodField()
+
     class Meta:
         model = ProductVariant
         fields = [
@@ -153,6 +157,13 @@ class ProductVariantSerializer(serializers.ModelSerializer):
             "attributes",
         ]
 
+    def get_stock(self, obj):
+        """
+        موجودی قابل عرضه واریانت را با همان نام stock
+        برای فرانت‌اند ارسال می‌کند.
+        """
+
+        return calculate_variant_available_stock(obj)
 
 class ProductSerializer(serializers.ModelSerializer):
     images = ProductImageSerializer(

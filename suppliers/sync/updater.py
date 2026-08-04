@@ -2,18 +2,14 @@
 
 import logging
 from typing import Any
-
 from django.utils import timezone
-
 from suppliers.models import SupplierOffer
+
 from suppliers.services.offer_updater import (
     update_supplier_offer,
 )
 from suppliers.services.variant_price_sync import (
     sync_variant_price_from_offer,
-)
-from suppliers.services.variant_stock_sync import (
-    sync_variant_stock_from_offer,
 )
 
 from .helpers import to_decimal, to_stock
@@ -243,32 +239,6 @@ def update_offer(
                     offer_id,
                     variant_id,
                 )
-
-        # موجودی واریانت در هر بار پردازش بررسی می‌شود؛
-        # چون ممکن است پیشنهاد اصلی تأمین‌کننده تغییر کرده باشد.
-        variant_stock_changed = (
-            sync_variant_stock_from_offer(
-                offer
-            )
-        )
-
-        if variant_stock_changed:
-            logger.info(
-                "موجودی واریانت همگام شد | "
-                "offer_id=%s | variant_id=%s | supplier=%s | "
-                "product=%s",
-                offer_id,
-                variant_id,
-                supplier_slug,
-                item_name,
-            )
-        else:
-            logger.debug(
-                "موجودی واریانت نیازی به تغییر نداشت | "
-                "offer_id=%s | variant_id=%s",
-                offer_id,
-                variant_id,
-            )
 
     except Exception:
 
