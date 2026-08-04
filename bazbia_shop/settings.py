@@ -334,8 +334,8 @@ ZARINPAL_CURRENCY = os.getenv(
 PAYMENT_CALLBACK_URL = os.getenv(
     "PAYMENT_CALLBACK_URL",
     (
-        "https://bazbia.ir/"
-        "payment/callback"
+        "https://backend.bazbia.ir/"
+        "api/payments/callback/zarinpal/"
     ),
 ).strip()
 
@@ -344,10 +344,9 @@ PAYMENT_FRONTEND_RESULT_URL = os.getenv(
     "PAYMENT_FRONTEND_RESULT_URL",
     (
         "https://bazbia.ir/"
-        "payment/result"
+        "payment/verify"
     ),
 ).strip()
-
 
 STOREFRONT_BASE_URL = os.getenv(
     "STOREFRONT_BASE_URL",
