@@ -10,7 +10,7 @@ from django.db.models import (
 )
 
 from products.models import ProductVariant
-
+from products.services.variant_stock import ( filter_available_variants)
 
 class TorobProductSelector:
     """
@@ -19,6 +19,8 @@ class TorobProductSelector:
 
     PAGE_SIZE = 100
 
+    
+    
     @classmethod
     def base_queryset(cls) -> QuerySet:
         """
@@ -26,18 +28,22 @@ class TorobProductSelector:
 
         - برای ترب فعال شده‌اند
         - محصول اصلی فعال است
-        - موجودی قابل فروش دارند
+        - موجودی قابل عرضه ترکیبی دارند
         - قیمت معتبر دارند
         """
 
+        queryset = ProductVariant.objects.filter(
+            torob_config__is_enabled=True,
+            product__is_active=True,
+            price__gt=0,
+        )
+
+        queryset = filter_available_variants(
+            queryset
+        )
+
         return (
-            ProductVariant.objects
-            .filter(
-                torob_config__is_enabled=True,
-                product__is_active=True,
-                stock__gt=0,
-                price__gt=0,
-            )
+            queryset
             .select_related(
                 "product",
                 "product__category",
@@ -59,6 +65,7 @@ class TorobProductSelector:
             .distinct()
         )
 
+    
     @classmethod
     def get_paginated(
         cls,
