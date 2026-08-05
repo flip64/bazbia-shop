@@ -1,6 +1,7 @@
 from products.services.product_data import ProductData
+from suppliers.fetchers.pakhshabdi.get_supplier_abdi import get_supplier_abdi
 
-from suppliers.fetchers.pakhshabdi.sync.abdi_fetcher import (
+from suppliers.fetchers.pakhshabdi.abdi_fetcher import (
     fetch_product_details,
     extract_quantity,
     extract_product_images,
@@ -23,5 +24,6 @@ def extract_product_data(url):
     data.tags = extract_tags(url)
 
     data.supplier_url = url
-
+    data.supplier = get_supplier_abdi()
+    data.is_active = False
     return data

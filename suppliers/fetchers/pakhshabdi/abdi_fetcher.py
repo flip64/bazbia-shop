@@ -45,23 +45,6 @@ def clean_price(price_str):
     return int(digits) if digits else None
 
 
-def send_price_alert(name, new_price, old_price):
-    """ارسال هشدار تغییر قیمت (فعلاً فقط چاپ در کنسول)"""
-    change_percent = 0
-    if old_price and old_price > 0 and new_price is not None:
-        diff = new_price - old_price
-        change_percent = (diff / old_price) * 100
-
-    message = (
-        f"🚨 تغییر قیمت برای محصول {name or 'نامشخص'}\n"
-        f"💰 قیمت قبلی: {old_price or 'نامشخص'} تومان\n"
-        f"💵 قیمت جدید: {new_price or 'نامشخص'} تومان\n"
-        f"📊 تغییر: {change_percent:+.2f}%"
-    )
-
-    print(message)
-    return {"console": "sent"}
-
 
 # ================== استخراج مشخصات ==================
 def extract_specifications(url):

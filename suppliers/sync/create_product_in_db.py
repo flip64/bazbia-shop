@@ -15,13 +15,10 @@ from suppliers.services.offer_creator import (
     create_price_history,
 )
 
-from suppliers.fetchers.pakhshabdi.sync.extractor import extract_product_data
 
 
 @transaction.atomic
-def create_product_from_url(url):
-    data = extract_product_data(url)
-    data.is_active = False
+def create_product_from_productData(data):
     product = create_product(data)
 
     variant = create_variant(product, data)
@@ -31,11 +28,10 @@ def create_product_from_url(url):
     create_tags(product, data)
 
     create_images(product, data)
-    supplier =get_supplier_abdi()
     offer = create_supplier_offer(
-        supplier=supplier,
+        supplier=data.supplier,
         variant=variant,
-        supplier_url= url ,
+        supplier_url= data.supplier_url ,
         purchase_price = data.price,
         supplier_stock=  data.quantity,
         supplier_product_name = data.name

@@ -3,14 +3,13 @@
 import os
 import json
 
-from .logger import info, warning
+from suppliers.logger import info ,warning
 
 
 BASE_DIR = os.path.dirname(
     os.path.dirname(
-        os.path.dirname(
             os.path.abspath(__file__)
-        )
+        
     )
 )
 

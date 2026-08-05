@@ -12,7 +12,7 @@ echo "Python: $(which python)"
 echo "Version: $(python --version)"
 
 # اجرای اسکریپت
-python suppliers/fetchers/pakhshabdi/sync/import_pakhshabdi.py
+python suppliers/sync/import_pakhshabdi.py
 
 EXIT_CODE=$?
 
