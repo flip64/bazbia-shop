@@ -1,82 +1,220 @@
 # -*- coding: utf-8 -*-
 
-from django.db.models import Sum
+from django.db.models import (
+    F,
+    IntegerField,
+    OuterRef,
+    QuerySet,
+    Subquery,
+    Sum,
+    Value,
+)
+from django.db.models.functions import Coalesce
 
 from products.models import ProductVariant
+
+
+class VariantStockService:
+    """
+    سرویس محاسبه موجودی قابل عرضه واریانت‌ها.
+
+    موجودی قابل عرضه:
+        موجودی داخلی بازبیا
+        +
+        موجودی معتبر تأمین‌کنندگان
+
+    این سرویس دو حالت استفاده دارد:
+
+    1. محاسبه موجودی یک واریانت:
+        VariantStockService.calculate(variant)
+
+    2. محاسبه موجودی روی QuerySet:
+        VariantStockService.annotate(queryset)
+
+    حالت QuerySet برای فیلتر، شمارش، مرتب‌سازی و صفحه‌بندی
+    بخش‌هایی مانند اتصال به ترب مناسب است.
+    """
+
+    INTERNAL_STOCK_FIELD = "stock"
+    SUPPLIER_STOCK_ANNOTATION = "supplier_available_stock"
+    AVAILABLE_STOCK_ANNOTATION = "available_stock"
+
+    @classmethod
+    def calculate(
+        cls,
+        variant: ProductVariant,
+    ) -> int:
+        """
+        موجودی قابل عرضه یک واریانت را محاسبه می‌کند.
+
+        اگر واریانت قبلاً با متد annotate این سرویس
+        حاشیه‌نویسی شده باشد، همان مقدار آماده استفاده می‌شود
+        و Query جدیدی به دیتابیس ارسال نمی‌شود.
+        """
+
+        annotated_available_stock = getattr(
+            variant,
+            cls.AVAILABLE_STOCK_ANNOTATION,
+            None,
+        )
+
+        if annotated_available_stock is not None:
+            return int(
+                annotated_available_stock or 0
+            )
+
+        internal_stock = int(
+            variant.stock or 0
+        )
+
+        supplier_stock_result = (
+            variant.supplier_offers
+            .filter(
+                supplier__is_active=True,
+                is_available=True,
+                supplier_stock__gt=0,
+            )
+            .aggregate(
+                total_stock=Sum(
+                    "supplier_stock"
+                )
+            )
+        )
+
+        supplier_stock = int(
+            supplier_stock_result[
+                "total_stock"
+            ]
+            or 0
+        )
+
+        return (
+            internal_stock
+            + supplier_stock
+        )
+
+    @classmethod
+    def annotate(
+        cls,
+        queryset: QuerySet,
+    ) -> QuerySet:
+        """
+        موجودی تأمین‌کنندگان و موجودی قابل عرضه را
+        به QuerySet واریانت‌ها اضافه می‌کند.
+
+        فیلدهای ایجادشده روی هر واریانت:
+
+        supplier_available_stock:
+            مجموع موجودی معتبر تأمین‌کنندگان
+
+        available_stock:
+            موجودی داخلی + موجودی تأمین‌کنندگان
+
+        این متد چیزی را در دیتابیس ذخیره نمی‌کند.
+        """
+
+        # برای جلوگیری از Circular Import، مدل تأمین‌کننده
+        # در زمان اجرای متد وارد می‌شود.
+        from suppliers.models import SupplierOffer
+
+        supplier_stock_subquery = (
+            SupplierOffer.objects
+            .filter(
+                variant_id=OuterRef("pk"),
+                supplier__is_active=True,
+                is_available=True,
+                supplier_stock__gt=0,
+            )
+            .values("variant_id")
+            .annotate(
+                total_stock=Sum(
+                    "supplier_stock"
+                )
+            )
+            .values("total_stock")[:1]
+        )
+
+        queryset = queryset.annotate(
+            supplier_available_stock=Coalesce(
+                Subquery(
+                    supplier_stock_subquery,
+                    output_field=IntegerField(),
+                ),
+                Value(0),
+                output_field=IntegerField(),
+            )
+        )
+
+        queryset = queryset.annotate(
+            available_stock=(
+                Coalesce(
+                    F("stock"),
+                    Value(0),
+                    output_field=IntegerField(),
+                )
+                +
+                F(
+                    "supplier_available_stock"
+                )
+            )
+        )
+
+        return queryset
+
+    @classmethod
+    def filter_available(
+        cls,
+        queryset: QuerySet,
+    ) -> QuerySet:
+        """
+        فقط واریانت‌هایی را برمی‌گرداند که موجودی
+        قابل عرضه آن‌ها بیشتر از صفر باشد.
+        """
+
+        queryset = cls.annotate(
+            queryset
+        )
+
+        return queryset.filter(
+            available_stock__gt=0
+        )
 
 
 def calculate_variant_available_stock(
     variant: ProductVariant,
 ) -> int:
     """
-    موجودی قابل عرضه یک واریانت را محاسبه می‌کند.
+    تابع سازگار با کدهای قبلی پروژه.
 
-    تعریف موجودی‌ها
-    ----------------
-    موجودی داخلی:
-        مقدار فیلد ``ProductVariant.stock`` است و فقط نشان‌دهنده
-        کالایی است که واقعاً در انبار بازبیا قرار دارد.
+    استفاده‌های قبلی همچنان بدون تغییر کار خواهند کرد:
 
-    موجودی تأمین‌کنندگان:
-        مجموع ``supplier_stock`` پیشنهادهای معتبر و فعال
-        تأمین‌کنندگان خارجی است.
-
-    موجودی قابل عرضه:
-        مجموع موجودی داخلی بازبیا و موجودی معتبر
-        تأمین‌کنندگان خارجی است.
-
-    Parameters
-    ----------
-    variant : ProductVariant
-        واریانتی که موجودی قابل عرضه آن باید محاسبه شود.
-
-    Returns
-    -------
-    int
-        مجموع موجودی داخلی و موجودی معتبر تأمین‌کنندگان.
-
-    Example
-    -------
-    اگر وضعیت یک واریانت چنین باشد:
-
-        موجودی داخلی بازبیا: 3
-        موجودی تأمین‌کننده اول: 20
-        موجودی تأمین‌کننده دوم: 5
-
-    خروجی تابع برابر 28 خواهد بود.
-
-    Business Rules
-    --------------
-    فقط پیشنهادهایی در محاسبه وارد می‌شوند که:
-
-    - تأمین‌کننده آن‌ها فعال باشد.
-    - خود پیشنهاد موجود و قابل عرضه باشد.
-    - مقدار موجودی تأمین‌کننده بیشتر از صفر باشد.
-
-    Notes
-    -----
-    این تابع هیچ تغییری در دیتابیس ایجاد نمی‌کند.
-
-    این تابع نباید مقدار ``ProductVariant.stock`` را تغییر دهد؛
-    چون آن فیلد فقط متعلق به موجودی داخلی انبار بازبیا است.
+        calculate_variant_available_stock(variant)
     """
 
-    internal_stock = int(variant.stock or 0)
-
-    supplier_stock_result = (
-        variant.supplier_offers
-        .filter(
-            supplier__is_active=True,
-            is_available=True,
-            supplier_stock__gt=0,
-        )
-        .aggregate(
-            total_stock=Sum("supplier_stock")
-        )
+    return VariantStockService.calculate(
+        variant
     )
 
-    supplier_stock = int(
-        supplier_stock_result["total_stock"] or 0
+
+def annotate_variant_available_stock(
+    queryset: QuerySet,
+) -> QuerySet:
+    """
+    افزودن موجودی ترکیبی به QuerySet واریانت‌ها.
+    """
+
+    return VariantStockService.annotate(
+        queryset
     )
 
-    return internal_stock + supplier_stock
+
+def filter_available_variants(
+    queryset: QuerySet,
+) -> QuerySet:
+    """
+    فیلتر واریانت‌های دارای موجودی قابل عرضه.
+    """
+
+    return VariantStockService.filter_available(
+        queryset
+    )
