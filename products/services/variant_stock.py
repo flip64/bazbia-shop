@@ -16,28 +16,13 @@ from products.models import ProductVariant
 
 class VariantStockService:
     """
-    سرویس محاسبه موجودی قابل عرضه واریانت‌ها.
+    سرویس موجودی قابل عرضه واریانت‌ها.
 
     موجودی قابل عرضه:
         موجودی داخلی بازبیا
         +
         موجودی معتبر تأمین‌کنندگان
-
-    این سرویس دو حالت استفاده دارد:
-
-    1. محاسبه موجودی یک واریانت:
-        VariantStockService.calculate(variant)
-
-    2. محاسبه موجودی روی QuerySet:
-        VariantStockService.annotate(queryset)
-
-    حالت QuerySet برای فیلتر، شمارش، مرتب‌سازی و صفحه‌بندی
-    بخش‌هایی مانند اتصال به ترب مناسب است.
     """
-
-    INTERNAL_STOCK_FIELD = "stock"
-    SUPPLIER_STOCK_ANNOTATION = "supplier_available_stock"
-    AVAILABLE_STOCK_ANNOTATION = "available_stock"
 
     @classmethod
     def calculate(
@@ -45,23 +30,20 @@ class VariantStockService:
         variant: ProductVariant,
     ) -> int:
         """
-        موجودی قابل عرضه یک واریانت را محاسبه می‌کند.
+        محاسبه موجودی قابل عرضه یک واریانت.
 
-        اگر واریانت قبلاً با متد annotate این سرویس
-        حاشیه‌نویسی شده باشد، همان مقدار آماده استفاده می‌شود
-        و Query جدیدی به دیتابیس ارسال نمی‌شود.
+        اگر واریانت قبلاً annotate شده باشد،
+        از مقدار آماده available_stock استفاده می‌شود.
         """
 
-        annotated_available_stock = getattr(
+        annotated_stock = getattr(
             variant,
-            cls.AVAILABLE_STOCK_ANNOTATION,
+            "available_stock",
             None,
         )
 
-        if annotated_available_stock is not None:
-            return int(
-                annotated_available_stock or 0
-            )
+        if annotated_stock is not None:
+            return int(annotated_stock or 0)
 
         internal_stock = int(
             variant.stock or 0
@@ -88,10 +70,7 @@ class VariantStockService:
             or 0
         )
 
-        return (
-            internal_stock
-            + supplier_stock
-        )
+        return internal_stock + supplier_stock
 
     @classmethod
     def annotate(
@@ -99,22 +78,17 @@ class VariantStockService:
         queryset: QuerySet,
     ) -> QuerySet:
         """
-        موجودی تأمین‌کنندگان و موجودی قابل عرضه را
-        به QuerySet واریانت‌ها اضافه می‌کند.
-
-        فیلدهای ایجادشده روی هر واریانت:
+        افزودن دو مقدار محاسباتی به QuerySet:
 
         supplier_available_stock:
-            مجموع موجودی معتبر تأمین‌کنندگان
+            موجودی معتبر تأمین‌کنندگان
 
         available_stock:
             موجودی داخلی + موجودی تأمین‌کنندگان
-
-        این متد چیزی را در دیتابیس ذخیره نمی‌کند.
         """
 
-        # برای جلوگیری از Circular Import، مدل تأمین‌کننده
-        # در زمان اجرای متد وارد می‌شود.
+        # قرار دادن import درون متد برای کاهش احتمال
+        # وابستگی چرخشی بین apps
         from suppliers.models import SupplierOffer
 
         supplier_stock_subquery = (
@@ -145,21 +119,16 @@ class VariantStockService:
             )
         )
 
-        queryset = queryset.annotate(
+        return queryset.annotate(
             available_stock=(
                 Coalesce(
                     F("stock"),
                     Value(0),
                     output_field=IntegerField(),
                 )
-                +
-                F(
-                    "supplier_available_stock"
-                )
+                + F("supplier_available_stock")
             )
         )
-
-        return queryset
 
     @classmethod
     def filter_available(
@@ -167,16 +136,15 @@ class VariantStockService:
         queryset: QuerySet,
     ) -> QuerySet:
         """
-        فقط واریانت‌هایی را برمی‌گرداند که موجودی
-        قابل عرضه آن‌ها بیشتر از صفر باشد.
+        دریافت واریانت‌هایی که موجودی قابل عرضه
+        آن‌ها بیشتر از صفر است.
         """
 
-        queryset = cls.annotate(
-            queryset
-        )
-
-        return queryset.filter(
-            available_stock__gt=0
+        return (
+            cls.annotate(queryset)
+            .filter(
+                available_stock__gt=0
+            )
         )
 
 
@@ -185,10 +153,6 @@ def calculate_variant_available_stock(
 ) -> int:
     """
     تابع سازگار با کدهای قبلی پروژه.
-
-    استفاده‌های قبلی همچنان بدون تغییر کار خواهند کرد:
-
-        calculate_variant_available_stock(variant)
     """
 
     return VariantStockService.calculate(
@@ -200,7 +164,7 @@ def annotate_variant_available_stock(
     queryset: QuerySet,
 ) -> QuerySet:
     """
-    افزودن موجودی ترکیبی به QuerySet واریانت‌ها.
+    افزودن موجودی ترکیبی به QuerySet.
     """
 
     return VariantStockService.annotate(
