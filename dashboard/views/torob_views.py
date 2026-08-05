@@ -8,7 +8,7 @@ from django.utils import timezone
 
 from products.models import ProductVariant
 from torob_integration.models import TorobVariantConfig
-
+from products.services.variant_stock import ( VariantStockService)
 
 @staff_member_required
 def torob_variant_management(request):
