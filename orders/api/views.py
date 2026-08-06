@@ -14,10 +14,7 @@ from django.shortcuts import get_object_or_404
 from django.utils import timezone
 
 from rest_framework import generics, status
-from rest_framework.permissions import (
-    AllowAny,
-    IsAuthenticated,
-)
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
@@ -40,21 +37,15 @@ from orders.models import (
     OrderItem,
     SalesSummary,
 )
-from products.api.pagination import (
-    CustomCategoryPagination,
+from products.api.pagination import CustomCategoryPagination
+from products.api.serializers import ProductListSerializer
+from products.models import Product, ProductVariant
+from products.services.variant_stock import (
+    calculate_variant_available_stock,
 )
-from products.api.serializers import (
-    ProductListSerializer,
-)
-from products.models import (
-    Product,
-    ProductVariant,
-)
-
-from products.services.variant_stock import calculate_variant_available_stock
+from suppliers.models import SupplierOffer
 
 
-# حداکثر تعداد مجاز از هر واریانت در سبد خرید
 MAX_CART_ITEM_QUANTITY = 100
 
 
@@ -62,89 +53,38 @@ MAX_CART_ITEM_QUANTITY = 100
 # توابع کمکی عمومی
 # =========================================================
 def get_request_session_key(request) -> str:
-    """
-    دریافت کلید سشن مشتری مهمان.
-
-    ترتیب بررسی:
-    1. Query Parameter
-    2. Request Body
-    3. Session داخلی Django
-
-    در صورتی که سشن هنوز ایجاد نشده باشد، یک سشن جدید
-    ساخته می‌شود.
-    """
-
-    session_key = request.query_params.get(
-        "session_key"
-    )
+    session_key = request.query_params.get("session_key")
 
     if not session_key:
-        session_key = request.data.get(
-            "session_key"
-        )
+        session_key = request.data.get("session_key")
 
     if not request.session.session_key:
         request.session.create()
 
     if not session_key:
-        session_key = (
-            request.session.session_key
-        )
+        session_key = request.session.session_key
 
     return session_key
 
 
 def get_or_create_user_cart(user) -> Cart:
-    """
-    دریافت سبد خرید کاربر واردشده.
-
-    چون فیلد user در مدل Cart از نوع OneToOneField است،
-    نباید user و is_active هم‌زمان در get_or_create
-    استفاده شوند؛ زیرا ممکن است سبد غیرفعال قبلی وجود
-    داشته باشد و ساخت سبد جدید باعث خطای Unique شود.
-
-    در صورت غیرفعال بودن سبد قبلی، همان سبد دوباره فعال
-    می‌شود.
-    """
-
     cart, _ = Cart.objects.get_or_create(
         user=user,
-        defaults={
-            "is_active": True,
-        },
+        defaults={"is_active": True},
     )
 
     if not cart.is_active:
         cart.is_active = True
-        cart.save(
-            update_fields=["is_active"],
-        )
+        cart.save(update_fields=["is_active"])
 
     return cart
 
 
 def get_user_cart(request) -> Cart:
-    """
-    دریافت یا ایجاد سبد خرید مناسب درخواست.
-
-    برای کاربر واردشده، سبد متصل به حساب کاربری خوانده
-    می‌شود.
-
-    برای کاربر مهمان، سبد براساس session_key خوانده یا
-    ساخته می‌شود.
-
-    ادغام سبد مهمان و کاربر فقط از طریق MergeCartView
-    انجام می‌شود.
-    """
-
     if request.user.is_authenticated:
-        return get_or_create_user_cart(
-            request.user
-        )
+        return get_or_create_user_cart(request.user)
 
-    session_key = get_request_session_key(
-        request
-    )
+    session_key = get_request_session_key(request)
 
     guest_cart, _ = Cart.objects.get_or_create(
         session_key=session_key,
@@ -155,35 +95,16 @@ def get_user_cart(request) -> Cart:
     return guest_cart
 
 
-def cart_response_data(
-    cart: Cart,
-    request,
-) -> dict:
-    """
-    سریالایز کردن سبد خرید همراه با context درخواست.
-    """
-
+def cart_response_data(cart: Cart, request) -> dict:
     return CartSerializer(
         cart,
-        context={
-            "request": request,
-        },
+        context={"request": request},
     ).data
 
 
 def get_variant_unit_price(
     variant: ProductVariant,
 ) -> Decimal:
-    """
-    دریافت قیمت نهایی یک واحد واریانت.
-
-    در صورت وجود discount_price، قیمت تخفیف‌خورده
-    استفاده می‌شود؛ در غیر این صورت قیمت اصلی واریانت
-    استفاده خواهد شد.
-
-    تمام مبلغ‌ها در پروژه بازبیا بر حسب تومان هستند.
-    """
-
     if variant.discount_price is not None:
         return variant.discount_price
 
@@ -194,13 +115,6 @@ def decimal_from_value(
     value,
     default: Decimal = Decimal("0"),
 ) -> Decimal:
-    """
-    تبدیل امن مقدار دریافتی به Decimal.
-
-    برای جلوگیری از خطاهای ناشی از float یا مقدار None،
-    ابتدا مقدار به رشته تبدیل می‌شود.
-    """
-
     try:
         return Decimal(str(value))
     except (
@@ -214,26 +128,15 @@ def decimal_from_value(
 def build_address_snapshot(
     address: CustomerAddress,
 ) -> dict:
-    """
-    ساخت نسخه ثابت آدرس سفارش.
-
-    آدرس حساب مشتری ممکن است بعداً ویرایش یا حذف شود؛
-    بنابراین اطلاعات کامل تحویل در لحظه ثبت سفارش داخل
-    خود سفارش ذخیره می‌شود.
-    """
-
     return {
         "address_id": address.id,
         "title": address.title,
-        "recipient_name":
-            address.recipient_name,
-        "recipient_phone":
-            address.recipient_phone,
+        "recipient_name": address.recipient_name,
+        "recipient_phone": address.recipient_phone,
         "province": address.province,
         "city": address.city,
         "address": address.address,
-        "postal_code":
-            address.postal_code,
+        "postal_code": address.postal_code,
     }
 
 
@@ -241,26 +144,14 @@ def merge_guest_cart_into_user_cart(
     guest_cart: Cart,
     user_cart: Cart,
 ) -> None:
-    """
-    انتقال آیتم‌های سبد مهمان به سبد کاربر.
-
-    تعداد نهایی هر آیتم از موجودی کالا و سقف مجاز سبد
-    بیشتر نخواهد شد.
-    """
-
-    guest_items = (
-        guest_cart.items
-        .select_related(
-            "variant",
-            "variant__product",
-        )
+    guest_items = guest_cart.items.select_related(
+        "variant",
+        "variant__product",
     )
 
     for guest_item in guest_items:
-        available_stock = (
-            calculate_variant_available_stock(
-                guest_item.variant
-            )
+        available_stock = calculate_variant_available_stock(
+            guest_item.variant
         )
 
         allowed_guest_quantity = min(
@@ -272,15 +163,12 @@ def merge_guest_cart_into_user_cart(
         if allowed_guest_quantity <= 0:
             continue
 
-        user_item, created = (
-            CartItem.objects.get_or_create(
-                cart=user_cart,
-                variant=guest_item.variant,
-                defaults={
-                    "quantity":
-                        allowed_guest_quantity,
-                },
-            )
+        user_item, created = CartItem.objects.get_or_create(
+            cart=user_cart,
+            variant=guest_item.variant,
+            defaults={
+                "quantity": allowed_guest_quantity,
+            },
         )
 
         if created:
@@ -298,10 +186,7 @@ def merge_guest_cart_into_user_cart(
         )
 
         if user_item.quantity != allowed_quantity:
-            user_item.quantity = (
-                allowed_quantity
-            )
-
+            user_item.quantity = allowed_quantity
             user_item.save(
                 update_fields=["quantity"],
             )
@@ -316,10 +201,6 @@ def merge_guest_cart_into_user_cart(
 # فروش‌های لحظه‌ای
 # =========================================================
 class FlashSalesView(APIView):
-    """
-    دریافت محصولات دارای فروش لحظه‌ای فعال.
-    """
-
     permission_classes = [AllowAny]
 
     def get(self, request):
@@ -327,8 +208,7 @@ class FlashSalesView(APIView):
             Product.objects
             .filter(
                 flash_sale=True,
-                flash_sale_end__gt=
-                    timezone.now(),
+                flash_sale_end__gt=timezone.now(),
                 is_active=True,
             )
             .distinct()
@@ -337,9 +217,7 @@ class FlashSalesView(APIView):
         serializer = ProductListSerializer(
             products,
             many=True,
-            context={
-                "request": request,
-            },
+            context={"request": request},
         )
 
         return Response(
@@ -355,10 +233,6 @@ class FlashSalesView(APIView):
 # ذخیره سبد خرید
 # =========================================================
 class SaveCartView(APIView):
-    """
-    ذخیره سبد خرید کاربر واردشده.
-    """
-
     permission_classes = [IsAuthenticated]
 
     def post(self, request):
@@ -380,10 +254,6 @@ class SaveCartView(APIView):
 # بازیابی سبد ذخیره‌شده
 # =========================================================
 class LoadSavedCartView(APIView):
-    """
-    بازیابی سبد خرید کاربر واردشده.
-    """
-
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
@@ -404,15 +274,6 @@ class LoadSavedCartView(APIView):
 # پیگیری سفارش
 # =========================================================
 class TrackOrderView(APIView):
-    """
-    پیگیری سفارش با کد رهگیری.
-
-    توجه:
-    مدل Order باید فیلد tracking_code داشته باشد.
-    در غیر این صورت این endpoint باید تا زمان اضافه‌شدن
-    فیلد رهگیری غیرفعال شود.
-    """
-
     permission_classes = [AllowAny]
 
     def get(self, request, tracking_code):
@@ -423,9 +284,7 @@ class TrackOrderView(APIView):
 
         serializer = OrderSerializer(
             order,
-            context={
-                "request": request,
-            },
+            context={"request": request},
         )
 
         return Response(
@@ -438,20 +297,12 @@ class TrackOrderView(APIView):
 # درخواست مرجوعی
 # =========================================================
 class ReturnRequestView(APIView):
-    """
-    ثبت درخواست مرجوعی کالا.
-
-    فعلاً فقط پاسخ اولیه برمی‌گرداند و بعداً باید به مدل
-    درخواست مرجوعی متصل شود.
-    """
-
     permission_classes = [IsAuthenticated]
 
     def post(self, request):
         return Response(
             {
-                "message":
-                    "درخواست مرجوعی ثبت شد.",
+                "message": "درخواست مرجوعی ثبت شد.",
             },
             status=status.HTTP_201_CREATED,
         )
@@ -461,18 +312,13 @@ class ReturnRequestView(APIView):
 # پیشنهادهای ویژه
 # =========================================================
 class SpecialOffersView(APIView):
-    """
-    دریافت محصولات دارای واریانت تخفیف‌خورده.
-    """
-
     permission_classes = [AllowAny]
 
     def get(self, request):
         products = (
             Product.objects
             .filter(
-                variants__discount_price__isnull=
-                    False,
+                variants__discount_price__isnull=False,
                 is_special=True,
                 is_active=True,
             )
@@ -482,9 +328,7 @@ class SpecialOffersView(APIView):
         serializer = ProductListSerializer(
             products,
             many=True,
-            context={
-                "request": request,
-            },
+            context={"request": request},
         )
 
         return Response(
@@ -502,18 +346,8 @@ class SpecialOffersView(APIView):
 class WeeklyBestSellersAPIView(
     generics.ListAPIView
 ):
-    """
-    دریافت محصولات پرفروش هفت روز اخیر.
-    """
-
-    serializer_class = (
-        ProductListSerializer
-    )
-
-    pagination_class = (
-        CustomCategoryPagination
-    )
-
+    serializer_class = ProductListSerializer
+    pagination_class = CustomCategoryPagination
     permission_classes = [AllowAny]
 
     def get_queryset(self):
@@ -530,9 +364,7 @@ class WeeklyBestSellersAPIView(
             )
             .values("product_id")
             .annotate(
-                total_sold=Sum(
-                    "total_quantity"
-                ),
+                total_sold=Sum("total_quantity"),
             )
             .order_by("-total_sold")
         )
@@ -578,60 +410,42 @@ class WeeklyBestSellersAPIView(
     ):
         try:
             queryset = self.get_queryset()
-
-            page = self.paginate_queryset(
-                queryset
-            )
+            page = self.paginate_queryset(queryset)
 
             if page is not None:
-                serializer = (
-                    self.get_serializer(
-                        page,
-                        many=True,
-                        context={
-                            "request":
-                                request,
-                        },
-                    )
+                serializer = self.get_serializer(
+                    page,
+                    many=True,
+                    context={"request": request},
                 )
 
-                return (
-                    self.get_paginated_response(
-                        serializer.data
-                    )
+                return self.get_paginated_response(
+                    serializer.data
                 )
 
             serializer = self.get_serializer(
                 queryset,
                 many=True,
-                context={
-                    "request": request,
-                },
+                context={"request": request},
             )
 
             return Response(
                 {
                     "success": True,
                     "data": serializer.data,
-                    "count":
-                        queryset.count(),
+                    "count": queryset.count(),
                 },
-                status=
-                    status.HTTP_200_OK,
+                status=status.HTTP_200_OK,
             )
 
         except Exception as error:
             return Response(
                 {
                     "success": False,
-                    "message":
-                        "خطا در دریافت اطلاعات.",
+                    "message": "خطا در دریافت اطلاعات.",
                     "error": str(error),
                 },
-                status=(
-                    status
-                    .HTTP_500_INTERNAL_SERVER_ERROR
-                ),
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
             )
 
 
@@ -639,33 +453,18 @@ class WeeklyBestSellersAPIView(
 # مشاهده سبد خرید
 # =========================================================
 class CartView(generics.RetrieveAPIView):
-    """
-    دریافت سبد خرید فعلی کاربر یا مهمان.
-    """
-
     serializer_class = CartSerializer
     permission_classes = [AllowAny]
 
     def get_object(self):
-        return get_user_cart(
-            self.request
-        )
+        return get_user_cart(self.request)
 
 
 # =========================================================
 # افزودن آیتم به سبد خرید
 # =========================================================
-class AddToCartView(
-    generics.GenericAPIView
-):
-    """
-    افزودن یک واریانت به سبد خرید.
-    """
-
-    serializer_class = (
-        CartItemCreateSerializer
-    )
-
+class AddToCartView(generics.GenericAPIView):
+    serializer_class = CartItemCreateSerializer
     permission_classes = [AllowAny]
 
     @transaction.atomic
@@ -675,25 +474,21 @@ class AddToCartView(
         *args,
         **kwargs,
     ):
-        input_serializer = (
-            self.get_serializer(
-                data=request.data,
-            )
+        input_serializer = self.get_serializer(
+            data=request.data,
         )
 
         input_serializer.is_valid(
             raise_exception=True,
         )
 
-        variant_id = (
-            input_serializer
-            .validated_data["variant_id"]
-        )
+        variant_id = input_serializer.validated_data[
+            "variant_id"
+        ]
 
-        quantity = (
-            input_serializer
-            .validated_data["quantity"]
-        )
+        quantity = input_serializer.validated_data[
+            "quantity"
+        ]
 
         if quantity > MAX_CART_ITEM_QUANTITY:
             return Response(
@@ -704,13 +499,13 @@ class AddToCartView(
                         "عدد است."
                     ),
                 },
-                status=
-                    status.HTTP_400_BAD_REQUEST,
+                status=status.HTTP_400_BAD_REQUEST,
             )
 
         variant = get_object_or_404(
-            ProductVariant.objects
-            .select_related("product"),
+            ProductVariant.objects.select_related(
+                "product"
+            ),
             id=variant_id,
         )
 
@@ -729,8 +524,7 @@ class AddToCartView(
                     ),
                     "available_stock": 0,
                 },
-                status=
-                    status.HTTP_400_BAD_REQUEST,
+                status=status.HTTP_400_BAD_REQUEST,
             )
 
         cart = get_user_cart(request)
@@ -739,19 +533,14 @@ class AddToCartView(
             CartItem.objects.get_or_create(
                 cart=cart,
                 variant=variant,
-                defaults={
-                    "quantity": quantity,
-                },
+                defaults={"quantity": quantity},
             )
         )
 
         final_quantity = (
             quantity
             if created
-            else (
-                cart_item.quantity
-                + quantity
-            )
+            else cart_item.quantity + quantity
         )
 
         if final_quantity > available_stock:
@@ -779,17 +568,12 @@ class AddToCartView(
                         "عدد دیگر می‌توانید "
                         "اضافه کنید."
                     ),
-                    "available_stock":
-                        available_stock,
+                    "available_stock": available_stock,
                 },
-                status=
-                    status.HTTP_400_BAD_REQUEST,
+                status=status.HTTP_400_BAD_REQUEST,
             )
 
-        if (
-            final_quantity
-            > MAX_CART_ITEM_QUANTITY
-        ):
+        if final_quantity > MAX_CART_ITEM_QUANTITY:
             if created:
                 cart_item.delete()
 
@@ -801,15 +585,11 @@ class AddToCartView(
                         "عدد است."
                     ),
                 },
-                status=
-                    status.HTTP_400_BAD_REQUEST,
+                status=status.HTTP_400_BAD_REQUEST,
             )
 
         if not created:
-            cart_item.quantity = (
-                final_quantity
-            )
-
+            cart_item.quantity = final_quantity
             cart_item.save(
                 update_fields=["quantity"],
             )
@@ -822,9 +602,7 @@ class AddToCartView(
                 ),
                 "item": CartItemSerializer(
                     cart_item,
-                    context={
-                        "request": request,
-                    },
+                    context={"request": request},
                 ).data,
                 "cart": cart_response_data(
                     cart=cart,
@@ -845,14 +623,7 @@ class AddToCartView(
 class UpdateCartItemView(
     generics.GenericAPIView
 ):
-    """
-    تغییر تعداد یک آیتم سبد خرید.
-    """
-
-    serializer_class = (
-        CartItemUpdateSerializer
-    )
-
+    serializer_class = CartItemUpdateSerializer
     permission_classes = [AllowAny]
 
     def put(self, request, pk):
@@ -873,20 +644,17 @@ class UpdateCartItemView(
         request,
         pk,
     ):
-        input_serializer = (
-            self.get_serializer(
-                data=request.data,
-            )
+        input_serializer = self.get_serializer(
+            data=request.data,
         )
 
         input_serializer.is_valid(
             raise_exception=True,
         )
 
-        quantity = (
-            input_serializer
-            .validated_data["quantity"]
-        )
+        quantity = input_serializer.validated_data[
+            "quantity"
+        ]
 
         if quantity > MAX_CART_ITEM_QUANTITY:
             return Response(
@@ -897,15 +665,13 @@ class UpdateCartItemView(
                         "عدد است."
                     ),
                 },
-                status=
-                    status.HTTP_400_BAD_REQUEST,
+                status=status.HTTP_400_BAD_REQUEST,
             )
 
         cart = get_user_cart(request)
 
         cart_item = get_object_or_404(
-            CartItem.objects
-            .select_related(
+            CartItem.objects.select_related(
                 "variant",
                 "variant__product",
             ),
@@ -926,28 +692,22 @@ class UpdateCartItemView(
                         f"فقط {available_stock} "
                         "عدد موجود است."
                     ),
-                    "available_stock":
-                        available_stock,
+                    "available_stock": available_stock,
                 },
-                status=
-                    status.HTTP_400_BAD_REQUEST,
+                status=status.HTTP_400_BAD_REQUEST,
             )
 
         cart_item.quantity = quantity
-
         cart_item.save(
             update_fields=["quantity"],
         )
 
         return Response(
             {
-                "message":
-                    "تعداد آیتم بروزرسانی شد.",
+                "message": "تعداد آیتم بروزرسانی شد.",
                 "item": CartItemSerializer(
                     cart_item,
-                    context={
-                        "request": request,
-                    },
+                    context={"request": request},
                 ).data,
                 "cart": cart_response_data(
                     cart=cart,
@@ -964,10 +724,6 @@ class UpdateCartItemView(
 class RemoveCartItemView(
     generics.GenericAPIView
 ):
-    """
-    حذف یک آیتم از سبد خرید.
-    """
-
     permission_classes = [AllowAny]
 
     def delete(self, request, pk):
@@ -983,8 +739,7 @@ class RemoveCartItemView(
 
         return Response(
             {
-                "message":
-                    "آیتم از سبد خرید حذف شد.",
+                "message": "آیتم از سبد خرید حذف شد.",
                 "cart": cart_response_data(
                     cart=cart,
                     request=request,
@@ -1000,10 +755,6 @@ class RemoveCartItemView(
 class ClearCartView(
     generics.GenericAPIView
 ):
-    """
-    حذف تمام آیتم‌های سبد خرید.
-    """
-
     permission_classes = [AllowAny]
 
     def delete(self, request):
@@ -1013,8 +764,7 @@ class ClearCartView(
         return Response(
             {
                 "message": (
-                    "سبد خرید با موفقیت "
-                    "خالی شد."
+                    "سبد خرید با موفقیت خالی شد."
                 ),
                 "cart": cart_response_data(
                     cart=cart,
@@ -1031,29 +781,6 @@ class ClearCartView(
 class CreateOrderView(
     generics.GenericAPIView
 ):
-    """
-    ثبت نهایی سفارش از سبد خرید کاربر.
-
-    ورودی مورد انتظار:
-
-    {
-        "address_id": 1,
-        "shipping_quote_id": "uuid",
-        "shipping_method_code":
-            "fixed_standard",
-        "payment_method": "online"
-    }
-
-    نکات امنیتی:
-
-    - مبلغ کالاها از فرانت دریافت نمی‌شود.
-    - هزینه ارسال از فرانت دریافت نمی‌شود.
-    - موجودی در transaction و با select_for_update
-      بررسی می‌شود.
-    - آدرس فقط در صورتی پذیرفته می‌شود که متعلق به
-      مشتری فعلی باشد.
-    """
-
     permission_classes = [IsAuthenticated]
     serializer_class = CreateOrderSerializer
 
@@ -1064,13 +791,8 @@ class CreateOrderView(
         *args,
         **kwargs,
     ):
-        # ---------------------------------------------
-        # ۱. اعتبارسنجی داده ورودی
-        # ---------------------------------------------
-        input_serializer = (
-            self.get_serializer(
-                data=request.data,
-            )
+        input_serializer = self.get_serializer(
+            data=request.data,
         )
 
         input_serializer.is_valid(
@@ -1081,27 +803,17 @@ class CreateOrderView(
             input_serializer.validated_data
         )
 
-        address_id = validated_data[
-            "address_id"
-        ]
-
+        address_id = validated_data["address_id"]
         shipping_quote_id = validated_data[
             "shipping_quote_id"
         ]
-
-        shipping_method_code = (
-            validated_data[
-                "shipping_method_code"
-            ]
-        )
-
+        shipping_method_code = validated_data[
+            "shipping_method_code"
+        ]
         payment_method = validated_data[
             "payment_method"
         ]
 
-        # ---------------------------------------------
-        # ۲. دریافت پروفایل مشتری
-        # ---------------------------------------------
         customer = getattr(
             request.user,
             "customer_profile",
@@ -1116,22 +828,15 @@ class CreateOrderView(
                         "این کاربر یافت نشد."
                     ),
                 },
-                status=
-                    status.HTTP_400_BAD_REQUEST,
+                status=status.HTTP_400_BAD_REQUEST,
             )
 
-        # ---------------------------------------------
-        # ۳. بررسی مالکیت آدرس
-        # ---------------------------------------------
         address = get_object_or_404(
             CustomerAddress,
             id=address_id,
             customer=customer,
         )
 
-        # ---------------------------------------------
-        # ۴. دریافت و قفل‌کردن سبد خرید
-        # ---------------------------------------------
         cart = get_user_cart(request)
 
         cart = (
@@ -1141,8 +846,7 @@ class CreateOrderView(
         )
 
         cart_items = list(
-            cart.items
-            .select_related(
+            cart.items.select_related(
                 "variant",
                 "variant__product",
             )
@@ -1150,17 +854,10 @@ class CreateOrderView(
 
         if not cart_items:
             return Response(
-                {
-                    "error":
-                        "سبد خرید خالی است.",
-                },
-                status=
-                    status.HTTP_400_BAD_REQUEST,
+                {"error": "سبد خرید خالی است."},
+                status=status.HTTP_400_BAD_REQUEST,
             )
 
-        # ---------------------------------------------
-        # ۵. قفل‌کردن واریانت‌ها
-        # ---------------------------------------------
         variant_ids = [
             item.variant_id
             for item in cart_items
@@ -1176,9 +873,6 @@ class CreateOrderView(
             )
         }
 
-        # ---------------------------------------------
-        # ۶. بررسی موجودی و محاسبه مبلغ کالاها
-        # ---------------------------------------------
         items_total = Decimal("0")
         order_items_data = []
 
@@ -1198,10 +892,7 @@ class CreateOrderView(
                         "variant_id":
                             cart_item.variant_id,
                     },
-                    status=(
-                        status
-                        .HTTP_400_BAD_REQUEST
-                    ),
+                    status=status.HTTP_400_BAD_REQUEST,
                 )
 
             available_stock = (
@@ -1219,21 +910,15 @@ class CreateOrderView(
                             f"فقط {available_stock} "
                             "عدد موجودی قابل سفارش دارد."
                         ),
-                        "variant_id":
-                            variant.id,
+                        "variant_id": variant.id,
                         "available_stock":
                             available_stock,
                     },
-                    status=(
-                        status
-                        .HTTP_400_BAD_REQUEST
-                    ),
+                    status=status.HTTP_400_BAD_REQUEST,
                 )
 
-            unit_price = (
-                get_variant_unit_price(
-                    variant
-                )
+            unit_price = get_variant_unit_price(
+                variant
             )
 
             line_total = (
@@ -1252,9 +937,6 @@ class CreateOrderView(
                 }
             )
 
-        # ---------------------------------------------
-        # ۷. محاسبه مجدد هزینه ارسال در بک‌اند
-        # ---------------------------------------------
         shipping_quote = (
             FixedShippingQuoteService(
                 cart=cart,
@@ -1262,11 +944,9 @@ class CreateOrderView(
             ).calculate()
         )
 
-        available_methods = (
-            shipping_quote.get(
-                "methods",
-                [],
-            )
+        available_methods = shipping_quote.get(
+            "methods",
+            [],
         )
 
         selected_method = next(
@@ -1287,76 +967,43 @@ class CreateOrderView(
                         "معتبر یا فعال نیست."
                     ),
                 },
-                status=
-                    status.HTTP_400_BAD_REQUEST,
+                status=status.HTTP_400_BAD_REQUEST,
             )
 
         shipping_cost = decimal_from_value(
-            selected_method.get(
-                "cost",
-                0,
-            )
+            selected_method.get("cost", 0)
         )
 
         shipping_method_title = str(
-            selected_method.get(
-                "title",
-                "",
-            )
+            selected_method.get("title", "")
         ).strip()
 
-        # ---------------------------------------------
-        # ۸. ساخت Snapshot آدرس
-        # ---------------------------------------------
         address_snapshot = (
-            build_address_snapshot(
-                address
-            )
+            build_address_snapshot(address)
         )
 
-        # ---------------------------------------------
-        # ۹. ساخت سفارش
-        # ---------------------------------------------
         order = Order.objects.create(
             user=request.user,
             status=Order.STATUS_PENDING,
-
             shipping_address=address,
-
             shipping_address_snapshot=(
                 address_snapshot
             ),
-
             shipping_method_code=(
                 shipping_method_code
             ),
-
             shipping_method_title=(
                 shipping_method_title
             ),
-
             shipping_quote_id=(
                 shipping_quote_id
             ),
-
-            payment_method=(
-                payment_method
-            ),
-
+            payment_method=payment_method,
             items_total=items_total,
-
-            shipping_cost=(
-                shipping_cost
-            ),
-
-            discount_amount=(
-                Decimal("0")
-            ),
+            shipping_cost=shipping_cost,
+            discount_amount=Decimal("0"),
         )
 
-        # ---------------------------------------------
-        # ۱۰. ساخت آیتم‌های سفارش
-        # ---------------------------------------------
         order_items = [
             OrderItem(
                 order=order,
@@ -1373,41 +1020,127 @@ class CreateOrderView(
 
         # ---------------------------------------------
         # ۱۱. کم‌کردن موجودی
+        #
+        # ترتیب مصرف:
+        # ۱. موجودی داخلی variant.stock
+        # ۲. موجودی SupplierOffer
         # ---------------------------------------------
         for data in order_items_data:
             variant = data["variant"]
-
-            variant.stock -= (
+            remaining_quantity = int(
                 data["quantity"]
             )
 
-            variant.save(
-                update_fields=["stock"],
+            internal_stock = max(
+                int(variant.stock or 0),
+                0,
             )
 
-        # ---------------------------------------------
-        # ۱۲. خالی‌کردن سبد
-        # ---------------------------------------------
+            internal_deduction = min(
+                internal_stock,
+                remaining_quantity,
+            )
+
+            if internal_deduction > 0:
+                variant.stock = (
+                    internal_stock
+                    - internal_deduction
+                )
+
+                variant.save(
+                    update_fields=["stock"],
+                )
+
+                remaining_quantity -= (
+                    internal_deduction
+                )
+
+            if remaining_quantity <= 0:
+                continue
+
+            supplier_offers = (
+                SupplierOffer.objects
+                .select_for_update()
+                .filter(
+                    variant=variant,
+                    is_available=True,
+                    supplier_stock__gt=0,
+                )
+                .order_by(
+                    "-is_primary",
+                    "id",
+                )
+            )
+
+            for offer in supplier_offers:
+                if remaining_quantity <= 0:
+                    break
+
+                offer_stock = max(
+                    int(
+                        offer.supplier_stock
+                        or 0
+                    ),
+                    0,
+                )
+
+                supplier_deduction = min(
+                    offer_stock,
+                    remaining_quantity,
+                )
+
+                if supplier_deduction <= 0:
+                    continue
+
+                offer.supplier_stock = (
+                    offer_stock
+                    - supplier_deduction
+                )
+
+                update_fields = [
+                    "supplier_stock",
+                ]
+
+                if offer.supplier_stock <= 0:
+                    offer.supplier_stock = 0
+                    offer.is_available = False
+                    update_fields.append(
+                        "is_available"
+                    )
+
+                offer.save(
+                    update_fields=update_fields,
+                )
+
+                remaining_quantity -= (
+                    supplier_deduction
+                )
+
+            if remaining_quantity > 0:
+                raise ValueError(
+                    (
+                        "موجودی قابل سفارش "
+                        f"واریانت {variant.id} "
+                        "هنگام کسر موجودی "
+                        f"{remaining_quantity} عدد "
+                        "کمتر از مقدار مورد "
+                        "انتظار بود."
+                    )
+                )
+
         cart.items.all().delete()
 
-        # ---------------------------------------------
-        # ۱۳. پاسخ نهایی
-        # ---------------------------------------------
-        output_serializer = (
-            OrderSerializer(
-                order,
-                context={
-                    "request": request,
-                },
-            )
+        output_serializer = OrderSerializer(
+            order,
+            context={"request": request},
         )
 
         return Response(
             {
-                "message":
-                    "سفارش با موفقیت ثبت شد.",
-                "order":
-                    output_serializer.data,
+                "message": (
+                    "سفارش با موفقیت ثبت شد."
+                ),
+                "order": output_serializer.data,
             },
             status=status.HTTP_201_CREATED,
         )
@@ -1419,19 +1152,13 @@ class CreateOrderView(
 class OrderListView(
     generics.ListAPIView
 ):
-    """
-    نمایش تمام سفارش‌های کاربر واردشده.
-    """
-
     serializer_class = OrderSerializer
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
         return (
             Order.objects
-            .filter(
-                user=self.request.user
-            )
+            .filter(user=self.request.user)
             .prefetch_related(
                 "items__variant",
                 "items__variant__product",
@@ -1446,19 +1173,13 @@ class OrderListView(
 class OrderDetailView(
     generics.RetrieveAPIView
 ):
-    """
-    نمایش جزئیات یک سفارش متعلق به کاربر.
-    """
-
     serializer_class = OrderSerializer
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
         return (
             Order.objects
-            .filter(
-                user=self.request.user
-            )
+            .filter(user=self.request.user)
             .prefetch_related(
                 "items__variant",
                 "items__variant__product",
@@ -1472,10 +1193,6 @@ class OrderDetailView(
 class CancelOrderView(
     generics.GenericAPIView
 ):
-    """
-    لغو سفارش در وضعیت pending و بازگرداندن موجودی.
-    """
-
     permission_classes = [IsAuthenticated]
 
     @transaction.atomic
@@ -1498,8 +1215,7 @@ class CancelOrderView(
                         "قابل لغو نیست."
                     ),
                 },
-                status=
-                    status.HTTP_400_BAD_REQUEST,
+                status=status.HTTP_400_BAD_REQUEST,
             )
 
         order_items = list(
@@ -1529,29 +1245,23 @@ class CancelOrderView(
                 continue
 
             variant.stock += item.quantity
-
             variant.save(
                 update_fields=["stock"],
             )
 
-        order.status = (
-            Order.STATUS_CANCELLED
-        )
-
+        order.status = Order.STATUS_CANCELLED
         order.save(
             update_fields=["status"],
         )
 
         return Response(
             {
-                "message":
-                    "سفارش با موفقیت لغو شد.",
-
+                "message": (
+                    "سفارش با موفقیت لغو شد."
+                ),
                 "order": OrderSerializer(
                     order,
-                    context={
-                        "request": request,
-                    },
+                    context={"request": request},
                 ).data,
             },
             status=status.HTTP_200_OK,
@@ -1562,20 +1272,6 @@ class CancelOrderView(
 # ادغام سبد مهمان با سبد کاربر
 # =========================================================
 class MergeCartView(APIView):
-    """
-    ادغام سبد خرید مهمان با حساب کاربری.
-
-    Endpoint:
-
-    POST /api/orders/cart/merge/
-
-    Body:
-
-    {
-        "session_key": "abc123"
-    }
-    """
-
     permission_classes = [IsAuthenticated]
 
     @transaction.atomic
@@ -1593,8 +1289,7 @@ class MergeCartView(APIView):
                     "error":
                         "session_key الزامی است.",
                 },
-                status=
-                    status.HTTP_400_BAD_REQUEST,
+                status=status.HTTP_400_BAD_REQUEST,
             )
 
         guest_cart = (
@@ -1652,4 +1347,4 @@ class MergeCartView(APIView):
                 ),
             },
             status=status.HTTP_200_OK,
-    )
+        )
