@@ -31,9 +31,9 @@ def update_offer(offer, item):
     """
     بروزرسانی اطلاعات SupplierOffer
     """
-
-    price = to_decimal(item["price"])
-    stock = to_stock(item["stock"])
+    print(item.price)
+    price = to_decimal(item.price)
+    stock = to_stock(item.quantity)
 
     # ثبت تاریخچه قیمت
     save_price_history(offer, price)

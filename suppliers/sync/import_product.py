@@ -24,6 +24,8 @@ products = list_product()
 for item in products:
     supplier = item.supplier
     offer = find_offer(item)
+    print(f"gimate site",item.price  , "gemate database "  , offer.purchase_price )
+    print(item)   
     if offer:
         if offer.purchase_price == item.price:
             info(f"{item.name} taghir nakardeh")

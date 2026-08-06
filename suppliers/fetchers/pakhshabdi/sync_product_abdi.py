@@ -1,5 +1,16 @@
 # -*- coding: utf-8 -*-
 
+import os
+import sys
+import django
+
+BASE_DIR = "/home/flip/project/bazbia/bazbia-shop"
+sys.path.insert(0, BASE_DIR)
+
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "bazbia_shop.settings")
+django.setup()
+
+
 from suppliers.fetchers.pakhshabdi.json_loader import load_json
 from suppliers.fetchers.pakhshabdi.save_json import save_json
 from suppliers.fetchers.pakhshabdi.extractor import extract_product_data
@@ -30,7 +41,6 @@ def sync_products():
         if url in product_index:
    
             product = product_index[url]
-            print(" موجود")
             product["price"] = available["price"]
             product["stock"] = available.get("quantity", 0)
 

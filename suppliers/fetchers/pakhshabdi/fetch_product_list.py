@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
+from suppliers.fetchers.pakhshabdi.sync_product_abdi import sync_products
+
 
 import os
 import json
@@ -126,6 +128,8 @@ def main():
      )                           
     logger.info("Found %d available products.", len(results))
     logger.info("Saved: %s", output_file)
+    sync_products()
+    logger.info("synce products")
 
 if __name__ == "__main__":
     main()
