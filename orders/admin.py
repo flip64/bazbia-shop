@@ -129,7 +129,7 @@ class CartAdmin(admin.ModelAdmin):
 
     list_per_page = 50
 
-    date_hierarchy = "updated_at"
+  #  date_hierarchy = "updated_at"
 
     def get_queryset(self, request):
         return (
