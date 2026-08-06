@@ -49,6 +49,8 @@ urlpatterns = [
     path('api/promotions/', include('promotions.api.urls')),
     path('api/payments/',include('payments.api.urls')),
     path("api/contact/", include("contact.api.urls")),
+    
+    path("torob_api/",include("torob_integration.api.urls")),
 ]
 
 if settings.DEBUG:
