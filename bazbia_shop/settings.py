@@ -89,6 +89,7 @@ INSTALLED_APPS = [
     'dashboard',
     'torob_integration.apps.TorobIntegrationConfig',
     "contact",
+    "analytics",
 
 ]
 MIDDLEWARE = [
