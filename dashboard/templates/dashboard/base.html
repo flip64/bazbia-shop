@@ -1,0 +1,66 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+
+<head>
+    <meta charset="UTF-8">
+    <title>{% block title %}پنل مدیریت بازبیا{% endblock %}</title>
+
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <!-- Bootstrap RTL -->
+    <link href="{% static 'dashboard/css/bootstrap.rtl.min.css' %}" rel="stylesheet">
+
+    <!-- Bootstrap Icons -->
+    <link href="{% static 'dashboard/css/bootstrap-icons.css' %}" rel="stylesheet">
+
+    <!-- فونت -->
+    <link href="{% static 'dashboard/css/fonts.css' %}" rel="stylesheet">
+
+    <!-- استایل پنل -->
+    <link href="{% static 'dashboard/css/dashboard.css' %}" rel="stylesheet">
+
+    {% block extra_css %}{% endblock %}
+</head>
+
+<body>
+
+<div class="wrapper">
+
+    {% include "dashboard/partials/header.html" %}
+
+    {% include "dashboard/partials/sidebar.html" %}
+
+    <main class="main-content">
+
+        <div class="page-header">
+
+            <h3>
+                {% block page_title %}
+                داشبورد
+                {% endblock %}
+            </h3>
+
+            {% block breadcrumb %}
+            {% endblock %}
+
+        </div>
+
+        {% include "dashboard/partials/messages.html" %}
+
+        {% block content %}
+        {% endblock %}
+
+    </main>
+
+</div>
+
+<script src="{% static 'dashboard/js/bootstrap.bundle.min.js' %}"></script>
+
+<script src="{% static 'dashboard/js/dashboard.js' %}"></script>
+
+{% block extra_js %}{% endblock %}
+
+</body>
+</html>
