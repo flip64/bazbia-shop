@@ -4,7 +4,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from analytics.models import SiteEvent
-from analytics.serializers import SiteEventCreateSerializer
+from analytics.api.serializers import SiteEventCreateSerializer
 
 
 def get_client_ip(request):
