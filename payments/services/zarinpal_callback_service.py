@@ -8,6 +8,9 @@ from payments.services.gateways.zarinpal_gateway import (
     ZarinpalGatewayError,
 )
 
+from notifications.services.email.order_email_service import (
+    send_paid_order_email,
+)
 
 @dataclass(frozen=True)
 class ZarinpalCallbackResult:
@@ -143,7 +146,15 @@ class ZarinpalCallbackService:
             gateway_response=(
                 result.raw_response
             ),
+            
         )
+        order_id = payment.order_id
+        payment_id = payment.id
+
+        transaction.on_commit(lambda: send_paid_order_email(
+             order_id=order_id,
+             payment_id=payment_id,
+            )
 
         return ZarinpalCallbackResult(
             payment=payment,
