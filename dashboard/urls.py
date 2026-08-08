@@ -4,7 +4,7 @@ app_name = "dashboard"
 
 urlpatterns = [
     
-    path('', dashboard , name='dashbord'),
+    path('', dashboard , name='dashboard'),
 
 
 
