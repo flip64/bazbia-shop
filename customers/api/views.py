@@ -1,32 +1,88 @@
 from django.contrib.auth.models import User
 from django.db import transaction
 from django.conf import settings
-from rest_framework import status
 
+from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
-
-from rest_framework_simplejwt.tokens import RefreshToken
-
 from rest_framework import permissions, viewsets
 from rest_framework.exceptions import ValidationError
 
-from customers.models import CustomerAddress
-from customers.api.serializers import CustomerAddressSerializer
+from rest_framework_simplejwt.tokens import RefreshToken
 
-from customers.api.serializers import (
-    LoginSerializer,
-    RequestOTPSerializer,
-    VerifyOTPSerializer,
-    LogoutSerializer,
-
+from customers.models import (
+    Customer,
+    CustomerAddress,
+    OTP,
 )
 
-from customers.models import Customer, OTP
-from customers.services.otp_service import create_otp, verify_otp
+from customers.api.serializers import (
+    CustomerAddressSerializer,
+    LoginSerializer,
+    LogoutSerializer,
+    RequestOTPSerializer,
+    VerifyOTPSerializer,
+)
+
+from customers.services.otp_service import (
+    create_otp,
+    verify_otp,
+)
 
 
+# =========================================================
+# User data helper
+# =========================================================
+
+def build_user_data(user):
+    """
+    ساخت پاسخ استاندارد اطلاعات کاربر.
+
+    این تابع در Login، OTP و CurrentUser استفاده می‌شود
+    تا ساختار اطلاعات کاربر در تمام APIها یکسان باشد.
+    """
+
+    try:
+        customer = user.customer_profile
+    except Customer.DoesNotExist:
+        customer = None
+
+    first_name = user.first_name or ""
+    last_name = user.last_name or ""
+
+    full_name = (
+        f"{first_name} {last_name}"
+        .strip()
+    )
+
+    return {
+        "id": user.id,
+        "username": user.username,
+
+        "first_name": first_name,
+        "last_name": last_name,
+        "full_name": full_name,
+
+        "email": user.email or "",
+
+        "phone": (
+            customer.phone
+            if customer
+            else None
+        ),
+
+        "avatar": (
+            customer.avatar.url
+            if customer and customer.avatar
+            else None
+        ),
+    }
+
+
+# =========================================================
+# Request OTP
+# =========================================================
 
 class RequestOTPView(APIView):
     """
@@ -34,42 +90,69 @@ class RequestOTPView(APIView):
     """
 
     def post(self, request):
-        serializer = RequestOTPSerializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
+        serializer = RequestOTPSerializer(
+            data=request.data
+        )
 
-        phone = serializer.validated_data["phone"]
+        serializer.is_valid(
+            raise_exception=True
+        )
+
+        phone = (
+            serializer
+            .validated_data["phone"]
+        )
 
         try:
             otp, code = create_otp(
                 phone=phone,
                 purpose=OTP.Purpose.LOGIN,
             )
+
         except ValueError as error:
             return Response(
                 {
                     "error": str(error),
                 },
-                status=status.HTTP_429_TOO_MANY_REQUESTS,
+                status=(
+                    status
+                    .HTTP_429_TOO_MANY_REQUESTS
+                ),
             )
 
         # موقتاً تا زمان اتصال سرویس پیامک
-        print(f"OTP for {phone}: {code}")
+        print(
+            f"OTP for {phone}: {code}"
+        )
 
         response_data = {
-            "message": "کد تأیید ارسال شد.",
-            "session_id": str(otp.session_id),
-            "expires_at": otp.expires_at,
+            "message": (
+                "کد تأیید ارسال شد."
+            ),
+            "session_id": str(
+                otp.session_id
+            ),
+            "expires_at": (
+                otp.expires_at
+            ),
         }
 
-        # کد فقط در حالت توسعه برگردانده می‌شود
+        # کد فقط در حالت توسعه
+        # برگردانده می‌شود
         if settings.DEBUG:
-            response_data["debug_code"] = code
+            response_data[
+                "debug_code"
+            ] = code
 
         return Response(
             response_data,
             status=status.HTTP_200_OK,
         )
 
+
+# =========================================================
+# Verify OTP
+# =========================================================
 
 class VerifyOTPView(APIView):
     """
@@ -78,70 +161,131 @@ class VerifyOTPView(APIView):
 
     @transaction.atomic
     def post(self, request):
-        serializer = VerifyOTPSerializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
+        serializer = VerifyOTPSerializer(
+            data=request.data
+        )
 
-        session_id = serializer.validated_data["session_id"]
-        code = serializer.validated_data["code"]
+        serializer.is_valid(
+            raise_exception=True
+        )
+
+        session_id = (
+            serializer
+            .validated_data[
+                "session_id"
+            ]
+        )
+
+        code = (
+            serializer
+            .validated_data["code"]
+        )
 
         try:
             otp = verify_otp(
                 session_id=session_id,
                 code=code,
             )
+
         except ValueError as error:
             return Response(
                 {
                     "error": str(error),
                 },
-                status=status.HTTP_400_BAD_REQUEST,
+                status=(
+                    status
+                    .HTTP_400_BAD_REQUEST
+                ),
             )
 
         phone = otp.phone
 
-        user, user_created = User.objects.get_or_create(
-            username=phone,
-            defaults={
-                "is_active": True,
-            },
+        # ---------------------------------
+        # User
+        # ---------------------------------
+
+        user, user_created = (
+            User.objects.get_or_create(
+                username=phone,
+                defaults={
+                    "is_active": True,
+                },
+            )
         )
 
-        customer, customer_created = Customer.objects.get_or_create(
-            user=user,
-            defaults={
-                "phone": phone,
-            },
+        # ---------------------------------
+        # Customer
+        # ---------------------------------
+
+        customer, _ = (
+            Customer.objects
+            .get_or_create(
+                user=user,
+                defaults={
+                    "phone": phone,
+                },
+            )
         )
 
+        # اگر پروفایل وجود داشت
+        # ولی شماره خالی بود
         if not customer.phone:
             customer.phone = phone
-            customer.save(update_fields=["phone"])
 
-        refresh = RefreshToken.for_user(user)
+            customer.save(
+                update_fields=[
+                    "phone",
+                ]
+            )
+
+        # ---------------------------------
+        # JWT
+        # ---------------------------------
+
+        refresh = (
+            RefreshToken.for_user(
+                user
+            )
+        )
+
+        # ---------------------------------
+        # Response
+        # ---------------------------------
 
         return Response(
             {
-                "message": "ورود با موفقیت انجام شد.",
-                "is_new_user": user_created,
-                "user": {
-                    "id": user.id,
-                    "username": user.username,
-                    "email": user.email,
-                    "phone": customer.phone,
-                    "avatar": (
-                        customer.avatar.url
-                        if customer.avatar
-                        else None
-                    ),
-                },
+                "message": (
+                    "ورود با موفقیت "
+                    "انجام شد."
+                ),
+
+                "is_new_user": (
+                    user_created
+                ),
+
+                "user": (
+                    build_user_data(
+                        user
+                    )
+                ),
+
                 "tokens": {
-                    "refresh": str(refresh),
-                    "access": str(refresh.access_token),
+                    "refresh": str(
+                        refresh
+                    ),
+                    "access": str(
+                        refresh
+                        .access_token
+                    ),
                 },
             },
             status=status.HTTP_200_OK,
         )
 
+
+# =========================================================
+# Login
+# =========================================================
 
 class LoginView(APIView):
     """
@@ -149,94 +293,126 @@ class LoginView(APIView):
     """
 
     def post(self, request):
-        serializer = LoginSerializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
+        serializer = LoginSerializer(
+            data=request.data
+        )
 
-        user = serializer.validated_data["user"]
+        serializer.is_valid(
+            raise_exception=True
+        )
 
-        try:
-            customer = user.customer_profile
-        except Customer.DoesNotExist:
-            customer = None
+        user = (
+            serializer
+            .validated_data["user"]
+        )
 
-        refresh = RefreshToken.for_user(user)
+        refresh = (
+            RefreshToken.for_user(
+                user
+            )
+        )
 
         return Response(
             {
-                "message": "ورود با موفقیت انجام شد.",
-                "user": {
-                    "id": user.id,
-                    "username": user.username,
-                    "email": user.email,
-                    "phone": customer.phone if customer else None,
-                    "avatar": (
-                        customer.avatar.url
-                        if customer and customer.avatar
-                        else None
-                    ),
-                },
+                "message": (
+                    "ورود با موفقیت "
+                    "انجام شد."
+                ),
+
+                "user": (
+                    build_user_data(
+                        user
+                    )
+                ),
+
                 "tokens": {
-                    "refresh": str(refresh),
-                    "access": str(refresh.access_token),
+                    "refresh": str(
+                        refresh
+                    ),
+                    "access": str(
+                        refresh
+                        .access_token
+                    ),
                 },
             },
             status=status.HTTP_200_OK,
         )
 
 
-class CurrentUserView(APIView):
+# =========================================================
+# Current User
+# =========================================================
 
+class CurrentUserView(APIView):
     """
     دریافت اطلاعات کاربر واردشده
     """
 
-    permission_classes = [IsAuthenticated]
+    permission_classes = [
+        IsAuthenticated,
+    ]
 
     def get(self, request):
         user = request.user
 
-        try:
-            customer = user.customer_profile
-        except Customer.DoesNotExist:
-            customer = None
-
         return Response(
-            {
-                "id": user.id,
-                "username": user.username,
-                "email": user.email,
-                "phone": customer.phone if customer else None,
-                "avatar": (
-                    customer.avatar.url
-                    if customer and customer.avatar
-                    else None
-                ),
-            },
+            build_user_data(
+                user
+            ),
             status=status.HTTP_200_OK,
         )
-    
+
+
+# =========================================================
+# Logout
+# =========================================================
+
 class LogoutView(APIView):
     """
     خروج کاربر و باطل کردن Refresh Token
     """
 
-    permission_classes = [IsAuthenticated]
+    permission_classes = [
+        IsAuthenticated,
+    ]
 
     def post(self, request):
-        serializer = LogoutSerializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
+        serializer = LogoutSerializer(
+            data=request.data
+        )
 
-        refresh_token = serializer.validated_data["refresh"]
+        serializer.is_valid(
+            raise_exception=True
+        )
+
+        refresh_token = (
+            serializer
+            .validated_data[
+                "refresh"
+            ]
+        )
 
         try:
-            token = RefreshToken(refresh_token)
+            token = RefreshToken(
+                refresh_token
+            )
 
-            if str(token["user_id"]) != str(request.user.id):
+            if (
+                str(token["user_id"])
+                !=
+                str(request.user.id)
+            ):
                 return Response(
                     {
-                        "error": "این توکن متعلق به کاربر فعلی نیست.",
+                        "error": (
+                            "این توکن متعلق به "
+                            "کاربر فعلی نیست."
+                        ),
                     },
-                    status=status.HTTP_403_FORBIDDEN,
+                    status=(
+                        status
+                        .HTTP_403_FORBIDDEN
+                    ),
                 )
 
             token.blacklist()
@@ -244,28 +420,47 @@ class LogoutView(APIView):
         except Exception:
             return Response(
                 {
-                    "error": "توکن تمدید نامعتبر یا قبلاً باطل شده است.",
+                    "error": (
+                        "توکن تمدید نامعتبر "
+                        "یا قبلاً باطل شده است."
+                    ),
                 },
-                status=status.HTTP_400_BAD_REQUEST,
+                status=(
+                    status
+                    .HTTP_400_BAD_REQUEST
+                ),
             )
 
         return Response(
             {
-                "message": "خروج با موفقیت انجام شد.",
+                "message": (
+                    "خروج با موفقیت "
+                    "انجام شد."
+                ),
             },
             status=status.HTTP_200_OK,
         )
-    
 
-class CustomerAddressViewSet(viewsets.ModelViewSet):
+
+# =========================================================
+# Customer Address
+# =========================================================
+
+class CustomerAddressViewSet(
+    viewsets.ModelViewSet
+):
     """
     مدیریت آدرس‌های مشتری واردشده.
 
-    هر کاربر فقط آدرس‌های متعلق به پروفایل مشتری خودش
-    را مشاهده، ثبت، ویرایش و حذف می‌کند.
+    هر کاربر فقط آدرس‌های متعلق به
+    پروفایل مشتری خودش را مشاهده،
+    ثبت، ویرایش و حذف می‌کند.
     """
 
-    serializer_class = CustomerAddressSerializer
+    serializer_class = (
+        CustomerAddressSerializer
+    )
+
     permission_classes = [
         permissions.IsAuthenticated,
     ]
@@ -278,18 +473,27 @@ class CustomerAddressViewSet(viewsets.ModelViewSet):
         )
 
         if customer is None:
-            return CustomerAddress.objects.none()
+            return (
+                CustomerAddress
+                .objects
+                .none()
+            )
 
         return (
             CustomerAddress.objects
-            .filter(customer=customer)
+            .filter(
+                customer=customer
+            )
             .order_by(
                 "-is_default",
                 "-updated_at",
             )
         )
 
-    def perform_create(self, serializer):
+    def perform_create(
+        self,
+        serializer,
+    ):
         customer = getattr(
             self.request.user,
             "customer_profile",
@@ -300,7 +504,9 @@ class CustomerAddressViewSet(viewsets.ModelViewSet):
             raise ValidationError(
                 {
                     "detail": (
-                        "برای این کاربر پروفایل مشتری ایجاد نشده است."
+                        "برای این کاربر "
+                        "پروفایل مشتری "
+                        "ایجاد نشده است."
                     )
                 }
             )
@@ -308,4 +514,3 @@ class CustomerAddressViewSet(viewsets.ModelViewSet):
         serializer.save(
             customer=customer
         )
-
