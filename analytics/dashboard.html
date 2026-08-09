@@ -1,0 +1,672 @@
+{% extends "dashboard/base.html" %}
+
+{% block title %}
+آمار و تحلیل سایت
+{% endblock %}
+
+
+{% block content %}
+
+<style>
+    .analytics-page {
+        direction: rtl;
+        text-align: right;
+    }
+
+    .analytics-header {
+        margin-bottom: 24px;
+    }
+
+    .analytics-header h1 {
+        font-size: 26px;
+        font-weight: 800;
+        margin-bottom: 6px;
+    }
+
+    .analytics-header p {
+        margin: 0;
+        color: #6c757d;
+    }
+
+    .analytics-card {
+        background: #ffffff;
+        border: 1px solid #edf0f3;
+        border-radius: 14px;
+        padding: 20px;
+        height: 100%;
+        box-shadow:
+            0 4px 16px rgba(0, 0, 0, 0.04);
+    }
+
+    .analytics-card-label {
+        font-size: 14px;
+        color: #6c757d;
+        margin-bottom: 8px;
+    }
+
+    .analytics-card-value {
+        font-size: 30px;
+        font-weight: 800;
+        margin: 0;
+    }
+
+    .analytics-card-subtitle {
+        color: #8a9099;
+        font-size: 12px;
+        margin-top: 5px;
+    }
+
+    .analytics-section {
+        background: #ffffff;
+        border: 1px solid #edf0f3;
+        border-radius: 14px;
+        overflow: hidden;
+        box-shadow:
+            0 4px 16px rgba(0, 0, 0, 0.04);
+    }
+
+    .analytics-section-header {
+        padding: 18px 20px;
+        border-bottom: 1px solid #edf0f3;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+    }
+
+    .analytics-section-title {
+        margin: 0;
+        font-size: 17px;
+        font-weight: 700;
+    }
+
+    .analytics-section-description {
+        color: #8a9099;
+        font-size: 12px;
+    }
+
+    .analytics-table {
+        margin: 0;
+        width: 100%;
+    }
+
+    .analytics-table th {
+        color: #6c757d;
+        font-size: 13px;
+        font-weight: 600;
+        white-space: nowrap;
+        background: #fafbfc;
+    }
+
+    .analytics-table td {
+        vertical-align: middle;
+    }
+
+    .analytics-path {
+        direction: ltr;
+        text-align: left;
+        display: inline-block;
+        max-width: 400px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        font-family: monospace;
+        font-size: 13px;
+    }
+
+    .analytics-source {
+        display: inline-flex;
+        align-items: center;
+        padding: 5px 10px;
+        border-radius: 20px;
+        background: #f4f6f8;
+        font-size: 13px;
+    }
+
+    .analytics-empty {
+        padding: 35px 10px !important;
+        color: #8a9099 !important;
+        text-align: center;
+    }
+
+    .analytics-funnel {
+        display: flex;
+        align-items: stretch;
+        gap: 12px;
+        flex-wrap: wrap;
+    }
+
+    .analytics-funnel-item {
+        flex: 1;
+        min-width: 180px;
+        padding: 18px;
+        border: 1px solid #edf0f3;
+        border-radius: 12px;
+        background: #fafbfc;
+    }
+
+    .analytics-funnel-label {
+        color: #6c757d;
+        font-size: 13px;
+    }
+
+    .analytics-funnel-value {
+        margin-top: 7px;
+        font-size: 24px;
+        font-weight: 800;
+    }
+
+    @media (max-width: 768px) {
+        .analytics-card-value {
+            font-size: 24px;
+        }
+
+        .analytics-header h1 {
+            font-size: 22px;
+        }
+
+        .analytics-path {
+            max-width: 220px;
+        }
+    }
+</style>
+
+
+<div class="container-fluid py-4 analytics-page">
+
+    <!-- =================================================
+         Header
+    ================================================== -->
+
+    <div class="analytics-header">
+
+        <h1>
+            آمار و تحلیل سایت
+        </h1>
+
+        <p>
+            بررسی بازدید کاربران، صفحات محبوب و منابع ورودی فروشگاه
+        </p>
+
+    </div>
+
+
+    <!-- =================================================
+         Today
+    ================================================== -->
+
+    <div class="row g-3 mb-4">
+
+        <div class="col-6 col-xl-3">
+
+            <div class="analytics-card">
+
+                <div class="analytics-card-label">
+                    بازدید امروز
+                </div>
+
+                <div class="analytics-card-value">
+                    {{ today_views|default:0 }}
+                </div>
+
+                <div class="analytics-card-subtitle">
+                    تعداد مشاهده صفحات
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <div class="col-6 col-xl-3">
+
+            <div class="analytics-card">
+
+                <div class="analytics-card-label">
+                    بازدیدکننده یکتای امروز
+                </div>
+
+                <div class="analytics-card-value">
+                    {{ today_unique_visitors|default:0 }}
+                </div>
+
+                <div class="analytics-card-subtitle">
+                    بر اساس شناسه بازدیدکننده
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <div class="col-6 col-xl-3">
+
+            <div class="analytics-card">
+
+                <div class="analytics-card-label">
+                    بازدید دیروز
+                </div>
+
+                <div class="analytics-card-value">
+                    {{ yesterday_views|default:0 }}
+                </div>
+
+                <div class="analytics-card-subtitle">
+                    کل مشاهده صفحات دیروز
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <div class="col-6 col-xl-3">
+
+            <div class="analytics-card">
+
+                <div class="analytics-card-label">
+                    بازدید ۷ روز اخیر
+                </div>
+
+                <div class="analytics-card-value">
+                    {{ last_7_days_views|default:0 }}
+                </div>
+
+                <div class="analytics-card-subtitle">
+                    مجموع بازدید هفته اخیر
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- =================================================
+         Secondary stats
+    ================================================== -->
+
+    <div class="row g-3 mb-4">
+
+        <div class="col-md-4">
+
+            <div class="analytics-card">
+
+                <div class="analytics-card-label">
+                    بازدیدکنندگان یکتای ۷ روز اخیر
+                </div>
+
+                <div class="analytics-card-value">
+                    {{ last_7_days_unique|default:0 }}
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <div class="col-md-4">
+
+            <div class="analytics-card">
+
+                <div class="analytics-card-label">
+                    بازدید ۳۰ روز اخیر
+                </div>
+
+                <div class="analytics-card-value">
+                    {{ last_30_days_views|default:0 }}
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <div class="col-md-4">
+
+            <div class="analytics-card">
+
+                <div class="analytics-card-label">
+                    مشاهده محصول
+                </div>
+
+                <div class="analytics-card-value">
+                    {{ product_views|default:0 }}
+                </div>
+
+                <div class="analytics-card-subtitle">
+                    ۷ روز اخیر
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- =================================================
+         Funnel
+    ================================================== -->
+
+    <div class="analytics-section mb-4">
+
+        <div class="analytics-section-header">
+
+            <div>
+
+                <h2 class="analytics-section-title">
+                    قیف تعامل کاربران
+                </h2>
+
+                <div class="analytics-section-description">
+                    وضعیت فعلی رویدادهای ثبت‌شده در ۷ روز اخیر
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <div class="p-3 p-md-4">
+
+            <div class="analytics-funnel">
+
+                <div class="analytics-funnel-item">
+
+                    <div class="analytics-funnel-label">
+                        بازدید صفحات
+                    </div>
+
+                    <div class="analytics-funnel-value">
+                        {{ last_7_days_views|default:0 }}
+                    </div>
+
+                </div>
+
+
+                <div class="analytics-funnel-item">
+
+                    <div class="analytics-funnel-label">
+                        مشاهده محصول
+                    </div>
+
+                    <div class="analytics-funnel-value">
+                        {{ product_views|default:0 }}
+                    </div>
+
+                </div>
+
+
+                <div class="analytics-funnel-item">
+
+                    <div class="analytics-funnel-label">
+                        افزودن به سبد خرید
+                    </div>
+
+                    <div class="analytics-funnel-value">
+                        {{ add_to_cart_count|default:0 }}
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- =================================================
+         Tables
+    ================================================== -->
+
+    <div class="row g-4">
+
+        <!-- صفحات پربازدید -->
+
+        <div class="col-xl-7">
+
+            <div class="analytics-section h-100">
+
+                <div class="analytics-section-header">
+
+                    <div>
+
+                        <h2 class="analytics-section-title">
+                            صفحات پربازدید
+                        </h2>
+
+                        <div class="analytics-section-description">
+                            ۱۰ صفحه اول در ۷ روز اخیر
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <div class="table-responsive">
+
+                    <table class="table analytics-table">
+
+                        <thead>
+
+                            <tr>
+
+                                <th>
+                                    #
+                                </th>
+
+                                <th>
+                                    مسیر صفحه
+                                </th>
+
+                                <th>
+                                    بازدید
+                                </th>
+
+                            </tr>
+
+                        </thead>
+
+
+                        <tbody>
+
+                            {% for item in top_pages %}
+
+                                <tr>
+
+                                    <td>
+                                        {{ forloop.counter }}
+                                    </td>
+
+                                    <td>
+
+                                        <span
+                                            class="analytics-path"
+                                            title="{{ item.path }}"
+                                        >
+                                            {{ item.path|default:"/" }}
+                                        </span>
+
+                                    </td>
+
+                                    <td>
+
+                                        <strong>
+                                            {{ item.views }}
+                                        </strong>
+
+                                    </td>
+
+                                </tr>
+
+                            {% empty %}
+
+                                <tr>
+
+                                    <td
+                                        colspan="3"
+                                        class="analytics-empty"
+                                    >
+                                        هنوز اطلاعاتی برای نمایش وجود ندارد.
+                                    </td>
+
+                                </tr>
+
+                            {% endfor %}
+
+                        </tbody>
+
+                    </table>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- منابع ورودی -->
+
+        <div class="col-xl-5">
+
+            <div class="analytics-section h-100">
+
+                <div class="analytics-section-header">
+
+                    <div>
+
+                        <h2 class="analytics-section-title">
+                            منابع ورودی
+                        </h2>
+
+                        <div class="analytics-section-description">
+                            کاربران از کجا وارد سایت شده‌اند
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <div class="table-responsive">
+
+                    <table class="table analytics-table">
+
+                        <thead>
+
+                            <tr>
+
+                                <th>
+                                    منبع
+                                </th>
+
+                                <th>
+                                    بازدید
+                                </th>
+
+                            </tr>
+
+                        </thead>
+
+
+                        <tbody>
+
+                            {% for item in traffic_sources %}
+
+                                <tr>
+
+                                    <td>
+
+                                        <span class="analytics-source">
+
+                                            {% if item.source == "direct" %}
+
+                                                ورود مستقیم
+
+                                            {% elif item.source == "google" %}
+
+                                                گوگل
+
+                                            {% elif item.source == "torob" %}
+
+                                                ترب
+
+                                            {% elif item.source == "eitaa" %}
+
+                                                ایتا
+
+                                            {% elif item.source == "rubika" %}
+
+                                                روبیکا
+
+                                            {% elif item.source == "bale" %}
+
+                                                بله
+
+                                            {% elif item.source == "instagram" %}
+
+                                                اینستاگرام
+
+                                            {% elif item.source == "telegram" %}
+
+                                                تلگرام
+
+                                            {% elif item.source %}
+
+                                                {{ item.source }}
+
+                                            {% else %}
+
+                                                نامشخص
+
+                                            {% endif %}
+
+                                        </span>
+
+                                    </td>
+
+
+                                    <td>
+
+                                        <strong>
+                                            {{ item.views }}
+                                        </strong>
+
+                                    </td>
+
+                                </tr>
+
+                            {% empty %}
+
+                                <tr>
+
+                                    <td
+                                        colspan="2"
+                                        class="analytics-empty"
+                                    >
+                                        هنوز منبع ورودی ثبت نشده است.
+                                    </td>
+
+                                </tr>
+
+                            {% endfor %}
+
+                        </tbody>
+
+                    </table>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}
