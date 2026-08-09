@@ -5,4 +5,4 @@ from django.contrib import admin
 from .models import (SiteEvent)
 
 
-admin.register(SiteEvent)
+admin.site.register(SiteEvent)
