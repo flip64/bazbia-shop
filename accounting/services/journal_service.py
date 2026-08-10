@@ -8,8 +8,8 @@ from django.db.models.functions import Coalesce
 from accounting.models import (
     JournalEntry,
     JournalItem,
+    JournalSequence,
 )
-
 
 class JournalService:
     """
@@ -131,6 +131,38 @@ class JournalService:
             )
 
         return totals
+
+     @staticmethod
+     def get_next_number(
+        *,
+        fiscal_period,
+     ) -> int:
+         """
+        تولید شماره سند بعدی به صورت امن در تراکنش.
+        """
+
+        sequence, _ = (
+            JournalSequence.objects
+            .select_for_update()
+            .get_or_create(
+                fiscal_period=fiscal_period,
+                defaults={
+                    "last_number": 0,
+                },
+            )
+        )
+
+        sequence.last_number += 1
+
+        sequence.save(
+            update_fields=[
+                "last_number",
+                "updated_at",
+            ]
+        )
+
+        return sequence.last_number
+    
 
     @staticmethod
     def validate_items(
