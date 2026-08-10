@@ -1,5 +1,4 @@
-# accounting/models/journal_entry.py
-
+from django.core.exceptions import ValidationError
 from django.db import models
 
 
@@ -12,14 +11,17 @@ class JournalEntry(models.Model):
         PAYMENT = "payment", "پرداخت"
         EXPENSE = "expense", "هزینه"
         REFUND = "refund", "برگشت وجه"
+
         GATEWAY_SETTLEMENT = (
             "gateway_settlement",
             "تسویه درگاه",
         )
+
         SUPPLIER_SETTLEMENT = (
             "supplier_settlement",
             "تسویه تأمین‌کننده",
         )
+
         ADJUSTMENT = "adjustment", "اصلاحی"
         OPENING = "opening", "افتتاحیه"
         CLOSING = "closing", "اختتامیه"
@@ -32,6 +34,13 @@ class JournalEntry(models.Model):
     number = models.PositiveBigIntegerField(
         unique=True,
         verbose_name="شماره سند",
+    )
+
+    fiscal_period = models.ForeignKey(
+        "accounting.FiscalPeriod",
+        related_name="journal_entries",
+        on_delete=models.PROTECT,
+        verbose_name="دوره مالی",
     )
 
     entry_type = models.CharField(
@@ -80,6 +89,33 @@ class JournalEntry(models.Model):
         ordering = ["-date", "-number"]
         verbose_name = "سند حسابداری"
         verbose_name_plural = "اسناد حسابداری"
+        indexes = [
+            models.Index(
+                fields=["reference_type", "reference_id"]
+            ),
+            models.Index(
+                fields=["date", "status"]
+            ),
+        ]
+
+    def clean(self):
+        if self.fiscal_period_id:
+            if not (
+                self.fiscal_period.start_date
+                <= self.date
+                <= self.fiscal_period.end_date
+            ):
+                raise ValidationError(
+                    {
+                        "date":
+                            "تاریخ سند خارج از محدوده دوره مالی است."
+                    }
+                )
+
+            if self.fiscal_period.is_closed:
+                raise ValidationError(
+                    "امکان ثبت سند در دوره مالی بسته‌شده وجود ندارد."
+                )
 
     def __str__(self):
         return f"سند {self.number}"
