@@ -14,12 +14,71 @@ from accounting.models import (
 class JournalService:
     """
     سرویس مرکزی مدیریت اسناد حسابداری.
+
+    مسئولیت‌ها:
+    - ساخت سند
+    - ساخت ردیف‌های بدهکار و بستانکار
+    - بررسی اعتبار ردیف‌ها
+    - بررسی تراز بودن سند
+    - ثبت نهایی سند
     """
 
     @staticmethod
-    def get_totals(entry: JournalEntry) -> dict:
+    def debit_line(
+        *,
+        account,
+        amount,
+        description="",
+    ):
         """
-        مجموع بدهکار و بستانکار یک سند.
+        ساخت یک ردیف بدهکار.
+        """
+
+        amount = Decimal(str(amount))
+
+        if amount <= 0:
+            raise ValidationError(
+                "مبلغ ردیف بدهکار باید بزرگ‌تر از صفر باشد."
+            )
+
+        return {
+            "account": account,
+            "debit": amount,
+            "credit": Decimal("0"),
+            "description": description,
+        }
+
+    @staticmethod
+    def credit_line(
+        *,
+        account,
+        amount,
+        description="",
+    ):
+        """
+        ساخت یک ردیف بستانکار.
+        """
+
+        amount = Decimal(str(amount))
+
+        if amount <= 0:
+            raise ValidationError(
+                "مبلغ ردیف بستانکار باید بزرگ‌تر از صفر باشد."
+            )
+
+        return {
+            "account": account,
+            "debit": Decimal("0"),
+            "credit": amount,
+            "description": description,
+        }
+
+    @staticmethod
+    def get_totals(
+        entry: JournalEntry,
+    ) -> dict:
+        """
+        محاسبه مجموع بدهکار و بستانکار یک سند.
         """
 
         totals = entry.items.aggregate(
@@ -39,9 +98,15 @@ class JournalService:
         }
 
     @classmethod
-    def validate_balance(cls, entry: JournalEntry):
+    def validate_balance(
+        cls,
+        entry: JournalEntry,
+    ):
         """
         بررسی تراز بودن سند.
+
+        قانون اصلی:
+        جمع بدهکار باید دقیقاً برابر جمع بستانکار باشد.
         """
 
         totals = cls.get_totals(entry)
@@ -68,14 +133,18 @@ class JournalService:
         return totals
 
     @staticmethod
-    def validate_items(entry: JournalEntry):
+    def validate_items(
+        entry: JournalEntry,
+    ):
         """
         بررسی ردیف‌های سند.
         """
 
-        items = entry.items.select_related("account")
+        items = list(
+            entry.items.select_related("account")
+        )
 
-        if items.count() < 2:
+        if len(items) < 2:
             raise ValidationError(
                 "سند حسابداری باید حداقل دو ردیف داشته باشد."
             )
@@ -85,9 +154,14 @@ class JournalService:
 
     @classmethod
     @transaction.atomic
-    def post(cls, entry: JournalEntry) -> JournalEntry:
+    def post(
+        cls,
+        entry: JournalEntry,
+    ) -> JournalEntry:
         """
-        نهایی کردن سند حسابداری.
+        ثبت نهایی سند حسابداری.
+
+        فقط سند معتبر و تراز می‌تواند POSTED شود.
         """
 
         entry = (
@@ -113,6 +187,7 @@ class JournalService:
         entry.full_clean()
 
         cls.validate_items(entry)
+
         cls.validate_balance(entry)
 
         entry.status = JournalEntry.Status.POSTED
@@ -123,5 +198,100 @@ class JournalService:
                 "updated_at",
             ]
         )
+
+        return entry
+
+    @classmethod
+    @transaction.atomic
+    def create_entry(
+        cls,
+        *,
+        number,
+        fiscal_period,
+        entry_type,
+        date,
+        lines,
+        description="",
+        reference_type="",
+        reference_id=None,
+        auto_post=True,
+    ) -> JournalEntry:
+        """
+        ساخت کامل یک سند حسابداری.
+
+        ابتدا سند به حالت DRAFT ساخته می‌شود،
+        سپس ردیف‌ها ایجاد می‌شوند،
+        و در صورت auto_post=True سند نهایی می‌شود.
+        """
+
+        if not lines:
+            raise ValidationError(
+                "برای سند حسابداری باید ردیف ارسال شود."
+            )
+
+        if len(lines) < 2:
+            raise ValidationError(
+                "سند حسابداری باید حداقل دو ردیف داشته باشد."
+            )
+
+        entry = JournalEntry(
+            number=number,
+            fiscal_period=fiscal_period,
+            entry_type=entry_type,
+            date=date,
+            description=description,
+            status=JournalEntry.Status.DRAFT,
+            reference_type=reference_type,
+            reference_id=reference_id,
+        )
+
+        entry.full_clean()
+
+        entry.save()
+
+        items = []
+
+        for line in lines:
+
+            if "account" not in line:
+                raise ValidationError(
+                    "حساب در یکی از ردیف‌های سند مشخص نشده است."
+                )
+
+            item = JournalItem(
+                journal_entry=entry,
+                account=line["account"],
+                debit=Decimal(
+                    str(
+                        line.get(
+                            "debit",
+                            Decimal("0"),
+                        )
+                    )
+                ),
+                credit=Decimal(
+                    str(
+                        line.get(
+                            "credit",
+                            Decimal("0"),
+                        )
+                    )
+                ),
+                description=line.get(
+                    "description",
+                    "",
+                ),
+            )
+
+            item.full_clean()
+
+            items.append(item)
+
+        JournalItem.objects.bulk_create(
+            items
+        )
+
+        if auto_post:
+            entry = cls.post(entry)
 
         return entry
