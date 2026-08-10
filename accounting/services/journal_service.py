@@ -11,6 +11,7 @@ from accounting.models import (
     JournalSequence,
 )
 
+
 class JournalService:
     """
     سرویس مرکزی مدیریت اسناد حسابداری.
@@ -18,6 +19,7 @@ class JournalService:
     مسئولیت‌ها:
     - ساخت سند
     - ساخت ردیف‌های بدهکار و بستانکار
+    - تولید شماره سند
     - بررسی اعتبار ردیف‌ها
     - بررسی تراز بودن سند
     - ثبت نهایی سند
@@ -104,9 +106,6 @@ class JournalService:
     ):
         """
         بررسی تراز بودن سند.
-
-        قانون اصلی:
-        جمع بدهکار باید دقیقاً برابر جمع بستانکار باشد.
         """
 
         totals = cls.get_totals(entry)
@@ -132,12 +131,12 @@ class JournalService:
 
         return totals
 
-     @staticmethod
-     def get_next_number(
+    @staticmethod
+    def get_next_number(
         *,
         fiscal_period,
-     ) -> int:
-         """
+    ) -> int:
+        """
         تولید شماره سند بعدی به صورت امن در تراکنش.
         """
 
@@ -162,7 +161,6 @@ class JournalService:
         )
 
         return sequence.last_number
-    
 
     @staticmethod
     def validate_items(
@@ -192,8 +190,6 @@ class JournalService:
     ) -> JournalEntry:
         """
         ثبت نهایی سند حسابداری.
-
-        فقط سند معتبر و تراز می‌تواند POSTED شود.
         """
 
         entry = (
@@ -238,7 +234,6 @@ class JournalService:
     def create_entry(
         cls,
         *,
-        number,
         fiscal_period,
         entry_type,
         date,
@@ -251,9 +246,7 @@ class JournalService:
         """
         ساخت کامل یک سند حسابداری.
 
-        ابتدا سند به حالت DRAFT ساخته می‌شود،
-        سپس ردیف‌ها ایجاد می‌شوند،
-        و در صورت auto_post=True سند نهایی می‌شود.
+        شماره سند به صورت خودکار تولید می‌شود.
         """
 
         if not lines:
@@ -265,6 +258,10 @@ class JournalService:
             raise ValidationError(
                 "سند حسابداری باید حداقل دو ردیف داشته باشد."
             )
+
+        number = cls.get_next_number(
+            fiscal_period=fiscal_period,
+        )
 
         entry = JournalEntry(
             number=number,
@@ -278,7 +275,6 @@ class JournalService:
         )
 
         entry.full_clean()
-
         entry.save()
 
         items = []
