@@ -15,13 +15,13 @@ class FixedShippingQuoteService:
     تمام مبلغ‌ها در API به تومان هستند.
     """
 
-    SHIPPING_COST_TOMAN = 185_000
+    SHIPPING_COST_TOMAN = 195_000
     QUOTE_EXPIRATION_MINUTES = 30
 
     METHOD_CODE = "fixed_standard"
     METHOD_TITLE = "ارسال استاندارد"
     METHOD_DESCRIPTION = (
-        "هزینه ارسال فعلاً به‌صورت ثابت محاسبه می‌شود."
+        "هزینه ارسال  و یسته بندی فعلاً به‌صورت ثابت محاسبه می‌شود."
     )
 
     ESTIMATED_MIN_DAYS = 3
