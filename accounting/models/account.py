@@ -1,5 +1,4 @@
-# accounting/models/account.py
-
+from django.core.exceptions import ValidationError
 from django.db import models
 
 
@@ -38,14 +37,14 @@ class Account(models.Model):
         verbose_name="حساب والد",
     )
 
-    is_active = models.BooleanField(
-        default=True,
-        verbose_name="فعال",
-    )
-
     allow_posting = models.BooleanField(
         default=True,
         verbose_name="امکان ثبت سند",
+    )
+
+    is_active = models.BooleanField(
+        default=True,
+        verbose_name="فعال",
     )
 
     created_at = models.DateTimeField(
@@ -60,6 +59,12 @@ class Account(models.Model):
         ordering = ["code"]
         verbose_name = "حساب"
         verbose_name_plural = "حساب‌ها"
+
+    def clean(self):
+        if self.parent_id and self.parent_id == self.pk:
+            raise ValidationError(
+                {"parent": "یک حساب نمی‌تواند والد خودش باشد."}
+            )
 
     def __str__(self):
         return f"{self.code} - {self.name}"
