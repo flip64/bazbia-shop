@@ -206,6 +206,103 @@ class OrderItem(models.Model):
 
 
 
+# ==============================
+# مدل  ثبت منبع تامین آیتم‌های سفارش (OrderItem)
+# ==============================
+
+class OrderItemCostAllocation(models.Model):
+    """
+    ثبت منبع تأمین و بهای تمام‌شده بخشی از یک OrderItem.
+
+    یک OrderItem ممکن است:
+    - کامل از انبار داخلی تأمین شود
+    - کامل از تأمین‌کننده تأمین شود
+    - یا بین چند منبع تقسیم شود
+    """
+
+    SOURCE_INTERNAL = "internal"
+    SOURCE_SUPPLIER = "supplier"
+
+    SOURCE_CHOICES = [
+        (
+            SOURCE_INTERNAL,
+            "انبار داخلی",
+        ),
+        (
+            SOURCE_SUPPLIER,
+            "تأمین‌کننده",
+        ),
+    ]
+
+    order_item = models.ForeignKey(
+        OrderItem,
+        on_delete=models.CASCADE,
+        related_name="cost_allocations",
+        verbose_name="آیتم سفارش",
+    )
+
+    source_type = models.CharField(
+        max_length=20,
+        choices=SOURCE_CHOICES,
+        verbose_name="منبع تأمین",
+    )
+
+    quantity = models.PositiveIntegerField(
+        verbose_name="تعداد",
+    )
+
+    unit_cost = models.DecimalField(
+        max_digits=14,
+        decimal_places=0,
+        null=True,
+        blank=True,
+        verbose_name="بهای خرید هر واحد",
+        help_text=(
+            "بهای خرید هر واحد در لحظه ثبت سفارش. "
+            "برای موجودی داخلی تا زمان تکمیل سیستم "
+            "بهای انبار می‌تواند خالی باشد."
+        ),
+    )
+
+    supplier = models.ForeignKey(
+        "suppliers.Supplier",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="order_item_cost_allocations",
+        verbose_name="تأمین‌کننده",
+    )
+
+    supplier_offer = models.ForeignKey(
+        "suppliers.SupplierOffer",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="order_item_cost_allocations",
+        verbose_name="پیشنهاد تأمین‌کننده",
+    )
+
+    created_at = models.DateTimeField(
+        auto_now_add=True,
+    )
+
+    class Meta:
+        verbose_name = "منبع بهای آیتم سفارش"
+        verbose_name_plural = "منابع بهای آیتم‌های سفارش"
+
+    @property
+    def total_cost(self):
+        if self.unit_cost is None:
+            return None
+
+        return self.unit_cost * self.quantity
+
+    def __str__(self):
+        return (
+            f"OrderItem #{self.order_item_id} - "
+            f"{self.get_source_type_display()} - "
+            f"{self.quantity}"
+        )
 
 
 # ==============================

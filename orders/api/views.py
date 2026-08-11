@@ -35,6 +35,7 @@ from orders.models import (
     CartItem,
     Order,
     OrderItem,
+    OrderItemCostAllocation,
     SalesSummary,
 )
 from products.api.pagination import CustomCategoryPagination
@@ -1004,20 +1005,22 @@ class CreateOrderView(
             discount_amount=Decimal("0"),
         )
 
-        order_items = [
-            OrderItem(
-                order=order,
-                variant=data["variant"],
-                quantity=data["quantity"],
-                price=data["price"],
-            )
-            for data in order_items_data
-        ]
+        order_items_map = {}
 
-        OrderItem.objects.bulk_create(
-            order_items
+        for data in order_items_data:
+          order_item = OrderItem.objects.create(
+            order=order,
+            variant=data["variant"],
+            quantity=data["quantity"],
+            price=data["price"],
         )
 
+          order_items_map[
+          data["variant"].id
+           ] = order_item
+        
+        
+        
         # ---------------------------------------------
         # ۱۱. کم‌کردن موجودی
         #
@@ -1055,6 +1058,16 @@ class CreateOrderView(
                     internal_deduction
                 )
 
+                order_item = order_items_map [variant.id]
+
+                OrderItemCostAllocation.objects.create(
+                  order_item=order_item,
+                  source_type=(OrderItemCostAllocation.SOURCE_INTERNAL),
+                  quantity=internal_deduction,
+                  unit_cost=None,
+                    ) 
+
+
             if remaining_quantity <= 0:
                 continue
 
@@ -1091,6 +1104,17 @@ class CreateOrderView(
 
                 if supplier_deduction <= 0:
                     continue
+
+                order_item = order_items_map[variant.id]
+                OrderItemCostAllocation.objects.create(   
+                  order_item=order_item,
+                  source_type=(OrderItemCostAllocation.SOURCE_SUPPLIER),
+                  quantity=supplier_deduction,
+                  unit_cost=offer.purchase_price,
+                  supplier=offer.supplier,
+                  supplier_offer=offer,
+                      )
+
 
                 offer.supplier_stock = (
                     offer_stock
