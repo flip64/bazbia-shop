@@ -194,7 +194,6 @@ class InventoryLotAdmin(admin.ModelAdmin):
 # =========================================================
 # Inventory Movement
 # =========================================================
-
 @admin.register(InventoryMovement)
 class InventoryMovementAdmin(
     admin.ModelAdmin
@@ -204,6 +203,7 @@ class InventoryMovementAdmin(
         "product_variant",
         "type",
         "quantity",
+        "related_order",
         "created_at",
     )
 
@@ -215,12 +215,14 @@ class InventoryMovementAdmin(
     search_fields = (
         "product_variant__sku",
         "product_variant__product__name",
+        "related_order__id",
     )
 
     readonly_fields = (
         "product_variant",
         "type",
         "quantity",
+        "related_order",
         "created_at",
     )
 
@@ -229,19 +231,11 @@ class InventoryMovementAdmin(
         "-id",
     )
 
-    # -----------------------------------------------------
-    # حرکت موجودی فقط توسط Service ساخته شود
-    # -----------------------------------------------------
-
     def has_add_permission(
         self,
         request,
     ):
         return False
-
-    # -----------------------------------------------------
-    # حذف حرکت موجودی ممنوع
-    # -----------------------------------------------------
 
     def has_delete_permission(
         self,
