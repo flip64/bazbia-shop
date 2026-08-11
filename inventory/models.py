@@ -46,3 +46,85 @@ class InventoryMovement(models.Model):
     class Meta:
         verbose_name = "حرکت موجودی"
         verbose_name_plural = "حرکات موجودی"
+
+
+class InventoryLot(models.Model):
+    """
+    یک بچ/لات موجودی داخلی با بهای خرید مشخص.
+
+    هر بار کالایی برای انبار بازبیا خریداری می‌شود،
+    یک InventoryLot جدید ایجاد می‌کنیم.
+    """
+
+    product_variant = models.ForeignKey(
+        "products.ProductVariant",
+        on_delete=models.PROTECT,
+        related_name="inventory_lots",
+        verbose_name="واریانت",
+    )
+
+    supplier = models.ForeignKey(
+        "suppliers.Supplier",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="inventory_lots",
+        verbose_name="تأمین‌کننده",
+    )
+
+    quantity_received = models.PositiveIntegerField(
+        verbose_name="تعداد اولیه",
+    )
+
+    quantity_remaining = models.PositiveIntegerField(
+        verbose_name="تعداد باقی‌مانده",
+    )
+
+    unit_cost = models.DecimalField(
+        max_digits=14,
+        decimal_places=0,
+        verbose_name="بهای خرید هر واحد",
+    )
+
+    received_at = models.DateTimeField(
+        auto_now_add=True,
+        verbose_name="تاریخ ورود",
+    )
+
+    note = models.TextField(
+        blank=True,
+        verbose_name="یادداشت",
+    )
+
+    class Meta:
+        ordering = [
+            "received_at",
+            "id",
+        ]
+
+        verbose_name = "لات موجودی"
+        verbose_name_plural = "لات‌های موجودی"
+
+        indexes = [
+            models.Index(
+                fields=[
+                    "product_variant",
+                    "quantity_remaining",
+                ]
+            )
+        ]
+
+    @property
+    def remaining_value(self):
+        return (
+            self.quantity_remaining
+            * self.unit_cost
+        )
+
+    def __str__(self):
+        return (
+            f"{self.product_variant} | "
+            f"{self.quantity_remaining}/"
+            f"{self.quantity_received} | "
+            f"{self.unit_cost}"
+        )
