@@ -153,6 +153,15 @@ class Command(BaseCommand):
                 "allow_posting": True,
             },
 
+            {
+               "code": "4103",
+               "name": "تخفیفات فروش",
+               "account_type": Account.Type.INCOME,
+               "parent": "4",
+               "allow_posting": True,
+            },
+
+
             # =================================================
             # هزینه‌ها
             # =================================================
