@@ -32,20 +32,20 @@
 								><span class="mtext">تامین کنندگان</span>
 							</a>
 							
-    <ul class="submenu">
+                          <ul class="submenu">
 		
-        {% for supplier in suppliers %}
-            <li>
-                <a href="">
-                    {{ supplier.name }}
-                </a>
-            </li>
-        {% empty %}
-            <li>
-                <a href="#">تأمین‌کننده‌ای وجود ندارد</a>
-            </li>
-        {% endfor %}
-    </ul>
+                              {% for supplier in suppliers %}
+                                <li>
+                                 <a href="">
+                                  {{ supplier.name }}
+                                 </a>
+                                </li>
+                              {% empty %}
+                                <li>
+                                <a href="#">تأمین‌کننده‌ای وجود ندارد</a>
+                                </li>
+                              {% endfor %}
+                        </ul>
 
 
 						</li>
