@@ -27,54 +27,55 @@ class JournalService:
 
     @staticmethod
     def debit_line(
-        *,
-        account,
-        amount,
-        description="",
-    ):
-        """
-        ساخت یک ردیف بدهکار.
-        """
+      *,
+      account,
+      amount,
+      description="",
+      ):
+      amount = Decimal(str(amount)).quantize(
+        Decimal("1")
+      )
 
-        amount = Decimal(str(amount))
+      if amount <= 0:
+        raise ValidationError(
+            "مبلغ ردیف بدهکار باید بزرگ‌تر از صفر باشد."
+        )
 
-        if amount <= 0:
-            raise ValidationError(
-                "مبلغ ردیف بدهکار باید بزرگ‌تر از صفر باشد."
-            )
+      return {
+        "account": account,
+        "debit": amount,
+        "credit": Decimal("0"),
+        "description": description,
+    }
 
-        return {
-            "account": account,
-            "debit": amount,
-            "credit": Decimal("0"),
-            "description": description,
-        }
 
     @staticmethod
     def credit_line(
-        *,
-        account,
-        amount,
-        description="",
-    ):
-        """
-        ساخت یک ردیف بستانکار.
-        """
+     *,
+     account,
+     amount,
+     description="",
+       ):
+     amount = Decimal(str(amount)).quantize(
+        Decimal("1")
+      )
 
-        amount = Decimal(str(amount))
+     if amount <= 0:
+        raise ValidationError(
+            "مبلغ ردیف بستانکار باید بزرگ‌تر از صفر باشد."
+        )
 
-        if amount <= 0:
-            raise ValidationError(
-                "مبلغ ردیف بستانکار باید بزرگ‌تر از صفر باشد."
-            )
-
-        return {
-            "account": account,
-            "debit": Decimal("0"),
-            "credit": amount,
-            "description": description,
-        }
-
+     return {
+        "account": account,
+        "debit": Decimal("0"),
+        "credit": amount,
+        "description": description,
+     }
+    
+    
+    
+    
+    
     @staticmethod
     def get_totals(
         entry: JournalEntry,
