@@ -204,7 +204,6 @@ class InventoryMovementAdmin(
         "product_variant",
         "type",
         "quantity",
-        "order",
         "created_at",
     )
 
@@ -216,14 +215,12 @@ class InventoryMovementAdmin(
     search_fields = (
         "product_variant__sku",
         "product_variant__product__name",
-        "order__id",
     )
 
     readonly_fields = (
         "product_variant",
         "type",
         "quantity",
-        "order",
         "created_at",
     )
 
