@@ -282,6 +282,21 @@ class OrderItemCostAllocation(models.Model):
         verbose_name="پیشنهاد تأمین‌کننده",
     )
 
+    inventory_lot = models.ForeignKey(
+     "inventory.InventoryLot",
+     on_delete=models.SET_NULL,
+     null=True,
+     blank=True,
+     related_name="order_cost_allocations",
+     verbose_name="لات موجودی داخلی",
+   )
+
+
+
+
+
+    
+
     created_at = models.DateTimeField(
         auto_now_add=True,
     )
