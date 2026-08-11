@@ -3,7 +3,7 @@ from django.urls import path
 from analytics.api.views import SiteEventCreateAPIView
 
 
-app_name = "analytics"
+app_name = "api_analytics"
 
 
 urlpatterns = [
