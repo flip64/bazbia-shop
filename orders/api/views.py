@@ -1211,9 +1211,12 @@ class OrderDetailView(
         )
 
 
+
+
 # =========================================================
 # لغو سفارش
 # =========================================================
+
 class CancelOrderView(
     generics.GenericAPIView
 ):
@@ -1226,10 +1229,16 @@ class CancelOrderView(
             .select_for_update()
             .prefetch_related(
                 "items__variant",
+                "items__cost_allocations",
+                "items__cost_allocations__supplier_offer",
             ),
             id=pk,
             user=request.user,
         )
+
+        # -------------------------------------------------
+        # فقط سفارش Pending قابل لغو است
+        # -------------------------------------------------
 
         if order.status != Order.STATUS_PENDING:
             return Response(
@@ -1242,9 +1251,17 @@ class CancelOrderView(
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
+        # -------------------------------------------------
+        # آیتم‌های سفارش
+        # -------------------------------------------------
+
         order_items = list(
             order.items.all()
         )
+
+        # -------------------------------------------------
+        # قفل کردن Variantها
+        # -------------------------------------------------
 
         variant_ids = [
             item.variant_id
@@ -1256,27 +1273,216 @@ class CancelOrderView(
             for variant in (
                 ProductVariant.objects
                 .select_for_update()
-                .filter(id__in=variant_ids)
+                .filter(
+                    id__in=variant_ids
+                )
             )
         }
+
+        # -------------------------------------------------
+        # پیدا کردن SupplierOfferهایی که در سفارش استفاده شده‌اند
+        # -------------------------------------------------
+
+        supplier_offer_ids = set()
+
+        for item in order_items:
+            for allocation in (
+                item.cost_allocations.all()
+            ):
+                if (
+                    allocation.source_type
+                    ==
+                    OrderItemCostAllocation
+                    .SOURCE_SUPPLIER
+                    and
+                    allocation.supplier_offer_id
+                ):
+                    supplier_offer_ids.add(
+                        allocation.supplier_offer_id
+                    )
+
+        # -------------------------------------------------
+        # قفل کردن SupplierOfferها
+        # -------------------------------------------------
+
+        locked_supplier_offers = {
+            offer.id: offer
+            for offer in (
+                SupplierOffer.objects
+                .select_for_update()
+                .filter(
+                    id__in=supplier_offer_ids
+                )
+            )
+        }
+
+        # -------------------------------------------------
+        # برگشت موجودی
+        # -------------------------------------------------
 
         for item in order_items:
             variant = locked_variants.get(
                 item.variant_id
             )
 
-            if variant is None:
-                continue
-
-            variant.stock += item.quantity
-            variant.save(
-                update_fields=["stock"],
+            allocations = list(
+                item.cost_allocations.all()
             )
 
-        order.status = Order.STATUS_CANCELLED
-        order.save(
-            update_fields=["status"],
+            # =============================================
+            # سفارش‌های قدیمی
+            # =============================================
+            #
+            # سفارش‌هایی که قبل از اضافه شدن
+            # OrderItemCostAllocation ثبت شده‌اند.
+            #
+            # چون منبع تأمین تاریخی آن‌ها را نداریم،
+            # رفتار قدیمی حفظ می‌شود.
+            # =============================================
+
+            if not allocations:
+                if variant is None:
+                    continue
+
+                variant.stock = (
+                    int(variant.stock or 0)
+                    + int(item.quantity)
+                )
+
+                variant.save(
+                    update_fields=[
+                        "stock",
+                    ]
+                )
+
+                continue
+
+            # =============================================
+            # سفارش‌های جدید
+            # =============================================
+
+            for allocation in allocations:
+                quantity = int(
+                    allocation.quantity
+                )
+
+                if quantity <= 0:
+                    continue
+
+                # -----------------------------------------
+                # برگشت به انبار داخلی
+                # -----------------------------------------
+
+                if (
+                    allocation.source_type
+                    ==
+                    OrderItemCostAllocation
+                    .SOURCE_INTERNAL
+                ):
+                    if variant is None:
+                        raise ValueError(
+                            (
+                                "واریانت مربوط به "
+                                f"OrderItem #{item.pk} "
+                                "پیدا نشد."
+                            )
+                        )
+
+                    variant.stock = (
+                        int(variant.stock or 0)
+                        + quantity
+                    )
+
+                    variant.save(
+                        update_fields=[
+                            "stock",
+                        ]
+                    )
+
+                # -----------------------------------------
+                # برگشت به تأمین‌کننده
+                # -----------------------------------------
+
+                elif (
+                    allocation.source_type
+                    ==
+                    OrderItemCostAllocation
+                    .SOURCE_SUPPLIER
+                ):
+                    if (
+                        allocation.supplier_offer_id
+                        is None
+                    ):
+                        raise ValueError(
+                            (
+                                "SupplierOffer مربوط به "
+                                f"Allocation #{allocation.pk} "
+                                "مشخص نشده است."
+                            )
+                        )
+
+                    offer = (
+                        locked_supplier_offers
+                        .get(
+                            allocation.supplier_offer_id
+                        )
+                    )
+
+                    if offer is None:
+                        raise ValueError(
+                            (
+                                "SupplierOffer مربوط به "
+                                f"Allocation #{allocation.pk} "
+                                "پیدا نشد."
+                            )
+                        )
+
+                    offer.supplier_stock = (
+                        int(
+                            offer.supplier_stock
+                            or 0
+                        )
+                        + quantity
+                    )
+
+                    offer.is_available = True
+
+                    offer.save(
+                        update_fields=[
+                            "supplier_stock",
+                            "is_available",
+                        ]
+                    )
+
+                # -----------------------------------------
+                # نوع منبع نامعتبر
+                # -----------------------------------------
+
+                else:
+                    raise ValueError(
+                        (
+                            "نوع منبع تأمین نامعتبر برای "
+                            f"Allocation #{allocation.pk}"
+                        )
+                    )
+
+        # -------------------------------------------------
+        # لغو سفارش
+        # -------------------------------------------------
+
+        order.status = (
+            Order.STATUS_CANCELLED
         )
+
+        order.save(
+            update_fields=[
+                "status",
+            ]
+        )
+
+        # -------------------------------------------------
+        # پاسخ
+        # -------------------------------------------------
 
         return Response(
             {
@@ -1285,12 +1491,13 @@ class CancelOrderView(
                 ),
                 "order": OrderSerializer(
                     order,
-                    context={"request": request},
+                    context={
+                        "request": request,
+                    },
                 ).data,
             },
             status=status.HTTP_200_OK,
         )
-
 
 # =========================================================
 # ادغام سبد مهمان با سبد کاربر
