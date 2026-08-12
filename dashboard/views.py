@@ -33,7 +33,7 @@ def dataTable(request, slug=None):
         products = Product.objects.filter(variants__supplier_offers__supplier=supplier
         ).distinct()
    
-
+        print(products[0].base_price)
     context = {
         "page_title": "داشبورد مدیریت",
         "suppliers": suppliers,
