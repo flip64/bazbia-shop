@@ -40,7 +40,7 @@
 										تامین کننده
 									</a>
 									<div class="dropdown-menu dropdown-menu-right">
-										
+
 									       {% for supplier in suppliers %}
 												<a class="dropdown-item" href="#">{{ supplier.name }}</a>
                                            {% empty %}
@@ -67,21 +67,21 @@
 									
 									<tr>
 										<th class="table-plus datatable-nosort">نام محصول </th>
-										<th>قیمت</th>
-										<th>Office</th>
-										<th>Address</th>
+										<th>قیمت خرید </th>
+										<th>قیمت فروش </th>
+										<th>درصد سود </th>
 										<th>Start Date</th>
 										<th>Salart</th>
 									</tr>
 								</thead>
 								<tbody>
 									
-									  {% for product in products %}
+									  {% for offer in product_offers %}
 									    <tr>
-											  <td class="table-plus">	{{ product.name }}</td>
-										      <td></td>
-										      <td>Sagittarius</td>
-										      <td>2829 Trainer Avenue Peoria, IL 61602</td>
+											  <td class="table-plus">	{{ offer.variant.product.name }}</td>
+										      <td>{{offer.purchase_price}}</td>
+										      <td>{{offer.variant.price}}</td>
+										      <td>{{offer.variant.profit_percent}}</td>
 										      <td>29-03-2018</td>
 										      <td>$162,700</td>
 										</tr>

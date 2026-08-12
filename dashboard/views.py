@@ -2,7 +2,7 @@
 from django.shortcuts import render,get_object_or_404
 from django.contrib.auth.decorators import login_required
 from suppliers.models import Supplier
-from products.models import Product
+from suppliers.models import SupplierOffer
 
 @login_required
 def dashboard(request):
@@ -30,16 +30,29 @@ def dataTable(request, slug=None):
             slug=slug,
             is_active=True
         )
-        products = Product.objects.filter(variants__supplier_offers__supplier=supplier
-        ).distinct()
-   
-        print(products[0].base_price)
+                
+
+        product_offers = (SupplierOffer.objects.filter(supplier=supplier)
+                  .select_related("variant", "variant__product"))
+        
+        
+
+
+
     context = {
         "page_title": "داشبورد مدیریت",
         "suppliers": suppliers,
         "supplier": supplier,
-        "products": products,
-    }
+        "product_offers": product_offers,
+    }              
+
+        
+
+        
+        
+        
+        
+
 
     return render(request, "dashboard/pages/datatable.html", context)
 
