@@ -4,6 +4,7 @@ from django.db.models import (
     F,
     Min,
     OuterRef,
+    Prefetch,
 )
 from django.http import (
     HttpResponseBadRequest,
@@ -38,6 +39,33 @@ from products.api.serializers import (
     ProductSerializer,
     SpecialProductSerializer,
 )
+from products.services.variant_stock import (
+    annotate_variant_available_stock,
+)
+
+
+def product_variant_prefetch():
+    """
+    واریانت‌ها را همراه موجودی ترکیبی، ویژگی‌ها و تصاویر
+    با تعداد کوئری ثابت برای Serializer آماده می‌کند.
+    """
+
+    variant_queryset = (
+        ProductVariant.objects
+        .prefetch_related(
+            "attributes__attribute",
+            "images",
+        )
+    )
+
+    return Prefetch(
+        "variants",
+        queryset=(
+            annotate_variant_available_stock(
+                variant_queryset
+            )
+        ),
+    )
 
 
 # =============================
@@ -59,9 +87,13 @@ class ProductFilterMixin:
 
     def apply_filters(self, queryset):
         available_variant_queryset = (
-            ProductVariant.objects.filter(
-                product_id=OuterRef("pk"),
-                stock__gt=0,
+            annotate_variant_available_stock(
+                ProductVariant.objects.filter(
+                    product_id=OuterRef("pk"),
+                )
+            )
+            .filter(
+                available_stock__gt=0,
             )
         )
 
@@ -245,7 +277,7 @@ class ProductListAPIView(
                 variants__isnull=False,
             )
             .prefetch_related(
-                "variants",
+                product_variant_prefetch(),
                 "images",
                 "tags",
             )
@@ -279,8 +311,7 @@ class ProductFullListAPIView(
                 variants__isnull=False,
             )
             .prefetch_related(
-                "variants",
-                "variants__attributes",
+                product_variant_prefetch(),
                 "images",
                 "videos",
                 "tags",
@@ -300,8 +331,18 @@ class ProductFullListAPIView(
 class ProductDetailAPIView(
     generics.RetrieveAPIView,
 ):
-    queryset = Product.objects.filter(
-        is_active=True,
+    queryset = (
+        Product.objects
+        .filter(
+            is_active=True,
+        )
+        .prefetch_related(
+            product_variant_prefetch(),
+            "images",
+            "videos",
+            "tags",
+            "specifications",
+        )
     )
     serializer_class = (
         ProductDetailSerializer
@@ -401,7 +442,7 @@ class ProductListCategoryAPIView(
                 variants__isnull=False,
             )
             .prefetch_related(
-                "variants",
+                product_variant_prefetch(),
                 "images",
                 "tags",
             )
