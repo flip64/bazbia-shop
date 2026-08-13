@@ -6,6 +6,7 @@ from products.models import (
     Product,
     ProductImage,
     ProductVariant,
+    ProductVariantImage,
     Category,
     ProductSpecification,
     SpecialProduct,
@@ -121,6 +122,17 @@ class ProductImageSerializer(serializers.ModelSerializer):
         ]
 
 
+class ProductVariantImageSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ProductVariantImage
+        fields = [
+            "image",
+            "source_url",
+            "alt_text",
+            "is_main",
+        ]
+
+
 class AttributeValueSerializer(serializers.ModelSerializer):
     attribute_name = serializers.CharField(
         source="attribute.name",
@@ -143,6 +155,13 @@ class ProductVariantSerializer(serializers.ModelSerializer):
     )
 
     stock = serializers.SerializerMethodField()
+    in_stock = serializers.SerializerMethodField()
+    final_price = serializers.SerializerMethodField()
+    label = serializers.SerializerMethodField()
+    images = ProductVariantImageSerializer(
+        many=True,
+        read_only=True,
+    )
 
     class Meta:
         model = ProductVariant
@@ -151,11 +170,31 @@ class ProductVariantSerializer(serializers.ModelSerializer):
             "sku",
             "price",
             "discount_price",
+            "final_price",
             "stock",
+            "in_stock",
             "low_stock_threshold",
             "expiration_date",
+            "label",
             "attributes",
+            "images",
         ]
+
+    @staticmethod
+    def _available_stock(obj):
+        cached_stock = getattr(
+            obj,
+            "_serializer_available_stock",
+            None,
+        )
+
+        if cached_stock is None:
+            cached_stock = int(
+                calculate_variant_available_stock(obj)
+            )
+            obj._serializer_available_stock = cached_stock
+
+        return cached_stock
 
     def get_stock(self, obj):
         """
@@ -163,7 +202,30 @@ class ProductVariantSerializer(serializers.ModelSerializer):
         برای فرانت‌اند ارسال می‌کند.
         """
 
-        return calculate_variant_available_stock(obj)
+        return self._available_stock(obj)
+
+    def get_in_stock(self, obj):
+        return self._available_stock(obj) > 0
+
+    def get_final_price(self, obj):
+        if (
+            obj.discount_price is not None
+            and obj.discount_price > 0
+            and obj.discount_price < obj.price
+        ):
+            return int(obj.discount_price)
+
+        return int(obj.price)
+
+    def get_label(self, obj):
+        attributes = obj.attributes.all()
+
+        label = " / ".join(
+            f"{attribute.attribute.name}: {attribute.value}"
+            for attribute in attributes
+        )
+
+        return label or obj.sku
 
 class ProductSerializer(serializers.ModelSerializer):
     images = ProductImageSerializer(
@@ -325,23 +387,63 @@ class ProductListSerializer(serializers.ModelSerializer):
     def get_category(self, obj):
         return obj.category.name if obj.category else None
 
-    def get_price(self, obj):
-        if hasattr(obj, "min_price") and obj.min_price is not None:
-            return int(obj.min_price)
+    @staticmethod
+    def _variant_final_price(variant):
+        if (
+            variant.discount_price is not None
+            and variant.discount_price > 0
+            and variant.discount_price < variant.price
+        ):
+            return variant.discount_price
 
-        variant = obj.variants.order_by("price").first()
+        return variant.price
+
+    def _get_display_variant(self, obj):
+        cached_variant = getattr(
+            obj,
+            "_serializer_display_variant",
+            None,
+        )
+
+        if cached_variant is not None:
+            return cached_variant
+
+        variants = list(obj.variants.all())
+
+        available_variants = [
+            variant
+            for variant in variants
+            if calculate_variant_available_stock(variant) > 0
+        ]
+
+        candidates = available_variants or variants
+
+        display_variant = min(
+            candidates,
+            key=lambda variant: (
+                self._variant_final_price(variant),
+                variant.id,
+            ),
+            default=None,
+        )
+
+        obj._serializer_display_variant = display_variant
+        return display_variant
+
+    def get_price(self, obj):
+        variant = self._get_display_variant(obj)
 
         return int(variant.price) if variant else None
 
     def get_discount_price(self, obj):
-        variant = (
-            obj.variants
-            .exclude(discount_price__isnull=True)
-            .order_by("discount_price")
-            .first()
-        )
+        variant = self._get_display_variant(obj)
 
-        if variant and variant.discount_price is not None:
+        if (
+            variant
+            and variant.discount_price is not None
+            and variant.discount_price > 0
+            and variant.discount_price < variant.price
+        ):
             return int(variant.discount_price)
 
         return None
