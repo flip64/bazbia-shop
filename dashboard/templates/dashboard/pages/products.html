@@ -1,0 +1,283 @@
+{% extends "dashboard/base.html" %}
+
+{% block title %}
+    محصولات تأمین‌کننده
+{% endblock %}
+
+
+{% block page_heading %}
+    مدیریت محصولات
+{% endblock %}
+
+
+{% block content %}
+
+<div class="container-fluid px-0">
+
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4">
+
+        <div>
+            <h1 class="h4 mb-1">
+                محصولات تأمین‌کننده
+            </h1>
+
+            <p class="text-secondary mb-0">
+                مشاهده قیمت خرید، قیمت فروش، سود و موجودی محصولات
+            </p>
+        </div>
+
+        <div class="dropdown">
+            <button
+                class="btn btn-primary dropdown-toggle"
+                type="button"
+                data-bs-toggle="dropdown"
+                aria-expanded="false"
+            >
+                {% if supplier %}
+                    {{ supplier.name }}
+                {% else %}
+                    انتخاب تأمین‌کننده
+                {% endif %}
+            </button>
+
+            <ul class="dropdown-menu dropdown-menu-end text-end">
+
+                {% for supplier_item in suppliers %}
+                    <li>
+                        <a
+                            class="dropdown-item"
+                            href="{% url 'dashboard:datatable' supplier_item.slug %}"
+                        >
+                            {{ supplier_item.name }}
+                        </a>
+                    </li>
+                {% empty %}
+                    <li>
+                        <span class="dropdown-item-text text-secondary">
+                            تأمین‌کننده‌ای وجود ندارد
+                        </span>
+                    </li>
+                {% endfor %}
+
+            </ul>
+        </div>
+
+    </div>
+
+
+    <div class="dashboard-card">
+
+        <div class="p-3 p-md-4 border-bottom">
+
+            <form method="get" class="row g-3 align-items-end">
+
+                <div class="col-12 col-md-6 col-lg-4">
+                    <label for="searchInput" class="form-label">
+                        جستجوی محصول
+                    </label>
+
+                    <input
+                        type="search"
+                        id="searchInput"
+                        name="q"
+                        value="{{ request.GET.q }}"
+                        class="form-control"
+                        placeholder="نام محصول را وارد کنید"
+                    >
+                </div>
+
+                <div class="col-12 col-md-auto">
+                    <button type="submit" class="btn btn-primary w-100">
+                        جستجو
+                    </button>
+                </div>
+
+                {% if request.GET.q %}
+                    <div class="col-12 col-md-auto">
+                        <a
+                            href="{% url 'dashboard:datatable' supplier.slug %}"
+                            class="btn btn-outline-secondary w-100"
+                        >
+                            حذف جستجو
+                        </a>
+                    </div>
+                {% endif %}
+
+            </form>
+
+        </div>
+
+
+        <div class="table-responsive">
+
+            <table class="table table-hover align-middle mb-0 products-table">
+
+                <thead>
+                    <tr>
+                        <th scope="col">
+                            نام محصول
+                        </th>
+
+                        <th scope="col">
+                            قیمت خرید
+                        </th>
+
+                        <th scope="col">
+                            قیمت فروش
+                        </th>
+
+                        <th scope="col">
+                            درصد سود
+                        </th>
+
+                        <th scope="col">
+                            موجودی تأمین‌کننده
+                        </th>
+
+                        <th scope="col">
+                            وضعیت
+                        </th>
+                    </tr>
+                </thead>
+
+                <tbody>
+
+                    {% for offer in product_offers %}
+
+                        <tr>
+
+                            <td>
+                                <div class="product-name">
+                                    {{ offer.variant.product.name }}
+                                </div>
+
+                                {% if offer.variant.sku %}
+                                    <div class="product-meta">
+                                        SKU:
+                                        {{ offer.variant.sku }}
+                                    </div>
+                                {% endif %}
+                            </td>
+
+                            <td>
+                                {% if offer.purchase_price %}
+                                    {{ offer.purchase_price }}
+                                    <span class="currency-label">ریال</span>
+                                {% else %}
+                                    <span class="text-secondary">ثبت نشده</span>
+                                {% endif %}
+                            </td>
+
+                            <td>
+                                {% if offer.variant.price %}
+                                    {{ offer.variant.price }}
+                                    <span class="currency-label">ریال</span>
+                                {% else %}
+                                    <span class="text-secondary">ثبت نشده</span>
+                                {% endif %}
+                            </td>
+
+                            <td>
+                                {% if offer.variant.profit_percent is not None %}
+                                    <span class="profit-badge">
+                                        {{ offer.variant.profit_percent }}٪
+                                    </span>
+                                {% else %}
+                                    <span class="text-secondary">—</span>
+                                {% endif %}
+                            </td>
+
+                            <td>
+                                {{ offer.supplier_stock|default:0 }}
+                            </td>
+
+                            <td>
+                                {% if offer.supplier_stock > 0 %}
+                                    <span class="status-badge status-available">
+                                        موجود
+                                    </span>
+                                {% else %}
+                                    <span class="status-badge status-unavailable">
+                                        ناموجود
+                                    </span>
+                                {% endif %}
+                            </td>
+
+                        </tr>
+
+                    {% empty %}
+
+                        <tr>
+                            <td colspan="6">
+                                <div class="empty-state">
+                                    <h2 class="h5">
+                                        محصولی پیدا نشد
+                                    </h2>
+
+                                    <p class="mb-0 text-secondary">
+                                        برای این تأمین‌کننده هنوز پیشنهادی ثبت نشده است.
+                                    </p>
+                                </div>
+                            </td>
+                        </tr>
+
+                    {% endfor %}
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+
+        {% if page_obj.has_other_pages %}
+
+            <div class="p-3 border-top">
+
+                <nav aria-label="صفحه‌بندی محصولات">
+
+                    <ul class="pagination justify-content-center mb-0">
+
+                        {% if page_obj.has_previous %}
+                            <li class="page-item">
+                                <a
+                                    class="page-link"
+                                    href="?page={{ page_obj.previous_page_number }}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}"
+                                >
+                                    قبلی
+                                </a>
+                            </li>
+                        {% endif %}
+
+                        <li class="page-item active">
+                            <span class="page-link">
+                                {{ page_obj.number }}
+                                از
+                                {{ page_obj.paginator.num_pages }}
+                            </span>
+                        </li>
+
+                        {% if page_obj.has_next %}
+                            <li class="page-item">
+                                <a
+                                    class="page-link"
+                                    href="?page={{ page_obj.next_page_number }}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}"
+                                >
+                                    بعدی
+                                </a>
+                            </li>
+                        {% endif %}
+
+                    </ul>
+
+                </nav>
+
+            </div>
+
+        {% endif %}
+
+    </div>
+
+</div>
+
+{% endblock %}

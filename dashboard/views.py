@@ -17,11 +17,10 @@ def dashboard(request):
     return render(request, "dashboard/index.html", context)
 
 
-
-def dataTable(request, slug=None):
+@login_required
+def supplier_datatable(request, slug=None):
     suppliers = Supplier.objects.filter(is_active=True)
 
-    products = None
     supplier = None
 
     if slug:
@@ -54,6 +53,6 @@ def dataTable(request, slug=None):
         
 
 
-    return render(request, "dashboard/pages/datatable.html", context)
+    return render(request, "dashboard/pages/products.html", context)
 
 

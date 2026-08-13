@@ -1,0 +1,24 @@
+<header class="dashboard-header">
+
+    <button
+        class="sidebar-toggle"
+        id="sidebarToggle"
+        type="button"
+        aria-label="باز و بسته کردن منو"
+    >
+        ☰
+    </button>
+
+    <div class="header-title">
+        {% block page_heading %}
+            مدیریت محصولات
+        {% endblock %}
+    </div>
+
+    <div class="header-user">
+        {% if request.user.is_authenticated %}
+            <span>{{ request.user.get_username }}</span>
+        {% endif %}
+    </div>
+
+</header>

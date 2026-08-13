@@ -1,0 +1,37 @@
+<aside class="dashboard-sidebar" id="dashboardSidebar">
+
+    <div class="sidebar-brand">
+        <a href="{% url 'dashboard:dashboard' %}">
+            بازبیا
+        </a>
+    </div>
+
+    <nav class="sidebar-nav">
+
+        <a
+            class="sidebar-link"
+            href="{% url 'dashboard:dashboard' %}"
+        >
+            داشبورد
+        </a>
+
+        <div class="sidebar-title">
+            تأمین‌کنندگان
+        </div>
+
+        {% for supplier in suppliers %}
+            <a
+                class="sidebar-link"
+                href="{% url 'dashboard:datatable' supplier.slug %}"
+            >
+                {{ supplier.name }}
+            </a>
+        {% empty %}
+            <span class="sidebar-empty">
+                تأمین‌کننده‌ای وجود ندارد
+            </span>
+        {% endfor %}
+
+    </nav>
+
+</aside>

@@ -1,12 +1,12 @@
 from django.urls import path
-from dashboard.views  import  dashboard,dataTable
+from dashboard.views  import  dashboard,supplier_datatable  
 app_name = "dashboard"
 
 urlpatterns = [
     
     path('', dashboard , name='dashboard'),
-    path('suppliers/', dashboard , name='supplers'),
-    path('datatables/<slug:slug>/',dataTable, name='datatable'),
+    path('suppliers/', dashboard , name='suppliers'),
+    path('datatables/<slug:slug>/',supplier_datatable, name='datatable'),
 
 
 
