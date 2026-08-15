@@ -1,0 +1,16 @@
+{% extends "admin/change_form.html" %}
+
+{% block submit_buttons_bottom %}
+    {{ block.super }}
+
+    {% if original and original.status == "draft" %}
+        <div class="submit-row">
+            <input
+                type="submit"
+                name="_confirm_purchase"
+                value="تأیید و ورود به انبار"
+                class="default"
+            >
+        </div>
+    {% endif %}
+{% endblock %}
