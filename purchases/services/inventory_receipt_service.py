@@ -1,144 +1,318 @@
-from django.db import models
+\# inventory/services/inventory_receipt_service.py
 
-# ==============================
-# 📦 مدل حرکات موجودی انبار (Inventory Movement)
-# ==============================
-class InventoryMovement(models.Model):
-    MOVEMENT_TYPE_CHOICES = [
-        ('purchase', 'ورود کالا از تامین‌کننده'),
-        ('reserve', 'رزرو موقت برای سفارش'),
-        ('sale', 'فروش قطعی و خروج کالا'),
-        ('cancel', 'لغو سفارش و برگشت رزرو'),
-        ('return', 'مرجوعی از سمت مشتری'),
-        ('adjustment', 'اصلاح دستی موجودی توسط مدیر انبار'),
-    ]
+from decimal import Decimal, InvalidOperation
 
-    # ارتباط با محصول دقیق (Variant)
-    product_variant = models.ForeignKey(
-        'products.ProductVariant', on_delete=models.CASCADE,
-        related_name='inventory_movements'
-    )
+from django.core.exceptions import ValidationError
+from django.db import transaction
 
-    # نوع حرکت انبار (ورود، رزرو، فروش و ...)
-    type = models.CharField(
-        max_length=20,
-        choices=MOVEMENT_TYPE_CHOICES
-    )
-
-    # تعداد تغییر (ممکن است مثبت یا منفی)
-    quantity = models.IntegerField(
-        help_text='تعداد مثبت یا منفی تغییر یافته در موجودی'
-    )
-
-    # در صورت وجود، این حرکت به سفارش خاصی مربوط می‌شود
-    related_order = models.ForeignKey(
-        'orders.Order', on_delete=models.SET_NULL,
-        null=True, blank=True,
-        related_name='inventory_movements'
-    )
-
-    # زمان ثبت این حرکت
-    created_at = models.DateTimeField(auto_now_add=True)
-
-    def __str__(self):
-        return f"{self.product_variant} - {self.type} ({self.quantity})"
-
-    class Meta:
-        verbose_name = "حرکت موجودی"
-        verbose_name_plural = "حرکات موجودی"
+from inventory.models import (
+    InventoryLot,
+    InventoryMovement,
+)
+from products.models import ProductVariant
 
 
-class InventoryLot(models.Model):
+class InventoryReceiptService:
     """
-    یک بچ/لات موجودی داخلی با بهای خرید مشخص.
+    سرویس ثبت ورود واقعی کالا به انبار داخلی بازبیا.
 
-    هر بار کالایی برای انبار بازبیا خریداری می‌شود،
-    یک InventoryLot جدید ایجاد می‌کنیم.
+    هر بار که یک خرید برای انبار تأیید می‌شود:
+
+    1. یک InventoryLot ساخته می‌شود.
+    2. موجودی داخلی ProductVariant افزایش پیدا می‌کند.
+    3. یک InventoryMovement از نوع purchase ثبت می‌شود.
+
+    purchase_item اختیاری است تا موجودی‌های اولیه
+    یا اصلاحات دستی هم در آینده قابل ثبت باشند.
     """
 
-    product_variant = models.ForeignKey(
-        "products.ProductVariant",
-        on_delete=models.PROTECT,
-        related_name="inventory_lots",
-        verbose_name="واریانت",
-    )
+    # =====================================================
+    # نرمال‌سازی تعداد
+    # =====================================================
 
-    supplier = models.ForeignKey(
-        "suppliers.Supplier",
-        on_delete=models.SET_NULL,
-        null=True,
-        blank=True,
-        related_name="inventory_lots",
-        verbose_name="تأمین‌کننده",
-    )
+    @staticmethod
+    def _normalize_quantity(
+        quantity,
+    ) -> int:
+        try:
+            quantity = int(quantity)
 
-    purchase_item = models.OneToOneField(
-        "purchases.PurchaseItem",
-        on_delete=models.PROTECT,
-        null=True,
-        blank=True,
-        related_name="inventory_lot",
-        verbose_name="ردیف خرید",
-        help_text=(
-            "ردیف فاکتور خریدی که این لات از آن ایجاد شده است. "
-            "برای موجودی‌های اولیه و اصلاحات می‌تواند خالی باشد."
-        ),
-    )
-
-    quantity_received = models.PositiveIntegerField(
-        verbose_name="تعداد اولیه",
-    )
-
-    quantity_remaining = models.PositiveIntegerField(
-        verbose_name="تعداد باقی‌مانده",
-    )
-
-    unit_cost = models.DecimalField(
-        max_digits=14,
-        decimal_places=0,
-        verbose_name="بهای خرید هر واحد",
-    )
-
-    received_at = models.DateTimeField(
-        auto_now_add=True,
-        verbose_name="تاریخ ورود",
-    )
-
-    note = models.TextField(
-        blank=True,
-        verbose_name="یادداشت",
-    )
-
-    class Meta:
-        ordering = [
-            "received_at",
-            "id",
-        ]
-
-        verbose_name = "لات موجودی"
-        verbose_name_plural = "لات‌های موجودی"
-
-        indexes = [
-            models.Index(
-                fields=[
-                    "product_variant",
-                    "quantity_remaining",
-                ]
+        except (
+            TypeError,
+            ValueError,
+        ):
+            raise ValidationError(
+                "تعداد ورودی معتبر نیست."
             )
-        ]
 
-    @property
-    def remaining_value(self):
-        return (
-            self.quantity_remaining
-            * self.unit_cost
+        if quantity <= 0:
+            raise ValidationError(
+                (
+                    "تعداد ورودی باید "
+                    "بزرگ‌تر از صفر باشد."
+                )
+            )
+
+        return quantity
+
+    # =====================================================
+    # نرمال‌سازی قیمت خرید
+    # =====================================================
+
+    @staticmethod
+    def _normalize_unit_cost(
+        unit_cost,
+    ) -> Decimal:
+        try:
+            unit_cost = Decimal(
+                str(unit_cost)
+            ).quantize(
+                Decimal("1")
+            )
+
+        except (
+            InvalidOperation,
+            TypeError,
+            ValueError,
+        ):
+            raise ValidationError(
+                "قیمت خرید معتبر نیست."
+            )
+
+        if unit_cost <= 0:
+            raise ValidationError(
+                (
+                    "قیمت خرید باید "
+                    "بزرگ‌تر از صفر باشد."
+                )
+            )
+
+        return unit_cost
+
+    # =====================================================
+    # ثبت ورود کالا
+    # =====================================================
+
+    @classmethod
+    @transaction.atomic
+    def receive(
+        cls,
+        *,
+        variant,
+        quantity,
+        unit_cost,
+        supplier=None,
+        purchase_item=None,
+        note="",
+    ) -> InventoryLot:
+        """
+        ثبت ورود کالا به انبار.
+
+        Parameters
+        ----------
+        variant:
+            ProductVariant موردنظر.
+
+        quantity:
+            تعداد کالای ورودی.
+
+        unit_cost:
+            بهای خرید هر واحد.
+
+        supplier:
+            تأمین‌کننده خرید.
+
+        purchase_item:
+            ردیف PurchaseItem که این Lot
+            از آن ساخته شده است.
+
+        note:
+            توضیح اختیاری.
+
+        Returns
+        -------
+        InventoryLot
+            لات ساخته‌شده.
+        """
+
+        # -------------------------------------------------
+        # اعتبارسنجی ورودی‌ها
+        # -------------------------------------------------
+
+        quantity = (
+            cls._normalize_quantity(
+                quantity
+            )
         )
 
-    def __str__(self):
-        return (
-            f"{self.product_variant} | "
-            f"{self.quantity_remaining}/"
-            f"{self.quantity_received} | "
-            f"{self.unit_cost}"
+        unit_cost = (
+            cls._normalize_unit_cost(
+                unit_cost
+            )
         )
 
+        if variant is None:
+            raise ValidationError(
+                "واریانت مشخص نشده است."
+            )
+
+        # -------------------------------------------------
+        # قفل کردن Variant
+        # -------------------------------------------------
+
+        try:
+            variant = (
+                ProductVariant.objects
+                .select_for_update()
+                .get(
+                    pk=variant.pk
+                )
+            )
+
+        except ProductVariant.DoesNotExist:
+            raise ValidationError(
+                "واریانت موردنظر پیدا نشد."
+            )
+
+        # -------------------------------------------------
+        # جلوگیری از ساخت دوباره Lot برای PurchaseItem
+        # -------------------------------------------------
+
+        if purchase_item is not None:
+            existing_lot = (
+                InventoryLot.objects
+                .select_for_update()
+                .filter(
+                    purchase_item=(
+                        purchase_item
+                    )
+                )
+                .first()
+            )
+
+            if existing_lot is not None:
+                raise ValidationError(
+                    (
+                        "برای این ردیف خرید "
+                        "قبلاً یک لات موجودی "
+                        "ایجاد شده است. "
+                        f"Lot #{existing_lot.pk}"
+                    )
+                )
+
+            # -------------------------------------------------
+            # کنترل تطابق واریانت PurchaseItem
+            # -------------------------------------------------
+
+            if (
+                purchase_item.variant_id
+                != variant.pk
+            ):
+                raise ValidationError(
+                    (
+                        "واریانت PurchaseItem "
+                        "با واریانت ورودی "
+                        "انبار یکسان نیست."
+                    )
+                )
+
+            # -------------------------------------------------
+            # کنترل تطابق تعداد
+            # -------------------------------------------------
+
+            if (
+                int(purchase_item.quantity)
+                != quantity
+            ):
+                raise ValidationError(
+                    (
+                        "تعداد ورود انبار با "
+                        "تعداد PurchaseItem "
+                        "یکسان نیست."
+                    )
+                )
+
+            # -------------------------------------------------
+            # کنترل تطابق قیمت خرید
+            # -------------------------------------------------
+
+            purchase_item_cost = (
+                cls._normalize_unit_cost(
+                    purchase_item.unit_cost
+                )
+            )
+
+            if (
+                purchase_item_cost
+                != unit_cost
+            ):
+                raise ValidationError(
+                    (
+                        "قیمت خرید ورود انبار "
+                        "با قیمت PurchaseItem "
+                        "یکسان نیست."
+                    )
+                )
+
+        # -------------------------------------------------
+        # ساخت InventoryLot
+        # -------------------------------------------------
+
+        lot = (
+            InventoryLot.objects.create(
+                product_variant=variant,
+                supplier=supplier,
+                purchase_item=(
+                    purchase_item
+                ),
+                quantity_received=(
+                    quantity
+                ),
+                quantity_remaining=(
+                    quantity
+                ),
+                unit_cost=unit_cost,
+                note=str(
+                    note or ""
+                ).strip(),
+            )
+        )
+
+        # -------------------------------------------------
+        # افزایش موجودی داخلی Variant
+        # -------------------------------------------------
+
+        current_stock = max(
+            int(
+                variant.stock
+                or 0
+            ),
+            0,
+        )
+
+        variant.stock = (
+            current_stock
+            + quantity
+        )
+
+        variant.save(
+            update_fields=[
+                "stock",
+            ]
+        )
+
+        # -------------------------------------------------
+        # ثبت حرکت موجودی
+        # -------------------------------------------------
+
+        InventoryMovement.objects.create(
+            product_variant=variant,
+            type=(
+                InventoryMovement
+                .TYPE_PURCHASE
+            ),
+            quantity=quantity,
+            related_order=None,
+        )
+
+        return lot
