@@ -92,7 +92,6 @@ class Purchase(models.Model):
         ]
 
         verbose_name = "خرید"
-
         verbose_name_plural = "خریدها"
 
     def __str__(self):
@@ -103,6 +102,10 @@ class Purchase(models.Model):
 
     @property
     def total_amount(self) -> Decimal:
+        """
+        محاسبه جمع مبلغ تمام ردیف‌های خرید.
+        """
+
         total = Decimal("0")
 
         for item in self.items.all():
@@ -154,7 +157,6 @@ class PurchaseItem(models.Model):
         ]
 
         verbose_name = "آیتم خرید"
-
         verbose_name_plural = "آیتم‌های خرید"
 
     def __str__(self):
@@ -165,36 +167,45 @@ class PurchaseItem(models.Model):
 
     @property
     def total_amount(self) -> Decimal:
+        """
+        محاسبه جمع مبلغ این ردیف خرید.
+        """
+
         return (
             Decimal(self.quantity)
             * Decimal(str(self.unit_cost))
         )
 
     def clean(self):
+        """
+        اعتبارسنجی تعداد و قیمت خرید.
+
+        بررسی None برای سازگاری با ردیف‌های خالی
+        فرم Inline پنل مدیریت ضروری است.
+        """
+
         super().clean()
 
         if (
-    self.quantity is not None
-    and self.quantity <= 0
-)::
+            self.quantity is not None
+            and self.quantity <= 0
+        ):
             raise ValidationError(
                 {
                     "quantity": (
-                        "تعداد باید بزرگ‌تر "
-                        "از صفر باشد."
+                        "تعداد باید بزرگ‌تر از صفر باشد."
                     ),
                 }
             )
 
         if (
-    self.unit_cost is not None
-    and self.unit_cost <= 0
-)::
+            self.unit_cost is not None
+            and self.unit_cost <= 0
+        ):
             raise ValidationError(
                 {
                     "unit_cost": (
-                        "قیمت خرید باید "
-                        "بزرگ‌تر از صفر باشد."
+                        "قیمت خرید باید بزرگ‌تر از صفر باشد."
                     ),
                 }
             )
