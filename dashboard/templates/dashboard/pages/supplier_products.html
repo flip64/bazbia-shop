@@ -219,17 +219,19 @@
                         <tr>
 
                             <td>
-                                <div class="product-name">
-                                    {{ offer.variant.product.name }}
-                                </div>
+                             <div class="product-name">
+                              <a href="{% url 'dashboard:product_detail' offer.variant.product.pk %}"
+                                class="text-decoration-none fw-semibold"  >
+                                {{ offer.variant.product.name }} 
+                                   </a>
+                              </div>
 
-                                {% if offer.variant.sku %}
-                                    <div class="product-meta">
-                                        SKU: {{ offer.variant.sku }}
-                                    </div>
+                               {% if offer.variant.sku %}
+                                <div class="product-meta">
+                                  SKU: {{ offer.variant.sku }}
+                                 </div>
                                 {% endif %}
                             </td>
-
                             <td>
                                 {% if offer.purchase_price is not None %}
                                     {{ offer.purchase_price }}
