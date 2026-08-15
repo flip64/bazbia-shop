@@ -1,4 +1,4 @@
-\# inventory/services/inventory_receipt_service.py
+# inventory/services/inventory_receipt_service.py
 
 from decimal import Decimal, InvalidOperation
 
