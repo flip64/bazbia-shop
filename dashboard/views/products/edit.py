@@ -45,3 +45,49 @@ def product_info_edit(request, pk):
         "dashboard/pages/product_edit/product_info_edit.html",
         context,
     )
+
+
+
+@login_required
+def product_images_edit(request, pk):
+    product = get_object_or_404(Product, pk=pk)
+
+    messages.info(
+        request,
+        "بخش مدیریت تصاویر در مرحله بعد تکمیل می‌شود.",
+    )
+
+    return redirect(
+        "dashboard:product_detail",
+        pk=product.pk,
+    )
+
+
+@login_required
+def product_specifications_edit(request, pk):
+    product = get_object_or_404(Product, pk=pk)
+
+    messages.info(
+        request,
+        "بخش ویرایش مشخصات در مرحله بعد تکمیل می‌شود.",
+    )
+
+    return redirect(
+        "dashboard:product_detail",
+        pk=product.pk,
+    )
+
+
+@login_required
+def product_tags_edit(request, pk):
+    product = get_object_or_404(Product, pk=pk)
+
+    messages.info(
+        request,
+        "بخش مدیریت تگ‌ها در مرحله بعد تکمیل می‌شود.",
+    )
+
+    return redirect(
+        "dashboard:product_detail",
+        pk=product.pk,
+    )

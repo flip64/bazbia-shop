@@ -50,12 +50,7 @@ urlpatterns = [
         product_detail,
         name="product_detail",
     ),
-    path(
-        "products/<int:pk>/edit/",
-        product_edit,
-        name="product_edit",
-    ),
-    path(
+   path(
         "suppliers/",
         supplier_list,
         name="supplier_list",
