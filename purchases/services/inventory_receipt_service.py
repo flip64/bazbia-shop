@@ -105,6 +105,17 @@ class InventoryReceiptService:
         purchase_item=None,
         note="",
     ) -> InventoryLot:
+      
+      
+   \   
+      
+      
+      
+      
+      
+      
+      
+      
         """
         ثبت ورود کالا به انبار.
 
