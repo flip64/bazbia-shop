@@ -173,7 +173,10 @@ class PurchaseItem(models.Model):
     def clean(self):
         super().clean()
 
-        if self.quantity <= 0:
+        if (
+    self.quantity is not None
+    and self.quantity <= 0
+)::
             raise ValidationError(
                 {
                     "quantity": (
@@ -183,7 +186,10 @@ class PurchaseItem(models.Model):
                 }
             )
 
-        if self.unit_cost <= 0:
+        if (
+    self.unit_cost is not None
+    and self.unit_cost <= 0
+)::
             raise ValidationError(
                 {
                     "unit_cost": (
