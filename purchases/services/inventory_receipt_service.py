@@ -107,7 +107,7 @@ class InventoryReceiptService:
     ) -> InventoryLot:
       
       
-   \   
+      
       
       
       
