@@ -90,6 +90,7 @@ INSTALLED_APPS = [
     "contact",
     "analytics",
     "purchases",
+    "scrap_abdisite",
 
 ]
 MIDDLEWARE = [
