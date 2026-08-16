@@ -27,7 +27,6 @@ urlpatterns = [
     path('', include('core.urls', namespace='root')),
     path('admin/', admin.site.urls),
     path('products/', include('products.urls', namespace='products')),
-    path('scrap_abdisite/', include('scrap_abdisite.urls', namespace='scrap_abdisite')),
     path('schema/', include(('schema_viewer.urls', 'schema_page'), namespace='schema_page')),
     path('accounts/', include(('core.urls', 'core'), namespace='core')),# آدرس‌های مربوط به login/signup
     path('orders/', include(('orders.urls', 'orders'), namespace='orders')),# آدرس‌های مربوط به orders
@@ -43,7 +42,6 @@ urlpatterns = [
     path('api/products/', include('products.api.urls')),
     path('api/orders/', include(('orders.api.urls'),namespace='orders_api')), 
     path('api/customers/', include('customers.api.urls')),
-    path('api/scrap_abdisite/',include('scrap_abdisite.api.urls')),
     path('api/bazbia_packing/',include('bazbia_packing.api.urls')),
     path('api/promotions/', include('promotions.api.urls')),
     path('api/payments/',include('payments.api.urls')),
