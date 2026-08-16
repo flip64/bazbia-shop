@@ -2,7 +2,6 @@
 
 from suppliers.models import SupplierOffer
 
-
 def update_supplier_offer(
     *,
     offer: SupplierOffer,

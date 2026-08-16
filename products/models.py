@@ -75,7 +75,6 @@ class Product(models.Model):
     tags = models.ManyToManyField(Tag, blank=True, related_name='products', help_text="تگ‌های مرتبط با محصول")
 
     is_active = models.BooleanField(default=True, help_text="آیا محصول فعال و قابل فروش است")
-    quantity = models.IntegerField(default=0, help_text="موجودی کلی محصول")
 
     created_at = models.DateTimeField(auto_now_add=True, help_text="تاریخ ایجاد محصول")
     updated_at = models.DateTimeField(auto_now=True, help_text="تاریخ آخرین بروزرسانی محصول")
@@ -175,14 +174,7 @@ class ProductVariant(models.Model):
         except:
             return self.product.name
 
-    @property
-    def calculated_price(self):
-        """محاسبه قیمت فروش بر اساس درصد سود و قیمت خرید، با رند کردن به نزدیک‌ترین 100 تومان"""
-        if self.purchase_price:
-            final_price = self.purchase_price * (Decimal(1) + self.profit_percent / Decimal(100))
-            return final_price.quantize(Decimal('100'), rounding=ROUND_HALF_UP)
-        return None
-
+  
 
 # ==============================
 # مدل تصاویر محصول (ProductImage)

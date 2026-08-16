@@ -32,7 +32,6 @@ def create_product(product_data):
         slug=create_slug(product_data.name),
         description=product_data.description,
         base_price=product_data.price,
-        quantity=product_data.quantity,
         category=product_data.category,
         is_active = product_data.is_active
     )
