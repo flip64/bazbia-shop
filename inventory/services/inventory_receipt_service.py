@@ -74,6 +74,7 @@ class InventoryReceiptService:
         quantity,
         unit_cost,
         supplier=None,
+        purchase_item=None,
         note="",
     ) -> InventoryLot:
         """
