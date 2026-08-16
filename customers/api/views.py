@@ -1,14 +1,13 @@
 from django.contrib.auth.models import User
 from django.db import transaction
-from django.conf import settings
 
-from rest_framework import status
+from rest_framework import permissions, status, viewsets
+from rest_framework.exceptions import ValidationError
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from rest_framework import permissions, viewsets
-from rest_framework.exceptions import ValidationError
 
+from rest_framework_simplejwt.exceptions import TokenError
 from rest_framework_simplejwt.tokens import RefreshToken
 
 from customers.models import (
@@ -39,8 +38,8 @@ def build_user_data(user):
     """
     ساخت پاسخ استاندارد اطلاعات کاربر.
 
-    این تابع در Login، OTP و CurrentUser استفاده می‌شود
-    تا ساختار اطلاعات کاربر در تمام APIها یکسان باشد.
+    این تابع در ورود با رمز عبور، ورود با OTP
+    و دریافت اطلاعات کاربر استفاده می‌شود.
     """
 
     try:
@@ -55,6 +54,17 @@ def build_user_data(user):
         f"{first_name} {last_name}"
         .strip()
     )
+
+    avatar_url = None
+
+    if (
+        customer
+        and customer.avatar
+    ):
+        try:
+            avatar_url = customer.avatar.url
+        except ValueError:
+            avatar_url = None
 
     return {
         "id": user.id,
@@ -72,11 +82,7 @@ def build_user_data(user):
             else None
         ),
 
-        "avatar": (
-            customer.avatar.url
-            if customer and customer.avatar
-            else None
-        ),
+        "avatar": avatar_url,
     }
 
 
@@ -86,25 +92,28 @@ def build_user_data(user):
 
 class RequestOTPView(APIView):
     """
-    درخواست ارسال کد ورود با شماره موبایل
+    درخواست ارسال کد ورود با شماره موبایل.
     """
+
+    permission_classes = [
+        permissions.AllowAny,
+    ]
 
     def post(self, request):
         serializer = RequestOTPSerializer(
-            data=request.data
+            data=request.data,
         )
 
         serializer.is_valid(
-            raise_exception=True
+            raise_exception=True,
         )
 
-        phone = (
-            serializer
-            .validated_data["phone"]
-        )
+        phone = serializer.validated_data[
+            "phone"
+        ]
 
         try:
-            otp, code = create_otp(
+            otp, _ = create_otp(
                 phone=phone,
                 purpose=OTP.Purpose.LOGIN,
             )
@@ -120,32 +129,18 @@ class RequestOTPView(APIView):
                 ),
             )
 
-        # موقتاً تا زمان اتصال سرویس پیامک
-        print(
-            f"OTP for {phone}: {code}"
-        )
-
-        response_data = {
-            "message": (
-                "کد تأیید ارسال شد."
-            ),
-            "session_id": str(
-                otp.session_id
-            ),
-            "expires_at": (
-                otp.expires_at
-            ),
-        }
-
-        # کد فقط در حالت توسعه
-        # برگردانده می‌شود
-        if settings.DEBUG:
-            response_data[
-                "debug_code"
-            ] = code
-
         return Response(
-            response_data,
+            {
+                "message": (
+                    "کد تأیید ارسال شد."
+                ),
+                "session_id": str(
+                    otp.session_id
+                ),
+                "expires_at": (
+                    otp.expires_at
+                ),
+            },
             status=status.HTTP_200_OK,
         )
 
@@ -156,30 +151,30 @@ class RequestOTPView(APIView):
 
 class VerifyOTPView(APIView):
     """
-    بررسی کد ورود و صدور توکن JWT
+    بررسی کد ورود و صدور توکن JWT.
     """
+
+    permission_classes = [
+        permissions.AllowAny,
+    ]
 
     @transaction.atomic
     def post(self, request):
         serializer = VerifyOTPSerializer(
-            data=request.data
+            data=request.data,
         )
 
         serializer.is_valid(
-            raise_exception=True
+            raise_exception=True,
         )
 
-        session_id = (
-            serializer
-            .validated_data[
-                "session_id"
-            ]
-        )
+        session_id = serializer.validated_data[
+            "session_id"
+        ]
 
-        code = (
-            serializer
-            .validated_data["code"]
-        )
+        code = serializer.validated_data[
+            "code"
+        ]
 
         try:
             otp = verify_otp(
@@ -213,13 +208,25 @@ class VerifyOTPView(APIView):
             )
         )
 
+        if not user.is_active:
+            return Response(
+                {
+                    "error": (
+                        "حساب کاربری غیرفعال است."
+                    ),
+                },
+                status=(
+                    status
+                    .HTTP_403_FORBIDDEN
+                ),
+            )
+
         # ---------------------------------
         # Customer
         # ---------------------------------
 
         customer, _ = (
-            Customer.objects
-            .get_or_create(
+            Customer.objects.get_or_create(
                 user=user,
                 defaults={
                     "phone": phone,
@@ -227,8 +234,6 @@ class VerifyOTPView(APIView):
             )
         )
 
-        # اگر پروفایل وجود داشت
-        # ولی شماره خالی بود
         if not customer.phone:
             customer.phone = phone
 
@@ -242,10 +247,8 @@ class VerifyOTPView(APIView):
         # JWT
         # ---------------------------------
 
-        refresh = (
-            RefreshToken.for_user(
-                user
-            )
+        refresh = RefreshToken.for_user(
+            user
         )
 
         # ---------------------------------
@@ -255,18 +258,13 @@ class VerifyOTPView(APIView):
         return Response(
             {
                 "message": (
-                    "ورود با موفقیت "
-                    "انجام شد."
+                    "ورود با موفقیت انجام شد."
                 ),
 
-                "is_new_user": (
-                    user_created
-                ),
+                "is_new_user": user_created,
 
-                "user": (
-                    build_user_data(
-                        user
-                    )
+                "user": build_user_data(
+                    user
                 ),
 
                 "tokens": {
@@ -274,8 +272,7 @@ class VerifyOTPView(APIView):
                         refresh
                     ),
                     "access": str(
-                        refresh
-                        .access_token
+                        refresh.access_token
                     ),
                 },
             },
@@ -289,40 +286,51 @@ class VerifyOTPView(APIView):
 
 class LoginView(APIView):
     """
-    ورود با شماره موبایل و رمز عبور
+    ورود با شماره موبایل و رمز عبور.
     """
+
+    permission_classes = [
+        permissions.AllowAny,
+    ]
 
     def post(self, request):
         serializer = LoginSerializer(
-            data=request.data
+            data=request.data,
         )
 
         serializer.is_valid(
-            raise_exception=True
+            raise_exception=True,
         )
 
-        user = (
-            serializer
-            .validated_data["user"]
-        )
+        user = serializer.validated_data[
+            "user"
+        ]
 
-        refresh = (
-            RefreshToken.for_user(
-                user
+        if not user.is_active:
+            return Response(
+                {
+                    "error": (
+                        "حساب کاربری غیرفعال است."
+                    ),
+                },
+                status=(
+                    status
+                    .HTTP_403_FORBIDDEN
+                ),
             )
+
+        refresh = RefreshToken.for_user(
+            user
         )
 
         return Response(
             {
                 "message": (
-                    "ورود با موفقیت "
-                    "انجام شد."
+                    "ورود با موفقیت انجام شد."
                 ),
 
-                "user": (
-                    build_user_data(
-                        user
-                    )
+                "user": build_user_data(
+                    user
                 ),
 
                 "tokens": {
@@ -330,8 +338,7 @@ class LoginView(APIView):
                         refresh
                     ),
                     "access": str(
-                        refresh
-                        .access_token
+                        refresh.access_token
                     ),
                 },
             },
@@ -345,7 +352,7 @@ class LoginView(APIView):
 
 class CurrentUserView(APIView):
     """
-    دریافت اطلاعات کاربر واردشده
+    دریافت اطلاعات کاربر واردشده.
     """
 
     permission_classes = [
@@ -353,11 +360,9 @@ class CurrentUserView(APIView):
     ]
 
     def get(self, request):
-        user = request.user
-
         return Response(
             build_user_data(
-                user
+                request.user
             ),
             status=status.HTTP_200_OK,
         )
@@ -369,7 +374,7 @@ class CurrentUserView(APIView):
 
 class LogoutView(APIView):
     """
-    خروج کاربر و باطل کردن Refresh Token
+    خروج کاربر و باطل‌کردن Refresh Token.
     """
 
     permission_classes = [
@@ -378,30 +383,31 @@ class LogoutView(APIView):
 
     def post(self, request):
         serializer = LogoutSerializer(
-            data=request.data
+            data=request.data,
         )
 
         serializer.is_valid(
-            raise_exception=True
+            raise_exception=True,
         )
 
-        refresh_token = (
-            serializer
-            .validated_data[
-                "refresh"
-            ]
-        )
+        refresh_token = serializer.validated_data[
+            "refresh"
+        ]
 
         try:
             token = RefreshToken(
                 refresh_token
             )
 
-            if (
-                str(token["user_id"])
-                !=
-                str(request.user.id)
-            ):
+            token_user_id = str(
+                token["user_id"]
+            )
+
+            current_user_id = str(
+                request.user.id
+            )
+
+            if token_user_id != current_user_id:
                 return Response(
                     {
                         "error": (
@@ -417,7 +423,7 @@ class LogoutView(APIView):
 
             token.blacklist()
 
-        except Exception:
+        except TokenError:
             return Response(
                 {
                     "error": (
@@ -434,8 +440,7 @@ class LogoutView(APIView):
         return Response(
             {
                 "message": (
-                    "خروج با موفقیت "
-                    "انجام شد."
+                    "خروج با موفقیت انجام شد."
                 ),
             },
             status=status.HTTP_200_OK,
@@ -452,9 +457,9 @@ class CustomerAddressViewSet(
     """
     مدیریت آدرس‌های مشتری واردشده.
 
-    هر کاربر فقط آدرس‌های متعلق به
-    پروفایل مشتری خودش را مشاهده،
-    ثبت، ویرایش و حذف می‌کند.
+    هر کاربر فقط آدرس‌های متعلق به پروفایل
+    مشتری خودش را مشاهده، ثبت، ویرایش
+    و حذف می‌کند.
     """
 
     serializer_class = (
@@ -504,9 +509,8 @@ class CustomerAddressViewSet(
             raise ValidationError(
                 {
                     "detail": (
-                        "برای این کاربر "
-                        "پروفایل مشتری "
-                        "ایجاد نشده است."
+                        "برای این کاربر پروفایل "
+                        "مشتری ایجاد نشده است."
                     )
                 }
             )
