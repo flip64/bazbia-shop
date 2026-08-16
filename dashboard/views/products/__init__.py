@@ -7,6 +7,9 @@ from .edit import (
     product_info_edit,
     product_specifications_edit,
     product_tags_edit,
+    product_variants_edit,
+    product_images_edit,
+    product_image_delete
 )
 
 
@@ -28,4 +31,7 @@ __all__ = [
     "product_tags_edit",
     "product_price_manager",
     "product_profit_manager",
+    "product_variants_edit",
+    "product_images_edit",
+    "product_image_delete"
 ]

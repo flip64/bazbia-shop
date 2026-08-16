@@ -1,31 +1,31 @@
 <!-- تصاویر محصول -->
 <div class="dashboard-card mb-4">
 
-    <div
-        class="p-3 p-md-4 border-bottom
-               d-flex justify-content-between align-items-center gap-3"
-    >
-        <div>
-            <h2 class="h5 mb-1">
-                تصاویر محصول
-            </h2>
+    {% with product_images=product.images.all %}
 
-            <div class="text-secondary small">
-                {{ product.images.count }} تصویر
+        <div
+            class="p-3 p-md-4 border-bottom
+                   d-flex justify-content-between align-items-center gap-3"
+        >
+            <div>
+                <h2 class="h5 mb-1">
+                    تصاویر محصول
+                </h2>
+
+                <div class="text-secondary small">
+                    {{ product_images|length }} تصویر
+                </div>
             </div>
+
+            <a
+                href="{% url 'dashboard:product_images_edit' product.pk %}"
+                class="btn btn-sm btn-outline-primary"
+            >
+                مدیریت تصاویر
+            </a>
         </div>
 
-        <a
-            href="{% url 'dashboard:product_images_edit' product.pk %}"
-            class="btn btn-sm btn-outline-primary"
-        >
-            مدیریت تصاویر
-        </a>
-    </div>
-
-    <div class="p-3 p-md-4">
-
-        {% with product_images=product.images.all %}
+        <div class="p-3 p-md-4">
 
             {% if product_images %}
 
@@ -42,6 +42,7 @@
                                            bg-light rounded overflow-hidden"
                                 >
                                     {% if product_image.image %}
+
                                         <img
                                             src="{{ product_image.image.url }}"
                                             alt="{{ product_image.alt_text|default:product.name }}"
@@ -50,6 +51,7 @@
                                         >
 
                                     {% elif product_image.source_url %}
+
                                         <img
                                             src="{{ product_image.source_url }}"
                                             alt="{{ product_image.alt_text|default:product.name }}"
@@ -58,6 +60,7 @@
                                         >
 
                                     {% else %}
+
                                         <div
                                             class="d-flex align-items-center
                                                    justify-content-center
@@ -65,19 +68,24 @@
                                         >
                                             بدون تصویر
                                         </div>
+
                                     {% endif %}
                                 </div>
 
                                 <div class="mt-2">
 
                                     {% if product_image.is_main %}
+
                                         <span class="badge bg-primary">
                                             تصویر اصلی
                                         </span>
+
                                     {% else %}
+
                                         <span class="badge bg-light text-dark border">
                                             تصویر فرعی
                                         </span>
+
                                     {% endif %}
 
                                 </div>
@@ -106,8 +114,8 @@
 
             {% endif %}
 
-        {% endwith %}
+        </div>
 
-    </div>
+    {% endwith %}
 
 </div>

@@ -3,7 +3,8 @@
 from django.contrib.auth.decorators import login_required
 from django.db.models import Prefetch
 from django.shortcuts import get_object_or_404, render
-
+from suppliers.models import SupplierOffer,SupplierPriceHistory
+from products.models import ProductVariant,Product
 
 
 

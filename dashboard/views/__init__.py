@@ -21,6 +21,9 @@ from .products import (
     product_profit_manager,
     product_specifications_edit,
     product_tags_edit,
+    product_variants_edit,
+    product_images_edit,
+    product_image_delete,
 )
 
 from .suppliers import (
@@ -50,6 +53,9 @@ __all__ = [
     "product_images_edit",
     "product_specifications_edit",
     "product_tags_edit",
+    "product_variants_edit",
+    "product_images_edit",
+    "product_image_delete"
 
 ]
 

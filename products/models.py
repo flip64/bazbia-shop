@@ -199,6 +199,23 @@ class ProductImage(models.Model):
     is_main = models.BooleanField(default=False, help_text="آیا تصویر اصلی محصول است؟")
     created_at = models.DateTimeField(auto_now_add=True, help_text="تاریخ ایجاد تصویر")
 
+
+    def delete(self, *args, **kwargs):
+        image_storage = None
+        image_name = None
+
+        if self.image:
+            image_storage = self.image.storage
+            image_name = self.image.name
+
+        super().delete(*args, **kwargs)
+
+        if image_storage and image_name:
+            if image_storage.exists(image_name):
+                image_storage.delete(image_name)
+
+
+
     def __str__(self):
         return f"Image of {self.product.name} - {self.source_url or 'No URL'}"
 

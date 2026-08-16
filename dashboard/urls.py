@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 
 from django.urls import path
-
 from dashboard.views import (
     dashboard_home,
     import_dashboard,
@@ -11,6 +10,7 @@ from dashboard.views import (
     product_detail,
     product_info_edit,
     product_images_edit,
+    product_variants_edit,
     product_list,
     product_price_manager,
     product_profit_manager,
@@ -20,6 +20,7 @@ from dashboard.views import (
     supplier_list,
     supplier_products,
     sync_dashboard,
+    product_image_delete,
 )
 
 app_name = "dashboard"
@@ -113,4 +114,22 @@ urlpatterns = [
         product_tags_edit,
         name="product_tags_edit",
      ),
+
+       path(
+        "products/<int:pk>/edit/variant/",
+        product_variants_edit,
+        name="product_variants_edit",
+     ),
+     path(
+    "products/<int:pk>/images/edit/",
+      product_images_edit,
+      name="product_images_edit",
+),
+
+
+path(
+    "products/images/<int:image_id>/delete/",
+    product_image_delete,
+    name="product_image_delete",
+),
 ]

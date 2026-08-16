@@ -1,0 +1,229 @@
+{% extends "dashboard/base.html" %}
+
+{% block title %}
+    {{ page_title }}
+{% endblock %}
+
+{% block page_heading %}
+    {{ page_title }}
+{% endblock %}
+
+{% block content %}
+
+<div class="container-fluid px-0">
+  <div class="collapse border-bottom" id="add-image-form">
+
+    <div class="p-3 p-md-4 bg-light">
+
+       <form
+    method="post"
+    enctype="multipart/form-data"
+>
+    {% csrf_token %}
+
+    <div class="row g-3 align-items-end">
+
+        <div class="col-12 col-lg">
+
+            <label
+                for="product-image"
+                class="form-label"
+            >
+                انتخاب تصویر
+            </label>
+
+            <input
+                type="file"
+                name="image"
+                id="product-image"
+                class="form-control"
+                accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp"
+                required
+            >
+
+            <div class="form-text">
+                فرمت‌های JPG، PNG و WEBP تا حجم ۵ مگابایت مجاز هستند.
+            </div>
+
+        </div>
+
+        <div class="col-12 col-lg-auto">
+
+            <button
+                type="submit"
+                class="btn btn-success w-100"
+            >
+                آپلود تصویر
+            </button>
+
+        </div>
+
+    </div>
+
+</form>
+    </div>
+
+</div>
+
+
+
+    <div
+        class="d-flex flex-column flex-md-row
+               justify-content-between align-items-md-center
+               gap-3 mb-4"
+    >
+        <div>
+            <h1 class="h4 mb-1">
+                مدیریت تصاویر
+            </h1>
+
+            <p class="text-secondary mb-0">
+                {{ product.name }}
+            </p>
+        </div>
+
+        <a
+            href="{% url 'dashboard:product_detail' pk=product.pk %}"
+            class="btn btn-outline-secondary"
+        >
+            بازگشت به جزئیات محصول
+        </a>
+    </div>
+
+    <div class="dashboard-card">
+
+        <div
+            class="p-3 p-md-4 border-bottom
+                   d-flex justify-content-between align-items-center gap-3"
+        >
+            <div>
+                <h2 class="h5 mb-1">
+                    تصاویر محصول
+                </h2>
+
+                <div class="text-secondary small">
+                    {{ product_images|length }} تصویر
+                </div>
+            </div>
+           <button
+             type="button"
+             class="btn btn-primary"
+             data-bs-toggle="collapse"
+             data-bs-target="#add-image-form"
+             aria-expanded="false"
+             aria-controls="add-image-form"
+           >
+              افزودن تصویر
+           </button>
+                  
+        </div>
+
+        <div class="p-3 p-md-4">
+
+            {% if product_images %}
+
+                <div class="row g-3">
+
+                    {% for product_image in product_images %}
+
+                        <div class="col-6 col-md-4 col-lg-3">
+
+                            <div class="border rounded p-2 h-100">
+
+                              <div
+    class="ratio ratio-1x1
+           bg-light rounded overflow-hidden mb-3"
+>
+
+    {% if product_image.image %}
+
+        <img
+            src="{{ product_image.image.url }}"
+            alt="{{ product_image.alt_text|default:product.name }}"
+            class="w-100 h-100 object-fit-contain"
+        >
+
+    {% elif product_image.source_url %}
+
+        <img
+            src="{{ product_image.source_url }}"
+            alt="{{ product_image.alt_text|default:product.name }}"
+            class="w-100 h-100 object-fit-contain"
+        >
+
+    {% else %}
+
+        <div
+            class="d-flex justify-content-center
+                   align-items-center text-secondary"
+        >
+            تصویر موجود نیست
+        </div>
+
+    {% endif %}
+
+</div>
+
+
+
+
+                                {% if product_image.is_main %}
+
+                                    <div class="mb-2">
+                                        <span class="badge text-bg-success">
+                                            تصویر اصلی
+                                        </span>
+                                    </div>
+
+                                {% endif %}
+
+                                <div class="d-grid gap-2">
+
+                                    <button
+                                        type="button"
+                                        class="btn btn-sm btn-outline-primary"
+                                        disabled
+                                    >
+                                        انتخاب به‌عنوان تصویر اصلی
+                                    </button>
+<form
+    method="post"
+    action="{% url 'dashboard:product_image_delete' image_id=product_image.pk %}"
+>
+    {% csrf_token %}
+
+    <button
+        type="submit"
+        class="btn btn-sm btn-outline-danger w-100"
+        onclick="return confirm('آیا از حذف این تصویر مطمئن هستید؟')"
+    >
+        حذف تصویر
+    </button>
+
+</form>
+                                    
+                                </div>
+
+                            </div>
+
+                        </div>
+
+                    {% endfor %}
+
+                </div>
+
+            {% else %}
+
+                <div class="text-center text-secondary py-5">
+                    تصویری برای این محصول ثبت نشده است.
+                </div>
+
+            {% endif %}
+
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}
