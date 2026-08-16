@@ -1,14 +1,12 @@
 import logging
-import random
+import secrets
 
 from datetime import timedelta
 
-from django.conf import settings
 from django.contrib.auth.hashers import (
     check_password,
     make_password,
 )
-from django.core.mail import EmailMultiAlternatives
 from django.db import transaction
 from django.utils import timezone
 
@@ -23,92 +21,54 @@ OTP_EXPIRE_MINUTES = 2
 OTP_MAX_ATTEMPTS = 5
 OTP_REQUEST_COOLDOWN_SECONDS = 60
 
-OTP_REPORT_EMAIL = "flip.jn664@gmail.com"
-
 
 def generate_otp_code() -> str:
     """
-    ساخت کد تأیید ۶ رقمی.
+    ساخت کد تأیید امن ۶ رقمی.
     """
-    return f"{random.randint(0, 999999):06d}"
+    return f"{secrets.randbelow(1_000_000):06d}"
 
 
-def send_otp_report_email(
+def mask_phone(phone: str) -> str:
+    """
+    مخفی‌کردن بخشی از شماره در لاگ.
+    مثال: 0912***6789
+    """
+    phone = str(phone).strip()
+
+    if len(phone) < 8:
+        return "***"
+
+    return f"{phone[:4]}***{phone[-4:]}"
+
+
+def send_otp_notification(
     phone: str,
     code: str,
 ) -> None:
     """
-    ارسال گزارش پیامک OTP به ایمیل ثابت مدیر.
+    ارسال کد فقط از طریق پیامک.
 
-    این ایمیل فقط بعد از ارسال موفق پیامک اجرا می‌شود.
+    کد OTP و پاسخ کامل سرویس پیامک در لاگ ثبت نمی‌شود.
     """
 
-    message = EmailMultiAlternatives(
-        subject="گزارش ارسال کد تأیید بازبیا",
-        body=(
-            "یک پیامک کد تأیید با موفقیت ارسال شد.\n\n"
-            f"شماره موبایل گیرنده: {phone}\n"
-            f"کد تأیید: {code}\n"
-            f"اعتبار کد: {OTP_EXPIRE_MINUTES} دقیقه\n\n"
-            "این کد را در اختیار افراد دیگر قرار ندهید."
-        ),
-        from_email=settings.DEFAULT_FROM_EMAIL,
-        to=[
-            OTP_REPORT_EMAIL,
-        ],
-    )
-
-    message.send(
-        fail_silently=False,
-    )
-
-
-def send_otp_notifications(
-    phone: str,
-    code: str,
-) -> None:
-    """
-    ارسال OTP از طریق SMS.ir و سپس ارسال گزارش ایمیلی.
-
-    اگر ارسال پیامک ناموفق باشد، ایمیل گزارش ارسال نمی‌شود.
-    اگر پیامک موفق باشد ولی ایمیل خطا بدهد، خطا فقط لاگ می‌شود.
-    """
+    masked_phone = mask_phone(phone)
 
     try:
-        sms_response = send_otp_sms(
+        send_otp_sms(
             phone=phone,
             code=code,
         )
 
         logger.info(
-            "OTP SMS sent successfully. phone=%s response=%s",
-            phone,
-            sms_response,
+            "OTP SMS sent successfully. phone=%s",
+            masked_phone,
         )
 
     except Exception:
         logger.exception(
             "OTP SMS sending failed. phone=%s",
-            phone,
-        )
-        return
-
-    try:
-        send_otp_report_email(
-            phone=phone,
-            code=code,
-        )
-
-        logger.info(
-            "OTP report email sent successfully. phone=%s email=%s",
-            phone,
-            OTP_REPORT_EMAIL,
-        )
-
-    except Exception:
-        logger.exception(
-            "OTP SMS was sent, but report email failed. phone=%s",
-            phone,
+            masked_phone,
         )
 
 
@@ -120,12 +80,9 @@ def create_otp(
     """
     ایجاد کد OTP جدید.
 
-    مراحل:
-    1. کنترل فاصله زمانی درخواست‌ها
-    2. غیرفعال‌کردن کدهای قبلی
-    3. ساخت و ذخیره کد هش‌شده
-    4. ارسال پیامک بعد از ثبت موفق تراکنش
-    5. ارسال گزارش همان پیامک به ایمیل ثابت
+    توجه:
+    مقدار code فقط برای ارسال پیامک برگردانده می‌شود
+    و نباید در view، response یا log قرار بگیرد.
     """
 
     phone = str(phone).strip()
@@ -138,7 +95,9 @@ def create_otp(
     now = timezone.now()
 
     latest_otp = (
-        OTP.objects.filter(
+        OTP.objects
+        .select_for_update()
+        .filter(
             phone=phone,
             purpose=purpose,
         )
@@ -186,7 +145,7 @@ def create_otp(
     )
 
     transaction.on_commit(
-        lambda: send_otp_notifications(
+        lambda: send_otp_notification(
             phone=phone,
             code=code,
         )
@@ -201,9 +160,7 @@ def verify_otp(
     code: str,
 ) -> OTP:
     """
-    بررسی کد OTP.
-
-    در صورت صحیح‌بودن کد، OTP مصرف‌شده علامت‌گذاری می‌شود.
+    بررسی کد OTP و مصرف آن در صورت موفقیت.
     """
 
     code = str(code).strip()
@@ -214,8 +171,12 @@ def verify_otp(
         )
 
     try:
-        otp = OTP.objects.select_for_update().get(
-            session_id=session_id,
+        otp = (
+            OTP.objects
+            .select_for_update()
+            .get(
+                session_id=session_id,
+            )
         )
 
     except OTP.DoesNotExist as exc:
@@ -258,13 +219,13 @@ def verify_otp(
     ):
         otp.attempts += 1
 
-        update_fields = [
-            "attempts",
-        ]
-
         remaining_attempts = (
             OTP_MAX_ATTEMPTS - otp.attempts
         )
+
+        update_fields = [
+            "attempts",
+        ]
 
         if remaining_attempts <= 0:
             otp.is_used = True
