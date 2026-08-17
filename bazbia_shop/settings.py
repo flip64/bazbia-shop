@@ -389,3 +389,26 @@ SMS_IR_OTP_PARAMETER = os.getenv(
 SMS_REQUEST_TIMEOUT = int(
     os.getenv("SMS_REQUEST_TIMEOUT", "10")
 )
+
+
+SMS_REQUEST_TIMEOUT = int(
+    os.getenv("SMS_REQUEST_TIMEOUT", "10")
+)
+
+# پیامک تأیید پرداخت سفارش
+SMS_IR_PAID_ORDER_TEMPLATE_ID = int(
+    os.getenv(
+        "SMS_IR_PAID_ORDER_TEMPLATE_ID",
+        "0",
+    )
+)
+
+SMS_IR_CUSTOMER_NAME_PARAMETER = os.getenv(
+    "SMS_IR_CUSTOMER_NAME_PARAMETER",
+    "CUSTOMER_NAME",
+)
+
+SMS_IR_ORDER_ID_PARAMETER = os.getenv(
+    "SMS_IR_ORDER_ID_PARAMETER",
+    "ORDER_ID",
+)
