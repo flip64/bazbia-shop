@@ -3,7 +3,9 @@
 from decimal import Decimal, ROUND_HALF_UP
 
 from suppliers.models import SupplierOffer
-
+from suppliers.services.offer_sync_policy import (
+    can_sync_variant_from_offer,
+)
 
 def calculate_sale_price(
     purchase_price: Decimal,
@@ -31,7 +33,7 @@ def sync_variant_price_from_offer(
     به‌روزرسانی می‌کند.
     """
 
-    if not offer.is_primary:
+    if can_sync_variant_from_offer(offer):
         return False
 
     variant = offer.variant

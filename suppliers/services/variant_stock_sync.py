@@ -1,7 +1,9 @@
 # suppliers/services/variant_stock_sync.py
 
 from suppliers.models import SupplierOffer
-
+from suppliers.services.offer_sync_policy import (
+    can_sync_variant_from_offer,
+)
 
 def sync_variant_stock_from_offer(
     offer: SupplierOffer,
@@ -11,7 +13,7 @@ def sync_variant_stock_from_offer(
     به‌روزرسانی می‌کند.
     """
 
-    if not offer.is_primary:
+    if can_sync_variant_from_offer(offer):
         return False
 
     variant = offer.variant
