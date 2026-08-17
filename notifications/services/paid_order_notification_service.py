@@ -29,6 +29,21 @@ def _customer_phone(order: Order) -> str:
     return str(snapshot.get("recipient_phone", "")).strip()
 
 
+def _customer_name(order: Order) -> str:
+    full_name = order.user.get_full_name().strip()
+    if full_name:
+        return full_name
+
+    snapshot = order.shipping_address_snapshot or {}
+    recipient_name = str(
+        snapshot.get("recipient_name", "")
+    ).strip()
+    if recipient_name:
+        return recipient_name
+
+    return str(order.user.get_username()).strip() or "مشتری"
+
+
 def _delivery(
     *,
     order: Order,
@@ -145,13 +160,8 @@ def notify_paid_order(*, order_id: int, payment_id: int) -> dict:
         try:
             response = send_paid_order_sms(
                 phone=phone,
+                customer_name=_customer_name(order),
                 order_id=order.id,
-                amount=order.total_price,
-                tracking_code=(
-                    payment.reference_id
-                    or payment.tracking_code
-                    or str(payment.id)
-                ),
             )
         except Exception as error:
             logger.exception(
@@ -186,4 +196,3 @@ def notify_paid_order(*, order_id: int, payment_id: int) -> dict:
             _mark_failed(email_delivery, "ارسال ایمیل مدیر ناموفق بود.")
 
     return results
-
