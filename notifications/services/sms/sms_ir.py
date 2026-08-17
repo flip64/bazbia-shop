@@ -9,6 +9,7 @@ from .exceptions import (
     SMSSendError,
 )
 
+
 logger = logging.getLogger(__name__)
 
 
@@ -17,8 +18,15 @@ class SMSIRService:
 
     def __init__(self) -> None:
         self.api_key = settings.SMS_IR_API_KEY
-        self.otp_template_id = settings.SMS_IR_OTP_TEMPLATE_ID
-        self.otp_parameter = settings.SMS_IR_OTP_PARAMETER
+
+        self.otp_template_id = (
+            settings.SMS_IR_OTP_TEMPLATE_ID
+        )
+
+        self.otp_parameter = (
+            settings.SMS_IR_OTP_PARAMETER
+        )
+
         self.timeout = settings.SMS_REQUEST_TIMEOUT
 
         self._validate_settings()
@@ -29,24 +37,19 @@ class SMSIRService:
                 "مقدار SMS_IR_API_KEY تنظیم نشده است."
             )
 
-        if not self.otp_template_id:
-            raise SMSConfigurationError(
-                "مقدار SMS_IR_OTP_TEMPLATE_ID تنظیم نشده است."
-            )
-
     @staticmethod
     def normalize_mobile(phone: str) -> str:
         """
-        تبدیل شماره به فرمت قابل قبول SMS.ir.
-
-        نمونه‌ها:
-        09121234567
-        989121234567
-        +989121234567
+        تبدیل شماره موبایل به فرمت قابل قبول SMS.ir.
         """
 
         mobile = str(phone).strip()
-        mobile = mobile.replace(" ", "").replace("-", "")
+
+        mobile = (
+            mobile
+            .replace(" ", "")
+            .replace("-", "")
+        )
 
         if mobile.startswith("+98"):
             return "0" + mobile[3:]
@@ -54,7 +57,10 @@ class SMSIRService:
         if mobile.startswith("98"):
             return "0" + mobile[2:]
 
-        if mobile.startswith("9") and len(mobile) == 10:
+        if (
+            mobile.startswith("9")
+            and len(mobile) == 10
+        ):
             return "0" + mobile
 
         return mobile
@@ -64,16 +70,42 @@ class SMSIRService:
         phone: str,
         code: str,
     ) -> dict[str, Any]:
+        return self.send_template(
+            phone=phone,
+            template_id=self.otp_template_id,
+            parameters={
+                self.otp_parameter: str(code),
+            },
+        )
+
+    def send_template(
+        self,
+        *,
+        phone: str,
+        template_id: int,
+        parameters: dict[str, object],
+    ) -> dict[str, Any]:
+        """
+        ارسال قالب Verify با پارامترهای دلخواه SMS.ir.
+        """
+
+        if not template_id:
+            raise SMSConfigurationError(
+                "شناسه قالب پیامک تنظیم نشده است."
+            )
+
         mobile = self.normalize_mobile(phone)
 
         payload = {
             "mobile": mobile,
-            "templateId": self.otp_template_id,
+            "templateId": int(template_id),
             "parameters": [
                 {
-                    "name": self.otp_parameter,
-                    "value": str(code),
+                    "name": str(name),
+                    "value": str(value),
                 }
+                for name, value
+                in parameters.items()
             ],
         }
 
@@ -90,13 +122,16 @@ class SMSIRService:
                 headers=headers,
                 timeout=self.timeout,
             )
+
         except requests.Timeout as exc:
             logger.exception(
                 "SMS.ir request timed out for mobile=%s",
                 mobile,
             )
+
             raise SMSSendError(
-                "زمان اتصال به سامانه پیامک به پایان رسید."
+                "زمان اتصال به سامانه پیامک "
+                "به پایان رسید."
             ) from exc
 
         except requests.RequestException as exc:
@@ -104,12 +139,14 @@ class SMSIRService:
                 "SMS.ir connection error for mobile=%s",
                 mobile,
             )
+
             raise SMSSendError(
                 "ارتباط با سامانه پیامک برقرار نشد."
             ) from exc
 
         try:
             response_data = response.json()
+
         except ValueError:
             response_data = {
                 "raw_response": response.text,
@@ -117,7 +154,8 @@ class SMSIRService:
 
         if not response.ok:
             logger.error(
-                "SMS.ir send failed. mobile=%s status=%s response=%s",
+                "SMS.ir send failed. "
+                "mobile=%s status=%s response=%s",
                 mobile,
                 response.status_code,
                 response_data,
@@ -128,7 +166,8 @@ class SMSIRService:
             )
 
         logger.info(
-            "OTP SMS sent successfully. mobile=%s response=%s",
+            "SMS.ir template sent successfully. "
+            "mobile=%s response=%s",
             mobile,
             response_data,
         )
