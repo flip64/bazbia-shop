@@ -70,6 +70,41 @@ def create_otp(
     return otp, code
 
 
+def send_otp_test_email(
+    phone: str,
+    code: str,
+) -> None:
+    """
+    ارسال کد OTP به ایمیل تست در محیط توسعه.
+    """
+
+    test_email = getattr(
+        settings,
+        "OTP_TEST_EMAIL",
+        "",
+    )
+
+    if not settings.DEBUG or not test_email:
+        return
+
+    send_mail(
+        subject="کد تأیید ورود بازبیا",
+        message=(
+            "کد تأیید ورود به بازبیا\n\n"
+            f"شماره موبایل: {phone}\n"
+            f"کد تأیید: {code}\n"
+            f"اعتبار کد: {OTP_EXPIRE_MINUTES} دقیقه\n\n"
+            "این کد را در اختیار دیگران قرار ندهید."
+        ),
+        from_email=settings.DEFAULT_FROM_EMAIL,
+        recipient_list=[test_email],
+        fail_silently=False,
+    )
+
+
+
+
+
 
 @transaction.atomic
 def verify_otp(
