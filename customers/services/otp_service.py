@@ -5,7 +5,7 @@ from datetime import timedelta
 from django.contrib.auth.hashers import check_password, make_password
 from django.db import transaction
 from django.utils import timezone
-
+from django.core.mail import EmailMultiAlternatives
 from customers.models import OTP
 
 
