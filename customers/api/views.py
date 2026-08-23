@@ -9,10 +9,14 @@ from rest_framework.views import APIView
 
 from rest_framework_simplejwt.tokens import RefreshToken
 
+
+
 from customers.api.serializers import (
     LoginSerializer,
     RequestOTPSerializer,
     VerifyOTPSerializer,
+    LogoutSerializer,
+
 )
 
 from customers.models import Customer, OTP
@@ -177,6 +181,7 @@ class LoginView(APIView):
 
 
 class CurrentUserView(APIView):
+
     """
     دریافت اطلاعات کاربر واردشده
     """
@@ -205,3 +210,48 @@ class CurrentUserView(APIView):
             },
             status=status.HTTP_200_OK,
         )
+    
+class LogoutView(APIView):
+    """
+    خروج کاربر و باطل کردن Refresh Token
+    """
+
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        serializer = LogoutSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        refresh_token = serializer.validated_data["refresh"]
+
+        try:
+            token = RefreshToken(refresh_token)
+
+            if str(token["user_id"]) != str(request.user.id):
+                return Response(
+                    {
+                        "error": "این توکن متعلق به کاربر فعلی نیست.",
+                    },
+                    status=status.HTTP_403_FORBIDDEN,
+                )
+
+            token.blacklist()
+
+        except Exception:
+            return Response(
+                {
+                    "error": "توکن تمدید نامعتبر یا قبلاً باطل شده است.",
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        return Response(
+            {
+                "message": "خروج با موفقیت انجام شد.",
+            },
+            status=status.HTTP_200_OK,
+        )
+    
+
+    
+
