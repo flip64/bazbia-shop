@@ -1,66 +1,99 @@
-from rest_framework import serializers
-from django.contrib.auth.models import User
-from customers.models import Customer,OTP
+import re
+
 from django.contrib.auth import authenticate
+from rest_framework import serializers
 
 
+IRAN_PHONE_PATTERN = re.compile(r"^09\d{9}$")
 
-class RegisterSerializer(serializers.ModelSerializer):
-    phone = serializers.CharField(write_only=True)
 
-    class Meta:
-        model = User
-        fields = ["username", "email", "password", "phone"]
-        extra_kwargs = {"password": {"write_only": True}}
+def validate_phone_number(phone: str) -> str:
+    """
+    اعتبارسنجی و یکسان‌سازی شماره موبایل ایران.
+    """
 
-    def create(self, validated_data):
-        phone = validated_data.pop("phone","")
+    phone = phone.strip()
+    phone = phone.replace(" ", "").replace("-", "")
 
-        # ساخت یوزر
-        user = User.objects.create_user(
-            username=validated_data["username"],
-            email=validated_data.get("email"),
-            password=validated_data["password"]
+    if phone.startswith("+98"):
+        phone = f"0{phone[3:]}"
+
+    elif phone.startswith("98"):
+        phone = f"0{phone[2:]}"
+
+    if not IRAN_PHONE_PATTERN.fullmatch(phone):
+        raise serializers.ValidationError(
+            "شماره موبایل باید با 09 شروع شود و 11 رقم داشته باشد."
         )
 
-        # ساخت پروفایل Customer
-        Customer.objects.create(
-            user=user,
-            phone=phone,
-        )
-
-        return user
+    return phone
 
 
-# customers/serializers.py
+class RequestOTPSerializer(serializers.Serializer):
+    phone = serializers.CharField(
+        max_length=15,
+        trim_whitespace=True,
+    )
 
-class SendOtpSerializer(serializers.Serializer):
-    phone = serializers.CharField(max_length=15)
+    def validate_phone(self, value):
+        return validate_phone_number(value)
 
-class VerifyOtpSerializer(serializers.Serializer):
-    phone = serializers.CharField(max_length=15)
-    code = serializers.CharField(max_length=4)
 
+class VerifyOTPSerializer(serializers.Serializer):
+    session_id = serializers.UUIDField()
+
+    code = serializers.CharField(
+        min_length=6,
+        max_length=6,
+        trim_whitespace=True,
+    )
+
+    def validate_code(self, value):
+        if not value.isdigit():
+            raise serializers.ValidationError(
+                "کد تأیید باید فقط شامل عدد باشد."
+            )
+
+        return value
 
 
 class LoginSerializer(serializers.Serializer):
-    username = serializers.CharField()
-    password = serializers.CharField(write_only=True)
+    phone = serializers.CharField(
+        max_length=15,
+        trim_whitespace=True,
+    )
 
-    def validate(self, data):
-        username = data.get("username")
-        print(username)
-        password = data.get("password")
+    password = serializers.CharField(
+        write_only=True,
+        trim_whitespace=False,
+    )
 
-        if username and password:
-            user = authenticate(username=username, password=password)
-            if user:
-                if not user.is_active:
-                    raise serializers.ValidationError("اکانت شما غیرفعال است.")
-                data["user"] = user
-            else:
-                raise serializers.ValidationError("یوزرنیم یا پسورد اشتباه است.")
-        else:
-            raise serializers.ValidationError("یوزرنیم و پسورد الزامی است.")
+    def validate_phone(self, value):
+        return validate_phone_number(value)
 
-        return data
+    def validate(self, attrs):
+        phone = attrs.get("phone")
+        password = attrs.get("password")
+
+        user = authenticate(
+            username=phone,
+            password=password,
+        )
+
+        if user is None:
+            raise serializers.ValidationError(
+                {
+                    "detail": "شماره موبایل یا رمز عبور اشتباه است."
+                }
+            )
+
+        if not user.is_active:
+            raise serializers.ValidationError(
+                {
+                    "detail": "حساب کاربری شما غیرفعال است."
+                }
+            )
+
+        attrs["user"] = user
+
+        return attrs

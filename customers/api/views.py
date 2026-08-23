@@ -1,167 +1,196 @@
-from rest_framework.views import APIView
-from rest_framework.response import Response
-from rest_framework.permissions import IsAuthenticated
-from rest_framework import status
-from rest_framework_simplejwt.tokens import RefreshToken
-from rest_framework.response import Response
-
 from django.contrib.auth.models import User
-from customers.api.serializers import RegisterSerializer
-from customers.models import CustomerState, Status
-from customers.models import OTP ,Customer
-from customers.api.serializers import SendOtpSerializer, VerifyOtpSerializer
-from customers.api.serializers import LoginSerializer
-import random
+from django.db import transaction
+
+from rest_framework import status
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
+from rest_framework.views import APIView
+
+from rest_framework_simplejwt.tokens import RefreshToken
+
+from customers.api.serializers import (
+    LoginSerializer,
+    RequestOTPSerializer,
+    VerifyOTPSerializer,
+)
+
+from customers.models import Customer, OTP
+from customers.services.otp_service import create_otp, verify_otp
 
 
+class RequestOTPView(APIView):
+    """
+    درخواست ارسال کد ورود با شماره موبایل
+    """
 
-class RegisterView(APIView):
     def post(self, request):
-        serializer = RegisterSerializer(data=request.data)
-        print(serializer)
+        serializer = RequestOTPSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
 
-        if serializer.is_valid():
-            user = serializer.save()
-           
-            # دریافت پروفایل مشتری
-            customer = user.customer_profile
+        phone = serializer.validated_data["phone"]
 
-            # گرفتن یا ایجاد وضعیت پیش‌فرض شماره تلفن تأیید نشده
-            status_phone_not_verified, created = Status.objects.get_or_create(
-                code='phone_not_verified',
-                defaults={'title': 'شماره تلفن تأیید نشده'}
-            )
+        otp, code = create_otp(
+            phone=phone,
+            purpose=OTP.Purpose.LOGIN,
+        )
 
-            # ایجاد CustomerState و افزودن وضعیت
-            customer_state = CustomerState.objects.create(customer=customer)
-            customer_state.statuses.add(status_phone_not_verified)
+        # موقتاً تا زمان اتصال سرویس پیامک
+        print(f"OTP for {phone}: {code}")
 
-            # برگرداندن اطلاعات و توکن
-            return Response(
-                {
-                    "message": "ثبت‌نام با موفقیت انجام شد",
-                    "user": {
-                        "id": user.id,
-                        "username": user.username,
-                        "email": user.email,
-                        "phone": customer.phone,
-                        "statuses": [s.code for s in customer_state.statuses.all()]
-                    },
-                   
-                },
-                status=status.HTTP_201_CREATED
-            )
+        response_data = {
+            "message": "کد تأیید ارسال شد.",
+            "session_id": str(otp.session_id),
+            "expires_at": otp.expires_at,
+        }
 
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        # فقط برای محیط توسعه
+        response_data["debug_code"] = code
+
+        return Response(
+            response_data,
+            status=status.HTTP_200_OK,
+        )
 
 
-# customers/views.py
+class VerifyOTPView(APIView):
+    """
+    بررسی کد ورود و صدور توکن JWT
+    """
 
-class SendOtpView(APIView):
+    @transaction.atomic
     def post(self, request):
-        serializer = SendOtpSerializer(data=request.data)
-        if serializer.is_valid():
-            phone = serializer.validated_data['phone']
-            # ساختن OTP تصادفی  4 رقمی
-            code = str(random.randint(1000, 9999))
-            otp = OTP.objects.create(phone=phone, code=code)
+        serializer = VerifyOTPSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
 
-            # TODO: در حالت واقعی باید کد رو با SMS بفرستی
-            print(f"OTP for {phone}: {code}")
+        session_id = serializer.validated_data["session_id"]
+        code = serializer.validated_data["code"]
 
-            return Response({
-                "code":str(code),
-                "message": "کد تایید ارسال شد",
-                "session_id": str(otp.session_id)  # برای امنیت می‌تونی session_id برگردونی
-            }, status=status.HTTP_200_OK)
-            
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-
-class VerifyOtpView(APIView):
-    def post(self, request):
-        serializer = VerifyOtpSerializer(data=request.data)
-        if serializer.is_valid():
-            phone = serializer.validated_data['phone']
-            code = serializer.validated_data['code']
-
-            try:
-                otp = OTP.objects.filter(phone=phone, code=code).latest('created_at')
-            except OTP.DoesNotExist:
-                return Response({"error": "کد معتبر نیست"}, status=status.HTTP_400_BAD_REQUEST)
-
-            # بررسی اعتبار کد (مثلاً ۵ دقیقه)
-            from django.utils import timezone
-            from datetime import timedelta
-            if otp.created_at < timezone.now() - timedelta(minutes=5):
-                return Response({"error": "کد منقضی شده"}, status=status.HTTP_400_BAD_REQUEST)
-
-            # پیدا کردن یا ساخت کاربر
-            user, created = User.objects.get_or_create(
-                username=phone,  # یوزرنیم = شماره موبایل
-                defaults={"is_active": True}
-            )
-
-            # ساختن توکن‌ها
-            refresh = RefreshToken.for_user(user)
-            access = refresh.access_token
-
-            return Response(
-                {
-                    "message": "کد تایید شد ✅",
-                    "user": {
-                        "id": user.id,
-                        "username": user.username,
-                    },
-                    "tokens": {
-                        "refresh": str(refresh),
-                        "access": str(access),
-                    },
-                },
-                status=status.HTTP_200_OK,
-            )
-
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-
-class CurrentUserView(APIView):
-    permission_classes = [IsAuthenticated]
-    def get(self, request):
-        user = request.user
         try:
-            customer = Customer.objects.get(user=user)
-            avatar = customer.avatar.url if customer.avatar else None
-        except Customer.DoesNotExist:
-            customer = None
-            avatar = None
+            otp = verify_otp(
+                session_id=session_id,
+                code=code,
+            )
+        except ValueError as error:
+            return Response(
+                {
+                    "error": str(error),
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+            )
 
-        
-        return Response({
-            "id": user.id,
-            "username": user.username,
-            "email": user.email,
-            "avatar": avatar
-        })
+        phone = otp.phone
 
+        user, user_created = User.objects.get_or_create(
+            username=phone,
+            defaults={
+                "is_active": True,
+            },
+        )
 
+        customer, customer_created = Customer.objects.get_or_create(
+            user=user,
+            defaults={
+                "phone": phone,
+            },
+        )
 
-class LoginView(APIView):
-    def post(self, request):
-        serializer = LoginSerializer(data=request.data)
-        if serializer.is_valid():
-            user = serializer.validated_data["user"]
-            refresh = RefreshToken.for_user(user)
-            return Response({
-                "message": "ورود موفقیت‌آمیز بود.",
+        if not customer.phone:
+            customer.phone = phone
+            customer.save(update_fields=["phone"])
+
+        refresh = RefreshToken.for_user(user)
+
+        return Response(
+            {
+                "message": "ورود با موفقیت انجام شد.",
+                "is_new_user": user_created,
                 "user": {
                     "id": user.id,
                     "username": user.username,
                     "email": user.email,
+                    "phone": customer.phone,
+                    "avatar": (
+                        customer.avatar.url
+                        if customer.avatar
+                        else None
+                    ),
                 },
                 "tokens": {
                     "refresh": str(refresh),
                     "access": str(refresh.access_token),
-                }
-            }, status=status.HTTP_200_OK)
-         
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+                },
+            },
+            status=status.HTTP_200_OK,
+        )
+
+
+class LoginView(APIView):
+    """
+    ورود با شماره موبایل و رمز عبور
+    """
+
+    def post(self, request):
+        serializer = LoginSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        user = serializer.validated_data["user"]
+
+        try:
+            customer = user.customer_profile
+        except Customer.DoesNotExist:
+            customer = None
+
+        refresh = RefreshToken.for_user(user)
+
+        return Response(
+            {
+                "message": "ورود با موفقیت انجام شد.",
+                "user": {
+                    "id": user.id,
+                    "username": user.username,
+                    "email": user.email,
+                    "phone": customer.phone if customer else None,
+                    "avatar": (
+                        customer.avatar.url
+                        if customer and customer.avatar
+                        else None
+                    ),
+                },
+                "tokens": {
+                    "refresh": str(refresh),
+                    "access": str(refresh.access_token),
+                },
+            },
+            status=status.HTTP_200_OK,
+        )
+
+
+class CurrentUserView(APIView):
+    """
+    دریافت اطلاعات کاربر واردشده
+    """
+
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        user = request.user
+
+        try:
+            customer = user.customer_profile
+        except Customer.DoesNotExist:
+            customer = None
+
+        return Response(
+            {
+                "id": user.id,
+                "username": user.username,
+                "email": user.email,
+                "phone": customer.phone if customer else None,
+                "avatar": (
+                    customer.avatar.url
+                    if customer and customer.avatar
+                    else None
+                ),
+            },
+            status=status.HTTP_200_OK,
+        )
