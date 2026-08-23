@@ -1,4 +1,5 @@
 import random
+
 from datetime import timedelta
 
 from django.contrib.auth.hashers import check_password, make_password
@@ -10,7 +11,7 @@ from customers.models import OTP
 
 OTP_EXPIRE_MINUTES = 2
 OTP_MAX_ATTEMPTS = 5
-
+OTP_REQUEST_COOLDOWN_SECONDS = 60
 
 def generate_otp_code() -> str:
     """
@@ -24,13 +25,30 @@ def create_otp(
     phone: str,
     purpose: str = OTP.Purpose.LOGIN,
 ) -> tuple[OTP, str]:
-    """
-    ساخت OTP جدید و باطل کردن OTPهای قبلی همان شماره و هدف.
+    now = timezone.now()
 
-    خروجی:
-        otp: رکورد ساخته‌شده
-        code: کد خام برای ارسال پیامک
-    """
+    latest_otp = (
+        OTP.objects.filter(
+            phone=phone,
+            purpose=purpose,
+        )
+        .order_by("-created_at")
+        .first()
+    )
+
+    if latest_otp:
+        elapsed_seconds = (
+            now - latest_otp.created_at
+        ).total_seconds()
+
+        if elapsed_seconds < OTP_REQUEST_COOLDOWN_SECONDS:
+            remaining_seconds = int(
+                OTP_REQUEST_COOLDOWN_SECONDS - elapsed_seconds
+            )
+
+            raise ValueError(
+                f"لطفاً {remaining_seconds} ثانیه دیگر دوباره تلاش کنید."
+            )
 
     OTP.objects.filter(
         phone=phone,
@@ -44,12 +62,13 @@ def create_otp(
         phone=phone,
         purpose=purpose,
         code_hash=make_password(code),
-        expires_at=timezone.now() + timedelta(
+        expires_at=now + timedelta(
             minutes=OTP_EXPIRE_MINUTES
         ),
     )
 
     return otp, code
+
 
 
 @transaction.atomic

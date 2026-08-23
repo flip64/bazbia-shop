@@ -1,7 +1,8 @@
 from django.contrib.auth.models import User
 from django.db import transaction
-
+from django.conf import settings
 from rest_framework import status
+
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -18,6 +19,7 @@ from customers.models import Customer, OTP
 from customers.services.otp_service import create_otp, verify_otp
 
 
+
 class RequestOTPView(APIView):
     """
     درخواست ارسال کد ورود با شماره موبایل
@@ -29,10 +31,18 @@ class RequestOTPView(APIView):
 
         phone = serializer.validated_data["phone"]
 
-        otp, code = create_otp(
-            phone=phone,
-            purpose=OTP.Purpose.LOGIN,
-        )
+        try:
+            otp, code = create_otp(
+                phone=phone,
+                purpose=OTP.Purpose.LOGIN,
+            )
+        except ValueError as error:
+            return Response(
+                {
+                    "error": str(error),
+                },
+                status=status.HTTP_429_TOO_MANY_REQUESTS,
+            )
 
         # موقتاً تا زمان اتصال سرویس پیامک
         print(f"OTP for {phone}: {code}")
@@ -43,8 +53,9 @@ class RequestOTPView(APIView):
             "expires_at": otp.expires_at,
         }
 
-        # فقط برای محیط توسعه
-        response_data["debug_code"] = code
+        # کد فقط در حالت توسعه برگردانده می‌شود
+        if settings.DEBUG:
+            response_data["debug_code"] = code
 
         return Response(
             response_data,

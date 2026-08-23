@@ -19,14 +19,10 @@ from datetime import timedelta
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 
-# مسیر ذخیره‌سازی فایل‌های استاتیک جمع‌آوری شده
-STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+# تنظیمات SMTP برای Gmail
+# تنظیمات ایمیل
+load_dotenv(os.path.join(BASE_DIR, '.env'))
 
-
-# مسیرهای اضافی برای فایل‌های استاتیک
-STATICFILES_DIRS = [
-    os.path.join(BASE_DIR, 'static'),
-]
 
 # مسیر ذخیره‌سازی فایل‌های استاتیک جمع‌آوری‌شده
 
@@ -67,13 +63,15 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'django_filters',
-
-
-
     'corsheaders',    
     'django.contrib.humanize',
     
-    
+       # Third-party apps
+    "rest_framework_simplejwt.token_blacklist",
+
+
+
+
     # اپ های پروژه
     'core',
     'customers',
@@ -91,21 +89,21 @@ INSTALLED_APPS = [
     'dashboard',
 
 ]
-
 MIDDLEWARE = [
-    
-    
-    'django.contrib.sessions.middleware.SessionMiddleware',
-    'corsheaders.middleware.CorsMiddleware',  # این رو اول همه middleware ها بذار
-    'django.middleware.common.CommonMiddleware',
-    'django.middleware.security.SecurityMiddleware',
-    "whitenoise.middleware.WhiteNoiseMiddleware",
-    'django.middleware.csrf.CsrfViewMiddleware',
-    'django.contrib.auth.middleware.AuthenticationMiddleware',
-    'django.contrib.messages.middleware.MessageMiddleware',
-    'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    "django.middleware.security.SecurityMiddleware",
 
+    "corsheaders.middleware.CorsMiddleware",
+    "whitenoise.middleware.WhiteNoiseMiddleware",
+
+    "django.contrib.sessions.middleware.SessionMiddleware",
+    "django.middleware.common.CommonMiddleware",
+
+    "django.middleware.csrf.CsrfViewMiddleware",
+    "django.contrib.auth.middleware.AuthenticationMiddleware",
+    "django.contrib.messages.middleware.MessageMiddleware",
+    "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
+
 
 ROOT_URLCONF = 'bazbia_shop.urls'
 
@@ -244,9 +242,6 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 
 
-# تنظیمات SMTP برای Gmail
-# تنظیمات ایمیل
-load_dotenv(os.path.join(BASE_DIR, '.env'))
 
 
 
