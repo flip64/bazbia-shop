@@ -1,6 +1,8 @@
 from django.db import models
 from django.contrib.auth.models import User
 from django.utils import timezone
+from django.core.validators import RegexValidator
+
 import uuid
 
 
@@ -123,25 +125,122 @@ class CustomerState(models.Model):
         return f"{self.customer.user.username} → {[s.title for s in self.statuses.all()]}"
 
 
-# ==============================
+# =======
+# 
+# =======================
 # مدل آدرس‌های مشتری (CustomerAddress)
 # ==============================
+
+
+postal_code_validator = RegexValidator(
+    regex=r"^\d{10}$",
+    message="کد پستی باید دقیقاً ۱۰ رقم باشد.",
+)
+
+phone_validator = RegexValidator(
+    regex=r"^09\d{9}$",
+    message="شماره موبایل باید با 09 شروع شود و ۱۱ رقم باشد.",
+)
+
+
 class CustomerAddress(models.Model):
     customer = models.ForeignKey(
-        Customer, on_delete=models.CASCADE,
-        related_name='addresses'
+        Customer,
+        on_delete=models.CASCADE,
+        related_name="addresses",
+        verbose_name="مشتری",
     )
-    title = models.CharField(max_length=50, blank=True, null=True)
-    address = models.TextField()
-    city = models.CharField(max_length=50, blank=True, null=True)
-    postal_code = models.CharField(max_length=20, blank=True, null=True)
-    is_default = models.BooleanField(default=False)
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
+
+    title = models.CharField(
+        max_length=50,
+        blank=True,
+        default="",
+        verbose_name="عنوان آدرس",
+        help_text="مثلاً منزل یا محل کار",
+    )
+
+    recipient_name = models.CharField(
+        max_length=150,
+        blank=True,
+        default="",
+        verbose_name="نام تحویل‌گیرنده",
+    )
+
+    recipient_phone = models.CharField(
+        max_length=11,
+        blank=True,
+        default="",
+        validators=[phone_validator],
+        verbose_name="شماره موبایل تحویل‌گیرنده",
+    )
+
+    province = models.CharField(
+        max_length=100,
+        blank=True,
+        default="",
+        verbose_name="استان",
+    )
+
+    city = models.CharField(
+        max_length=100,
+        blank=True,
+        default="",
+        verbose_name="شهر",
+    )
+
+    address = models.TextField(
+        verbose_name="نشانی کامل",
+    )
+
+    postal_code = models.CharField(
+        max_length=10,
+        blank=True,
+        default="",
+        validators=[postal_code_validator],
+        verbose_name="کد پستی",
+    )
+
+    is_default = models.BooleanField(
+        default=False,
+        verbose_name="آدرس پیش‌فرض",
+    )
+
+    created_at = models.DateTimeField(
+        auto_now_add=True,
+        verbose_name="تاریخ ایجاد",
+    )
+
+    updated_at = models.DateTimeField(
+        auto_now=True,
+        verbose_name="آخرین ویرایش",
+    )
+
+    class Meta:
+        verbose_name = "آدرس مشتری"
+        verbose_name_plural = "آدرس‌های مشتری"
+        ordering = [
+            "-is_default",
+            "-updated_at",
+        ]
+
+    def save(self, *args, **kwargs):
+        if self.is_default:
+            CustomerAddress.objects.filter(
+                customer=self.customer,
+                is_default=True,
+            ).exclude(
+                pk=self.pk,
+            ).update(
+                is_default=False,
+            )
+
+        super().save(*args, **kwargs)
 
     def __str__(self):
-        return f"{self.customer.user.username} - {self.title or 'بدون عنوان'}"
-
+        return (
+            f"{self.customer.user.username} - "
+            f"{self.title or self.city or 'بدون عنوان'}"
+        )
 
 
 
