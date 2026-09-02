@@ -36,6 +36,8 @@ from suppliers.sync.create_product_in_db import (
 from suppliers.sync.find_offer import find_offer
 from suppliers.sync.updater import update_offer
 
+from suppliers.models import SupplierOffer
+
 
 logger = get_logger(__name__)
 
@@ -54,6 +56,12 @@ def import_products():
             "محصولات تأمین‌کننده دریافت شدند | count=%s",
             len(products),
         )
+
+        # URL محصولاتی که در لیست فعلی عبدی دیده شده‌اند
+        seen_urls = {
+            item.supplier_url
+            for item in products
+        }
 
         for item in products:
             try:
@@ -118,6 +126,24 @@ def import_products():
                     getattr(item, "name", "-"),
                     getattr(item, "supplier_url", "-"),
                 )
+
+        # Offerهای عبدی که در لیست فعلی دیده نشده‌اند
+        missing_offers = SupplierOffer.objects.filter(
+            supplier__slug="abdi"
+        ).exclude(
+            supplier_url__in=seen_urls
+        )
+
+        missing_count = missing_offers.update(
+            supplier_stock=0,
+            is_available=False,
+        )
+
+        if missing_count:
+            logger.info(
+                "موجودی Offerهای غایب صفر شد | count=%s",
+                missing_count,
+            )
 
 
 if __name__ == "__main__":
