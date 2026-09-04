@@ -24,6 +24,11 @@ from products.sitemaps import ProductSitemap, CategorySitemap
 
 
 
+sitemaps = {
+    "products": ProductSitemap,
+    "categories": CategorySitemap,
+}
+
 
 
     
@@ -60,10 +65,6 @@ urlpatterns = [
 ]
 
 
-sitemaps = {
-    "products": ProductSitemap,
-    "categories": CategorySitemap,
-}
 
 
 if settings.DEBUG:
