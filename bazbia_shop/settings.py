@@ -65,6 +65,7 @@ INSTALLED_APPS = [
     'django_filters',
     'corsheaders',    
     'django.contrib.humanize',
+    'django.contrib.sitemaps',
     
        # Third-party apps
     "rest_framework_simplejwt.token_blacklist",
