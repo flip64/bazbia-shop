@@ -26,7 +26,7 @@ from products.sitemaps import ProductSitemap, CategorySitemap
 
 sitemaps = {
     "products": ProductSitemap,
-    "categories": CategorySitemap,
+    
 }
 
 
