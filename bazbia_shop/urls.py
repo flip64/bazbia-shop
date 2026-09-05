@@ -8,8 +8,7 @@ from products.sitemaps import (
     CategorySitemap,
 )
 
-from core.sitemap_view import storefront_sitemap
-
+from core.sitemap import storefront_sitemap
 
 sitemaps = {
     "products": ProductSitemap,
