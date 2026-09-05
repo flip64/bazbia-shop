@@ -5,7 +5,7 @@ from django.contrib.sitemaps import Sitemap
 from products.models import Product, Category
 
 
-FRONTEND_URL = "https://bazbia.com"
+FRONTEND_URL = "https://bazbia.ir"
 
 
 class ProductSitemap(Sitemap):
