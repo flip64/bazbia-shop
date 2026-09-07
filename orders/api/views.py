@@ -1489,6 +1489,38 @@ class CreateOrderView(
                 ),
                 0,
             )
+            lot_stock = (
+                InventoryLot.objects.
+                filter(
+                   product_variant=variant,
+                   quantity_remaining__gt=0,
+                )
+                 .aggregate(
+                   total=Sum("quantity_remaining")
+                 )["total"] or 0 )
+
+            real_internal_stock = min( internal_stock, int(lot_stock),
+            )
+
+            internal_deduction = min(real_internal_stock,
+            remaining_quantity,
+            )
+
+
+
+
+
+
+
+
+
+
+
+    
+
+
+
+            
 
             internal_deduction = min(
                 internal_stock,
