@@ -45,7 +45,7 @@ def create_variant(product, product_data):
         product=product,
         sku=uuid.uuid4().hex[:12],   
         price=product_data.price,
-        stock=product_data.quantity,
+        stock=0,
     )
 
 
