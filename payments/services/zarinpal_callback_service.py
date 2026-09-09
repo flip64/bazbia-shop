@@ -2,15 +2,15 @@ from dataclasses import dataclass
 
 from django.db import transaction
 
+from notifications.services.sms.order_sms_service import (
+    send_paid_order_sms,
+)
 from payments.models import Payment
 from payments.services.gateways.zarinpal_gateway import (
     ZarinpalGateway,
     ZarinpalGatewayError,
 )
 
-from notifications.services.email.order_email_service import (
-    send_paid_order_email,
-)
 
 @dataclass(frozen=True)
 class ZarinpalCallbackResult:
@@ -21,7 +21,8 @@ class ZarinpalCallbackResult:
 
 class ZarinpalCallbackService:
     """
-    بررسی بازگشت کاربر از زرین‌پال و تأیید واقعی تراکنش.
+    بررسی بازگشت کاربر از زرین‌پال
+    و تأیید واقعی تراکنش.
     """
 
     def __init__(
@@ -46,9 +47,12 @@ class ZarinpalCallbackService:
             .get(pk=self.payment.pk)
         )
 
+        # -----------------------------------------
+        # پرداخت قبلاً تأیید شده
+        # -----------------------------------------
         if (
-            payment.status ==
-            Payment.Status.SUCCESSFUL
+            payment.status
+            == Payment.Status.SUCCESSFUL
         ):
             return ZarinpalCallbackResult(
                 payment=payment,
@@ -59,11 +63,17 @@ class ZarinpalCallbackService:
                 ),
             )
 
+        # -----------------------------------------
+        # بررسی درگاه
+        # -----------------------------------------
         if payment.gateway != "zarinpal":
             raise ValueError(
                 "این تراکنش متعلق به زرین‌پال نیست."
             )
 
+        # -----------------------------------------
+        # بررسی Authority
+        # -----------------------------------------
         if (
             not payment.authority
             or payment.authority != self.authority
@@ -73,6 +83,10 @@ class ZarinpalCallbackService:
                 "ثبت‌شده مطابقت ندارد."
             )
 
+        # -----------------------------------------
+        # کاربر پرداخت را لغو کرده
+        # یا درگاه Status=OK نداده است
+        # -----------------------------------------
         if self.callback_status != "OK":
             payment.mark_cancelled(
                 error_message=(
@@ -96,6 +110,9 @@ class ZarinpalCallbackService:
                 ),
             )
 
+        # -----------------------------------------
+        # Verify واقعی از زرین‌پال
+        # -----------------------------------------
         gateway = ZarinpalGateway()
 
         try:
@@ -116,6 +133,9 @@ class ZarinpalCallbackService:
                 str(error)
             ) from error
 
+        # -----------------------------------------
+        # Verify ناموفق
+        # -----------------------------------------
         if not result.is_successful:
             payment.mark_failed(
                 error_message=(
@@ -136,6 +156,9 @@ class ZarinpalCallbackService:
                 ),
             )
 
+        # -----------------------------------------
+        # پرداخت واقعاً موفق است
+        # -----------------------------------------
         payment.mark_successful(
             tracking_code=(
                 result.tracking_code
@@ -146,16 +169,20 @@ class ZarinpalCallbackService:
             gateway_response=(
                 result.raw_response
             ),
-            
         )
+
+        # -----------------------------------------
+        # پیامک فقط بعد از Commit موفق دیتابیس
+        # -----------------------------------------
         order_id = payment.order_id
         payment_id = payment.id
 
-        transaction.on_commit(lambda: send_paid_order_email(
-             order_id=order_id,
-             payment_id=payment_id,
+        transaction.on_commit(
+            lambda: send_paid_order_sms(
+                order_id=order_id,
+                payment_id=payment_id,
             )
-                             )
+        )
 
         return ZarinpalCallbackResult(
             payment=payment,
