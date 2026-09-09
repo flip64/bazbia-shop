@@ -2,13 +2,14 @@ from dataclasses import dataclass
 
 from django.db import transaction
 
-from notifications.services.sms.order_sms_service import (
-    send_paid_order_sms,
-)
 from payments.models import Payment
 from payments.services.gateways.zarinpal_gateway import (
     ZarinpalGateway,
     ZarinpalGatewayError,
+)
+
+from notifications.services.paid_order_notification_service import (
+    notify_paid_order,
 )
 
 
@@ -48,12 +49,9 @@ class ZarinpalCallbackService:
         )
 
         # -----------------------------------------
-        # پرداخت قبلاً تأیید شده
+        # پرداخت قبلاً با موفقیت تأیید شده
         # -----------------------------------------
-        if (
-            payment.status
-            == Payment.Status.SUCCESSFUL
-        ):
+        if payment.status == Payment.Status.SUCCESSFUL:
             return ZarinpalCallbackResult(
                 payment=payment,
                 is_successful=True,
@@ -84,8 +82,8 @@ class ZarinpalCallbackService:
             )
 
         # -----------------------------------------
-        # کاربر پرداخت را لغو کرده
-        # یا درگاه Status=OK نداده است
+        # پرداخت توسط کاربر لغو شده
+        # یا Status درگاه OK نیست
         # -----------------------------------------
         if self.callback_status != "OK":
             payment.mark_cancelled(
@@ -96,8 +94,7 @@ class ZarinpalCallbackService:
                 gateway_response={
                     "gateway": "zarinpal",
                     "authority": self.authority,
-                    "callback_status":
-                        self.callback_status,
+                    "callback_status": self.callback_status,
                 },
             )
 
@@ -124,9 +121,7 @@ class ZarinpalCallbackService:
         except ZarinpalGatewayError as error:
             payment.mark_failed(
                 error_message=str(error),
-                gateway_response=(
-                    error.response_data
-                ),
+                gateway_response=error.response_data,
             )
 
             raise ValueError(
@@ -138,12 +133,8 @@ class ZarinpalCallbackService:
         # -----------------------------------------
         if not result.is_successful:
             payment.mark_failed(
-                error_message=(
-                    result.error_message
-                ),
-                gateway_response=(
-                    result.raw_response
-                ),
+                error_message=result.error_message,
+                gateway_response=result.raw_response,
             )
 
             return ZarinpalCallbackResult(
@@ -151,34 +142,40 @@ class ZarinpalCallbackService:
                 is_successful=False,
                 message=(
                     result.error_message
-                    or
-                    "تأیید پرداخت ناموفق بود."
+                    or "تأیید پرداخت ناموفق بود."
                 ),
             )
 
         # -----------------------------------------
         # پرداخت واقعاً موفق است
+        #
+        # mark_successful علاوه بر Payment،
+        # وضعیت Order را نیز به paid تغییر می‌دهد.
         # -----------------------------------------
         payment.mark_successful(
-            tracking_code=(
-                result.tracking_code
-            ),
-            reference_id=(
-                result.reference_id
-            ),
-            gateway_response=(
-                result.raw_response
-            ),
+            tracking_code=result.tracking_code,
+            reference_id=result.reference_id,
+            gateway_response=result.raw_response,
         )
 
-        # -----------------------------------------
-        # پیامک فقط بعد از Commit موفق دیتابیس
-        # -----------------------------------------
         order_id = payment.order_id
         payment_id = payment.id
 
+        # -----------------------------------------
+        # اعلان سفارش فقط پس از Commit موفق
+        #
+        # notify_paid_order خودش بررسی می‌کند:
+        # - Payment باید SUCCESSFUL باشد
+        # - Order باید PAID باشد
+        # - پیامک تکراری ارسال نشود
+        #
+        # سپس:
+        # - SMS مشتری
+        # - ایمیل مدیر
+        # را مدیریت می‌کند.
+        # -----------------------------------------
         transaction.on_commit(
-            lambda: send_paid_order_sms(
+            lambda: notify_paid_order(
                 order_id=order_id,
                 payment_id=payment_id,
             )
