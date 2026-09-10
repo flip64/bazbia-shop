@@ -5,6 +5,11 @@ from rest_framework import serializers
 
 from customers.models import CustomerAddress
 
+from customers.models import WishlistItem
+
+from products.models import Product
+from products.api.serializers import ProductListSerializer
+
 
 IRAN_PHONE_PATTERN = re.compile(r"^09\d{9}$")
 
@@ -351,3 +356,68 @@ class CustomerAddressSerializer(
             )
 
         return value
+
+# ==================================
+# Wishlist
+# ==================================
+class WishlistItemSerializer(
+    serializers.ModelSerializer
+):
+    """
+    Serializer علاقه‌مندی مشتری.
+
+    ورودی:
+        product_id
+
+    خروجی:
+        اطلاعات کامل محصول
+    """
+
+    product = ProductListSerializer(
+        read_only=True,
+    )
+
+    product_id = serializers.PrimaryKeyRelatedField(
+        source="product",
+        queryset=Product.objects.filter(
+            is_active=True,
+        ),
+        write_only=True,
+    )
+
+    class Meta:
+        model = WishlistItem
+
+        fields = [
+            "id",
+            "product",
+            "product_id",
+            "created_at",
+        ]
+
+        read_only_fields = [
+            "id",
+            "product",
+            "created_at",
+        ]
+
+    def create(
+        self,
+        validated_data,
+    ):
+        customer = validated_data[
+            "customer"
+        ]
+
+        product = validated_data[
+            "product"
+        ]
+
+        wishlist_item, created = (
+            WishlistItem.objects.get_or_create(
+                customer=customer,
+                product=product,
+            )
+        )
+
+        return wishlist_item
