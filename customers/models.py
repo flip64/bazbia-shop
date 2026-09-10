@@ -340,3 +340,56 @@ class OTP(models.Model):
 
     def __str__(self):
         return f"{self.phone} - {self.get_purpose_display()}"
+
+
+
+# ==================================
+# علاقه‌مندی‌های مشتری
+# ==================================
+class WishlistItem(models.Model):
+    """
+    محصولاتی که مشتری به لیست علاقه‌مندی‌های خود اضافه کرده است.
+    """
+
+    customer = models.ForeignKey(
+        Customer,
+        on_delete=models.CASCADE,
+        related_name="wishlist_items",
+        verbose_name="مشتری",
+    )
+
+    product = models.ForeignKey(
+        "products.Product",
+        on_delete=models.CASCADE,
+        related_name="wishlist_items",
+        verbose_name="محصول",
+    )
+
+    created_at = models.DateTimeField(
+        auto_now_add=True,
+        verbose_name="تاریخ افزودن",
+    )
+
+    class Meta:
+        verbose_name = "علاقه‌مندی"
+        verbose_name_plural = "علاقه‌مندی‌ها"
+
+        ordering = [
+            "-created_at",
+        ]
+
+        constraints = [
+            models.UniqueConstraint(
+                fields=[
+                    "customer",
+                    "product",
+                ],
+                name="unique_customer_wishlist_product",
+            )
+        ]
+
+    def __str__(self):
+        return (
+            f"{self.customer} - "
+            f"{self.product}"
+        )
