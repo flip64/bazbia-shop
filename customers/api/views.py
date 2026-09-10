@@ -1,7 +1,7 @@
 from django.contrib.auth.models import User
 from django.db import transaction
 
-from rest_framework import permissions, status, viewsets
+from rest_framework import permissions, status, viewsets,mixins
 from rest_framework.exceptions import ValidationError
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
@@ -9,7 +9,7 @@ from rest_framework.views import APIView
 
 from rest_framework_simplejwt.exceptions import TokenError
 from rest_framework_simplejwt.tokens import RefreshToken
-
+from customers.models import WishlistItem
 from customers.models import (
     Customer,
     CustomerAddress,
@@ -28,6 +28,8 @@ from customers.services.otp_service import (
     create_otp,
     verify_otp,
 )
+
+from customers.api.serializers import WishlistItemSerializer
 
 
 # =========================================================
@@ -517,4 +519,125 @@ class CustomerAddressViewSet(
 
         serializer.save(
             customer=customer
+        )
+
+
+# ==================================
+# Wishlist
+# ==================================
+class WishlistItemViewSet(
+    mixins.ListModelMixin,
+    mixins.CreateModelMixin,
+    mixins.DestroyModelMixin,
+    viewsets.GenericViewSet,
+):
+    """
+    API علاقه‌مندی مشتری.
+
+    GET:
+        /api/customers/wishlist/
+
+    POST:
+        /api/customers/wishlist/
+
+    DELETE:
+        /api/customers/wishlist/<product_id>/
+    """
+
+    serializer_class = (
+        WishlistItemSerializer
+    )
+
+    permission_classes = [
+        permissions.IsAuthenticated,
+    ]
+
+    # در DELETE شناسه محصول می‌گیریم
+    # نه شناسه WishlistItem
+    lookup_field = "product_id"
+
+    lookup_value_regex = r"\d+"
+
+    def get_customer(self):
+        """
+        مشتری متعلق به کاربر فعلی.
+        """
+
+        customer = (
+            Customer.objects
+            .filter(
+                user=self.request.user,
+            )
+            .first()
+        )
+
+        if customer is None:
+            raise ValidationError(
+                {
+                    "detail": (
+                        "پروفایل مشتری "
+                        "برای این کاربر یافت نشد."
+                    )
+                }
+            )
+
+        return customer
+
+    def get_queryset(self):
+        """
+        کاربر فقط علاقه‌مندی‌های خودش
+        را می‌تواند مشاهده یا حذف کند.
+        """
+
+        if (
+            not self.request.user
+            .is_authenticated
+        ):
+            return (
+                WishlistItem.objects.none()
+            )
+
+        customer = (
+            Customer.objects
+            .filter(
+                user=self.request.user,
+            )
+            .first()
+        )
+
+        if customer is None:
+            return (
+                WishlistItem.objects.none()
+            )
+
+        return (
+            WishlistItem.objects
+            .filter(
+                customer=customer,
+                product__is_active=True,
+            )
+            .select_related(
+                "product",
+                "product__category",
+            )
+            .prefetch_related(
+                "product__images",
+                "product__variants",
+                "product__variants__images",
+            )
+            .order_by(
+                "-created_at",
+            )
+        )
+
+    def perform_create(
+        self,
+        serializer,
+    ):
+        customer = (
+            self.get_customer()
+        )
+
+        serializer.save(
+            customer=customer,
         )
