@@ -9,6 +9,7 @@ from customers.api.views import (
     LogoutView,
     RequestOTPView,
     VerifyOTPView,
+    WishlistItemViewSet,
 )
 
 
@@ -22,7 +23,11 @@ router.register(
     CustomerAddressViewSet,
     basename="customer-address",
 )
-
+router.register(
+    r"wishlist",
+    WishlistItemViewSet,
+    basename="customer-wishlist",
+)
 
 urlpatterns = [
     path(
@@ -61,4 +66,7 @@ urlpatterns = [
         "",
         include(router.urls),
     ),
+
+
+    
 ]
