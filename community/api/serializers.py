@@ -1,15 +1,10 @@
 from django.core.exceptions import ValidationError as DjangoValidationError
 from rest_framework import serializers
 
-from community.models import (
-    ProductReview,
-    ProductQuestion,
-    ProductAnswer,
-)
-
-from community.services.review_service import ReviewService
-from community.services.question_service import QuestionService
+from community.models import ProductAnswer, ProductQuestion, ProductReview
 from community.services.answer_service import AnswerService
+from community.services.question_service import QuestionService
+from community.services.review_service import ReviewService
 
 
 # =========================================================
@@ -49,11 +44,10 @@ def raise_drf_validation_error(exc):
 
 class ProductAnswerSerializer(serializers.ModelSerializer):
     user_name = serializers.SerializerMethodField()
+    helpful_count = serializers.SerializerMethodField()
+    user_found_helpful = serializers.SerializerMethodField()
 
-    question_id = serializers.IntegerField(
-        source="question.id",
-        read_only=True,
-    )
+    question_id = serializers.IntegerField(source="question.id", read_only=True)
 
     class Meta:
         model = ProductAnswer
@@ -65,6 +59,8 @@ class ProductAnswerSerializer(serializers.ModelSerializer):
             "body",
             "is_verified_purchase",
             "is_official",
+            "helpful_count",
+            "user_found_helpful",
             "status",
             "created_at",
             "updated_at",
@@ -76,6 +72,8 @@ class ProductAnswerSerializer(serializers.ModelSerializer):
             "user_name",
             "is_verified_purchase",
             "is_official",
+            "helpful_count",
+            "user_found_helpful",
             "status",
             "created_at",
             "updated_at",
@@ -84,13 +82,22 @@ class ProductAnswerSerializer(serializers.ModelSerializer):
     def get_user_name(self, obj):
         return get_public_user_name(obj.user)
 
+    def get_helpful_count(self, obj):
+        return obj.helpful_votes.count()
+
+    def get_user_found_helpful(self, obj):
+        request = self.context.get("request")
+
+        if not request or not request.user.is_authenticated:
+            return False
+
+        return obj.helpful_votes.filter(user=request.user).exists()
+
     def validate_body(self, value):
         value = (value or "").strip()
 
         if not value:
-            raise serializers.ValidationError(
-                "متن پاسخ نمی‌تواند خالی باشد."
-            )
+            raise serializers.ValidationError("متن پاسخ نمی‌تواند خالی باشد.")
 
         return value
 
@@ -99,14 +106,10 @@ class ProductAnswerSerializer(serializers.ModelSerializer):
         question = self.context.get("question")
 
         if request is None:
-            raise serializers.ValidationError(
-                "اطلاعات درخواست در دسترس نیست."
-            )
+            raise serializers.ValidationError("اطلاعات درخواست در دسترس نیست.")
 
         if question is None:
-            raise serializers.ValidationError(
-                "پرسش مشخص نشده است."
-            )
+            raise serializers.ValidationError("پرسش مشخص نشده است.")
 
         try:
             return AnswerService.create_answer(
@@ -125,15 +128,10 @@ class ProductAnswerSerializer(serializers.ModelSerializer):
 
 class ProductQuestionSerializer(serializers.ModelSerializer):
     user_name = serializers.SerializerMethodField()
-
-    product_id = serializers.IntegerField(
-        source="product.id",
-        read_only=True,
-    )
-
     answers = serializers.SerializerMethodField()
-
     answer_count = serializers.SerializerMethodField()
+
+    product_id = serializers.IntegerField(source="product.id", read_only=True)
 
     class Meta:
         model = ProductQuestion
@@ -167,9 +165,7 @@ class ProductQuestionSerializer(serializers.ModelSerializer):
     def get_answers(self, obj):
         answers = (
             obj.answers
-            .filter(
-                status=ProductAnswer.STATUS_APPROVED,
-            )
+            .filter(status=ProductAnswer.STATUS_APPROVED)
             .select_related("user")
             .order_by(
                 "-is_official",
@@ -185,17 +181,13 @@ class ProductQuestionSerializer(serializers.ModelSerializer):
         ).data
 
     def get_answer_count(self, obj):
-        return obj.answers.filter(
-            status=ProductAnswer.STATUS_APPROVED,
-        ).count()
+        return obj.answers.filter(status=ProductAnswer.STATUS_APPROVED).count()
 
     def validate_body(self, value):
         value = (value or "").strip()
 
         if not value:
-            raise serializers.ValidationError(
-                "متن پرسش نمی‌تواند خالی باشد."
-            )
+            raise serializers.ValidationError("متن پرسش نمی‌تواند خالی باشد.")
 
         return value
 
@@ -204,14 +196,10 @@ class ProductQuestionSerializer(serializers.ModelSerializer):
         product = self.context.get("product")
 
         if request is None:
-            raise serializers.ValidationError(
-                "اطلاعات درخواست در دسترس نیست."
-            )
+            raise serializers.ValidationError("اطلاعات درخواست در دسترس نیست.")
 
         if product is None:
-            raise serializers.ValidationError(
-                "محصول مشخص نشده است."
-            )
+            raise serializers.ValidationError("محصول مشخص نشده است.")
 
         try:
             return QuestionService.create_question(
@@ -230,11 +218,10 @@ class ProductQuestionSerializer(serializers.ModelSerializer):
 
 class ProductReviewSerializer(serializers.ModelSerializer):
     user_name = serializers.SerializerMethodField()
+    helpful_count = serializers.SerializerMethodField()
+    user_found_helpful = serializers.SerializerMethodField()
 
-    product_id = serializers.IntegerField(
-        source="product.id",
-        read_only=True,
-    )
+    product_id = serializers.IntegerField(source="product.id", read_only=True)
 
     class Meta:
         model = ProductReview
@@ -247,6 +234,8 @@ class ProductReviewSerializer(serializers.ModelSerializer):
             "title",
             "body",
             "is_verified_purchase",
+            "helpful_count",
+            "user_found_helpful",
             "status",
             "created_at",
             "updated_at",
@@ -257,6 +246,8 @@ class ProductReviewSerializer(serializers.ModelSerializer):
             "product_id",
             "user_name",
             "is_verified_purchase",
+            "helpful_count",
+            "user_found_helpful",
             "status",
             "created_at",
             "updated_at",
@@ -265,6 +256,17 @@ class ProductReviewSerializer(serializers.ModelSerializer):
     def get_user_name(self, obj):
         return get_public_user_name(obj.user)
 
+    def get_helpful_count(self, obj):
+        return obj.helpful_votes.count()
+
+    def get_user_found_helpful(self, obj):
+        request = self.context.get("request")
+
+        if not request or not request.user.is_authenticated:
+            return False
+
+        return obj.helpful_votes.filter(user=request.user).exists()
+
     def validate_title(self, value):
         return (value or "").strip()
 
@@ -272,17 +274,13 @@ class ProductReviewSerializer(serializers.ModelSerializer):
         value = (value or "").strip()
 
         if not value:
-            raise serializers.ValidationError(
-                "متن دیدگاه نمی‌تواند خالی باشد."
-            )
+            raise serializers.ValidationError("متن دیدگاه نمی‌تواند خالی باشد.")
 
         return value
 
     def validate_rating(self, value):
         if value < 1 or value > 5:
-            raise serializers.ValidationError(
-                "امتیاز باید بین ۱ تا ۵ باشد."
-            )
+            raise serializers.ValidationError("امتیاز باید بین ۱ تا ۵ باشد.")
 
         return value
 
@@ -291,14 +289,10 @@ class ProductReviewSerializer(serializers.ModelSerializer):
         product = self.context.get("product")
 
         if request is None:
-            raise serializers.ValidationError(
-                "اطلاعات درخواست در دسترس نیست."
-            )
+            raise serializers.ValidationError("اطلاعات درخواست در دسترس نیست.")
 
         if product is None:
-            raise serializers.ValidationError(
-                "محصول مشخص نشده است."
-            )
+            raise serializers.ValidationError("محصول مشخص نشده است.")
 
         try:
             return ReviewService.create_review(
