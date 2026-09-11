@@ -91,6 +91,7 @@ INSTALLED_APPS = [
     "contact",
     "analytics",
     "purchases",
+    "community",
     
 
 ]
