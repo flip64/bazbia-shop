@@ -237,6 +237,20 @@
         border-radius: 10px;
     }
 
+    .tracking-code-input {
+        direction: ltr;
+        text-align: left;
+        font-family: monospace;
+        letter-spacing: 0.04em;
+    }
+
+    .shipping-help {
+        margin-top: 8px;
+        color: #6b7280;
+        font-size: 0.78rem;
+        line-height: 1.8;
+    }
+
     @media (max-width: 768px) {
         .order-detail-header {
             align-items: flex-start;
@@ -278,36 +292,6 @@
         </a>
 
     </div>
-
-    {% if messages %}
-        {% for message in messages %}
-
-            <div
-                class="alert
-                {% if message.tags == 'success' %}
-                    alert-success
-                {% elif message.tags == 'error' %}
-                    alert-danger
-                {% elif message.tags == 'warning' %}
-                    alert-warning
-                {% else %}
-                    alert-info
-                {% endif %}
-                alert-dismissible fade show"
-                role="alert"
-            >
-                {{ message }}
-
-                <button
-                    type="button"
-                    class="btn-close"
-                    data-bs-dismiss="alert"
-                    aria-label="بستن"
-                ></button>
-            </div>
-
-        {% endfor %}
-    {% endif %}
 
     <div class="row">
 
@@ -389,6 +373,36 @@
 
                         <span class="info-value">
                             {{ order.updated_at|date:"Y/m/d H:i" }}
+                        </span>
+                    </div>
+
+                    <div class="info-item">
+                        <span class="info-label">
+                            روش ارسال
+                        </span>
+
+                        <span class="info-value">
+                            {% if order.shipping_method_title %}
+                                {{ order.shipping_method_title }}
+                            {% elif order.shipping_method_code %}
+                                {{ order.shipping_method_code }}
+                            {% else %}
+                                ثبت نشده
+                            {% endif %}
+                        </span>
+                    </div>
+
+                    <div class="info-item">
+                        <span class="info-label">
+                            کد رهگیری مرسوله
+                        </span>
+
+                        <span class="info-value phone-number">
+                            {% if order.shipping_tracking_code %}
+                                {{ order.shipping_tracking_code }}
+                            {% else %}
+                                هنوز ثبت نشده
+                            {% endif %}
                         </span>
                     </div>
 
@@ -711,7 +725,7 @@
             <div class="detail-card">
 
                 <div class="detail-card-title">
-                    <span>تغییر وضعیت سفارش</span>
+                    <span>مدیریت ارسال سفارش</span>
                 </div>
 
                 <form
@@ -751,11 +765,47 @@
 
                     </div>
 
+                    <div class="mb-3">
+
+                        <label
+                            for="shipping-tracking-code"
+                            class="form-label"
+                        >
+                            کد رهگیری مرسوله
+                        </label>
+
+                        <input
+                            id="shipping-tracking-code"
+                            name="shipping_tracking_code"
+                            type="text"
+                            maxlength="100"
+                            class="form-control tracking-code-input"
+                            value="{{ order.shipping_tracking_code }}"
+                            placeholder="کد رهگیری را وارد کنید"
+                            autocomplete="off"
+                        >
+
+                        <div class="shipping-help">
+                            برای انتخاب وضعیت «ارسال شده»، ثبت کد رهگیری الزامی است.
+                            فاصله‌های اضافی و ارقام فارسی هنگام ذخیره اصلاح می‌شوند.
+                        </div>
+
+                    </div>
+
+                    {% if order.shipped_at %}
+                        <div class="alert alert-light border mb-3">
+                            زمان ثبت ارسال:
+                            {{ order.shipped_at|jalali_date }}
+                            ساعت
+                            {{ order.shipped_at|date:"H:i" }}
+                        </div>
+                    {% endif %}
+
                     <button
                         type="submit"
                         class="btn btn-success w-100"
                     >
-                        ذخیره وضعیت
+                        ذخیره اطلاعات ارسال
                     </button>
 
                 </form>
