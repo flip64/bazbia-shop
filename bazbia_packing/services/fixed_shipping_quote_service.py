@@ -18,10 +18,10 @@ class FixedShippingQuoteService:
     SHIPPING_COST_TOMAN = 195_000
     QUOTE_EXPIRATION_MINUTES = 30
 
-    METHOD_CODE = "fixed_standard"
-    METHOD_TITLE = "ارسال استاندارد"
+    METHOD_CODE = "post_pishtaz"
+    METHOD_TITLE = "پست پیشتاز "
     METHOD_DESCRIPTION = (
-        "هزینه ارسال  و یسته بندی فعلاً به‌صورت ثابت محاسبه می‌شود."
+        "ارسال سفارش از طریق شرکت ملی پست"
     )
 
     ESTIMATED_MIN_DAYS = 3
