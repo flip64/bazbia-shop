@@ -1,6 +1,6 @@
 from django.contrib import admin
 from django.utils.html import format_html
-
+from django.utils import timezone
 from orders.models import (
     Cart,
     CartItem,
@@ -37,9 +37,7 @@ class CartItemInline(admin.TabularInline):
         "unit_price_display",
         "total_price_display",
         "added_at",
-        "shipping_tracking_code",
-        "shipped_at"
-    )
+            )
 
     show_change_link = True
 
@@ -283,7 +281,81 @@ class CartItemAdmin(admin.ModelAdmin):
     def has_add_permission(self, request):
         return False
 
+@admin.register(Order)
+class OrderAdmin(admin.ModelAdmin):
+    list_display = (
+        "id",
+        "user",
+        "status",
+        "shipping_method_title",
+        "shipping_tracking_code",
+        "shipped_at",
+        "created_at",
+    )
 
-admin.site.register(Order)
+    list_filter = (
+        "status",
+        "shipping_method_code",
+        "created_at",
+    )
+
+    search_fields = (
+        "=id",
+        "user__username",
+        "user__first_name",
+        "user__last_name",
+        "shipping_tracking_code",
+    )
+
+    readonly_fields = (
+        "created_at",
+        "updated_at",
+        "shipped_at",
+    )
+
+    fields = (
+        "user",
+        "status",
+        "payment_method",
+
+        "shipping_address",
+        "shipping_address_snapshot",
+
+        "shipping_method_code",
+        "shipping_method_title",
+        "shipping_quote_id",
+        "shipping_tracking_code",
+        "shipped_at",
+
+        "items_total",
+        "shipping_cost",
+        "discount_amount",
+        "total_price",
+
+        "created_at",
+        "updated_at",
+    )
+
+    def save_model(
+        self,
+        request,
+        obj,
+        form,
+        change,
+    ):
+        if (
+            obj.status == Order.STATUS_SHIPPED
+            and obj.shipping_tracking_code
+            and obj.shipped_at is None
+        ):
+            obj.shipped_at = timezone.now()
+
+        super().save_model(
+            request,
+            obj,
+            form,
+            change,
+        )
+
 admin.site.register(OrderItem)
 admin.site.register(SalesSummary)
