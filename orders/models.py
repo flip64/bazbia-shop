@@ -142,6 +142,21 @@ class Order(models.Model):
         auto_now=True
     )
 
+    shipping_tracking_code = models.CharField(
+      max_length=100,
+      blank=True,
+      default="",
+      db_index=True,
+      verbose_name="کد رهگیری مرسوله",
+   )
+
+    shipped_at = models.DateTimeField(
+      null=True,
+      blank=True,
+      verbose_name="زمان ارسال",
+   )
+
+    
     class Meta:
         ordering = ["-created_at"]
         indexes = [
