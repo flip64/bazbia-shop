@@ -37,6 +37,8 @@ class CartItemInline(admin.TabularInline):
         "unit_price_display",
         "total_price_display",
         "added_at",
+        "shipping_tracking_code",
+        "shipped_at"
     )
 
     show_change_link = True
