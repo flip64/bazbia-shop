@@ -7,6 +7,7 @@ from django.db.models import Count, Q, Sum
 from django.db.models.functions import Coalesce
 from django.http import Http404
 from django.shortcuts import get_object_or_404, redirect, render
+from django.utils import timezone
 from django.views.decorators.http import require_POST
 
 from orders.models import Order
@@ -34,6 +35,7 @@ def order_list(request):
         Order.objects
         .select_related(
             "user",
+            "user__customer_profile",
             "shipping_address",
         )
         .annotate(
@@ -78,6 +80,8 @@ def order_list(request):
             | Q(
                 shipping_address_snapshot__recipient_phone__icontains=search
             )
+            | Q(shipping_tracking_code__icontains=search)
+            | Q(shipping_method_title__icontains=search)
         )
 
         if search.isdigit():
@@ -129,6 +133,9 @@ def order_list(request):
         request.GET.get("page")
     )
 
+    query_params = request.GET.copy()
+    query_params.pop("page", None)
+
     statistics = {
         "all": Order.objects.count(),
         "pending": Order.objects.filter(
@@ -165,6 +172,7 @@ def order_list(request):
             Order.PAYMENT_METHOD_CHOICES
         ),
         "statistics": statistics,
+        "query_without_page": query_params.urlencode(),
     }
 
     return render(
@@ -289,7 +297,7 @@ def order_detail(request, pk):
 @require_POST
 def order_status_update(request, pk):
     """
-    تغییر وضعیت سفارش توسط مدیر.
+    تغییر وضعیت و ثبت کد رهگیری سفارش توسط مدیر.
     """
 
     _staff_access_required(request)
@@ -303,6 +311,19 @@ def order_status_update(request, pk):
         "status",
         "",
     ).strip()
+
+    tracking_code = request.POST.get(
+        "shipping_tracking_code",
+        "",
+    ).strip()
+
+    digit_translation = str.maketrans(
+        "۰۱۲۳۴۵۶۷۸۹٠١٢٣٤٥٦٧٨٩",
+        "01234567890123456789",
+    )
+    tracking_code = "".join(
+        tracking_code.translate(digit_translation).split()
+    )
 
     valid_statuses = {
         value
@@ -320,10 +341,13 @@ def order_status_update(request, pk):
             pk=order.pk,
         )
 
-    if order.status == new_status:
-        messages.info(
+    if (
+        new_status == Order.STATUS_SHIPPED
+        and not tracking_code
+    ):
+        messages.error(
             request,
-            "وضعیت سفارش تغییری نکرد.",
+            "برای وضعیت «ارسال شده» کد رهگیری را وارد کنید.",
         )
 
         return redirect(
@@ -331,27 +355,39 @@ def order_status_update(request, pk):
             pk=order.pk,
         )
 
-    previous_status_display = (
-        order.get_status_display()
-    )
+    previous_status = order.status
+    previous_tracking_code = order.shipping_tracking_code
 
     order.status = new_status
+    order.shipping_tracking_code = tracking_code
+
+    update_fields = [
+        "status",
+        "shipping_tracking_code",
+        "updated_at",
+    ]
+
+    if (
+        new_status == Order.STATUS_SHIPPED
+        and order.shipped_at is None
+    ):
+        order.shipped_at = timezone.now()
+        update_fields.append("shipped_at")
+
     order.save(
-        update_fields=[
-            "status",
-            "updated_at",
-        ]
+        update_fields=update_fields
     )
 
-    messages.success(
-        request,
-        (
-            f"وضعیت سفارش شماره {order.pk} "
-            f"از «{previous_status_display}» "
-            f"به «{order.get_status_display()}» "
-            "تغییر کرد."
-        ),
-    )
+    if (
+        previous_status == new_status
+        and previous_tracking_code == tracking_code
+    ):
+        messages.info(request, "اطلاعات ارسال تغییری نکرد.")
+    else:
+        messages.success(
+            request,
+            f"اطلاعات ارسال سفارش شماره {order.pk} ذخیره شد.",
+        )
 
     return redirect(
         "dashboard:order_detail",
