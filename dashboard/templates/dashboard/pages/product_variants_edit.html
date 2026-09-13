@@ -1,0 +1,46 @@
+{% extends "dashboard/base.html" %}
+
+{% block title %}{{ page_title }}{% endblock %}
+
+{% block content %}
+<style>
+    .variant-page { direction:rtl; }
+    .variant-card { margin-bottom:16px; padding:18px; background:#fff; border:1px solid #e4e8ee; border-radius:13px; }
+    .variant-title { display:flex; justify-content:space-between; gap:12px; margin-bottom:16px; padding-bottom:12px; border-bottom:1px solid #edf0f4; }
+    .variant-grid { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:13px; }
+    .field-box label { display:block; margin-bottom:6px; color:#657187; font-size:.78rem; font-weight:700; }
+    .field-box input, .field-box select { width:100%; padding:.55rem .75rem; border:1px solid #ced4da; border-radius:.375rem; }
+    .field-box select[multiple] { min-height:105px; }
+    .field-errors { margin-top:5px; color:#dc2626; font-size:.75rem; }
+    .stock-box { padding:12px; background:#f8fafc; border-radius:9px; }
+    @media (max-width:950px) { .variant-grid { grid-template-columns:repeat(2,1fr); } }
+    @media (max-width:600px) { .variant-grid { grid-template-columns:1fr; } }
+</style>
+
+<div class="container-fluid px-0 variant-page">
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4">
+        <div><h1 class="h4 mb-1">مدیریت واریانت‌ها</h1><p class="text-secondary mb-0">{{ product.name }}</p></div>
+        <a href="{% url 'dashboard:product_detail' product.pk %}" class="btn btn-outline-secondary">بازگشت به محصول</a>
+    </div>
+
+    <div class="alert alert-info">موجودی داخلی در این صفحه فقط نمایش داده می‌شود و از طریق عملیات انبار تغییر می‌کند.</div>
+
+    <form method="post">
+        {% csrf_token %}
+        {{ formset.management_form }}
+        {% if formset.non_form_errors %}<div class="alert alert-danger">{{ formset.non_form_errors }}</div>{% endif %}
+
+        {% for form in formset %}
+            <div class="variant-card">
+                {% for hidden in form.hidden_fields %}{{ hidden }}{% endfor %}
+                <div class="variant-title"><strong>{% if form.instance.pk %}واریانت #{{ form.instance.pk }}{% else %}واریانت جدید{% endif %}</strong>{% if form.instance.pk %}<span class="stock-box">موجودی داخلی: {{ form.instance.stock }}</span>{% endif %}</div>
+                <div class="variant-grid">
+                    {% for field in form.visible_fields %}<div class="field-box"><label for="{{ field.id_for_label }}">{{ field.label }}</label>{{ field }}{% if field.help_text %}<small class="text-muted">{{ field.help_text }}</small>{% endif %}{% for error in field.errors %}<div class="field-errors">{{ error }}</div>{% endfor %}</div>{% endfor %}
+                </div>
+            </div>
+        {% endfor %}
+
+        <div class="d-flex gap-2"><button type="submit" class="btn btn-primary">ذخیره واریانت‌ها</button><a href="{% url 'dashboard:product_detail' product.pk %}" class="btn btn-outline-secondary">انصراف</a></div>
+    </form>
+</div>
+{% endblock %}
