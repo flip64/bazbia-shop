@@ -41,6 +41,36 @@
         </a>
 
         <div class="sidebar-title">
+            محصولات
+        </div>
+
+        <a
+            class="sidebar-link
+                {% if request.resolver_match.url_name == 'product_list' %}active
+                {% elif request.resolver_match.url_name == 'product_detail' %}active
+                {% elif request.resolver_match.url_name == 'product_info_edit' %}active
+                {% elif request.resolver_match.url_name == 'product_images_edit' %}active
+                {% endif %}"
+            href="{% url 'dashboard:product_list' %}"
+        >
+            مدیریت محصولات
+        </a>
+
+        <a
+            class="sidebar-link {% if request.resolver_match.url_name == 'product_price' %}active{% endif %}"
+            href="{% url 'dashboard:product_price' %}"
+        >
+            مدیریت قیمت فروش
+        </a>
+
+        <a
+            class="sidebar-link {% if request.resolver_match.url_name == 'product_profit' %}active{% endif %}"
+            href="{% url 'dashboard:product_profit' %}"
+        >
+            مدیریت درصد سود
+        </a>
+
+        <div class="sidebar-title">
             تأمین‌کنندگان
         </div>
 
