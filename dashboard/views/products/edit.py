@@ -2,9 +2,10 @@
 
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
+from django.http import Http404
 from django.shortcuts import get_object_or_404, redirect, render
 
-from dashboard.forms import ProductEditForm
+from dashboard.forms import ProductEditForm, ProductVariantFormSet
 from products.models import Product,ProductImage
 
 
@@ -99,16 +100,45 @@ def product_tags_edit(request, pk):
 
 @login_required
 def product_variants_edit(request, pk):
-    product = get_object_or_404(Product, pk=pk)
+    if not request.user.is_staff:
+        raise Http404
 
-    messages.info(
-        request,
-        "بخش مدیریت ,وایانتها در مرحله بعد تکمیل می‌شود.",
+    product = get_object_or_404(
+        Product.objects.prefetch_related(
+            "variants__attributes__attribute",
+            "variants__supplier_offers__supplier",
+        ),
+        pk=pk,
     )
 
-    return redirect(
-        "dashboard:product_detail",
-        pk=product.pk,
+    if request.method == "POST":
+        formset = ProductVariantFormSet(
+            request.POST,
+            instance=product,
+            prefix="variants",
+        )
+
+        if formset.is_valid():
+            formset.save()
+            messages.success(
+                request,
+                "واریانت‌های محصول با موفقیت ذخیره شدند. موجودی داخلی تغییری نکرد.",
+            )
+            return redirect("dashboard:product_detail", pk=product.pk)
+    else:
+        formset = ProductVariantFormSet(
+            instance=product,
+            prefix="variants",
+        )
+
+    return render(
+        request,
+        "dashboard/pages/product_edit/product_variants_edit.html",
+        {
+            "page_title": f"مدیریت واریانت‌های {product.name}",
+            "product": product,
+            "formset": formset,
+        },
     )
 
 
@@ -202,4 +232,3 @@ def product_image_delete(request, image_id):
         "dashboard:product_images_edit",
         pk=product_pk,
     )
-
