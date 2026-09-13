@@ -1,27 +1,88 @@
 {% extends "dashboard/base.html" %}
 
-{% block title %}
-    {{ page_title }}
-{% endblock %}
-
-{% block page_heading %}
-    {{ page_title }}
-{% endblock %}
+{% block title %}{{ page_title }} | بازبیا{% endblock %}
 
 {% block content %}
+<style>
+    .products-page { direction:rtl; }
+    .products-header { display:flex; justify-content:space-between; align-items:center; gap:16px; margin-bottom:22px; }
+    .products-header h1 { margin:0 0 6px; color:#1f2937; font-size:1.55rem; font-weight:800; }
+    .products-header p { margin:0; color:#6b7280; }
+    .stats-grid { display:grid; grid-template-columns:repeat(5,minmax(0,1fr)); gap:12px; margin-bottom:20px; }
+    .stat-card { padding:15px; background:#fff; border:1px solid #e4e8ee; border-radius:12px; }
+    .stat-label { display:block; margin-bottom:6px; color:#657187; font-size:.76rem; }
+    .stat-value { color:#172033; font-size:1.25rem; font-weight:900; }
+    .filter-card, .products-card { margin-bottom:20px; background:#fff; border:1px solid #e4e8ee; border-radius:14px; box-shadow:0 3px 15px rgba(23,32,51,.04); }
+    .filter-card { padding:18px; }
+    .filter-grid { display:grid; grid-template-columns:2fr repeat(5,minmax(130px,1fr)); gap:11px; align-items:end; }
+    .filter-actions { display:flex; gap:7px; }
+    .products-table { min-width:1120px; margin:0; vertical-align:middle; white-space:nowrap; }
+    .products-table th { padding:13px 11px; color:#657187; background:#f8f9fb; font-size:.77rem; font-weight:800; }
+    .products-table td { padding:13px 11px; border-color:#edf0f4; color:#374151; }
+    .product-cell { display:flex; align-items:center; gap:11px; min-width:260px; white-space:normal; }
+    .product-thumb { flex:0 0 58px; width:58px; height:58px; object-fit:contain; background:#f8fafc; border:1px solid #edf0f4; border-radius:9px; }
+    .product-placeholder { display:flex; align-items:center; justify-content:center; color:#94a3b8; font-size:.68rem; text-align:center; }
+    .product-title { display:block; color:#1f2937; font-weight:800; line-height:1.7; }
+    .product-slug { display:block; max-width:220px; overflow:hidden; color:#8b95a7; font-size:.7rem; direction:ltr; text-align:right; text-overflow:ellipsis; white-space:nowrap; }
+    .status-badge { display:inline-flex; padding:5px 9px; border-radius:999px; font-size:.72rem; font-weight:800; }
+    .status-active { color:#166534; background:#dcfce7; }
+    .status-inactive { color:#991b1b; background:#fee2e2; }
+    .stock-ok { color:#166534; font-weight:800; }
+    .stock-zero { color:#b91c1c; font-weight:800; }
+    .stock-detail { display:block; margin-top:4px; color:#8b95a7; font-size:.68rem; }
+    .issue-list { display:flex; flex-wrap:wrap; gap:4px; max-width:190px; white-space:normal; }
+    .issue-badge { padding:3px 6px; color:#9a3412; background:#fff7ed; border:1px solid #ffedd5; border-radius:6px; font-size:.66rem; }
+    .empty-products { padding:50px 20px; color:#6b7280; text-align:center; }
+    @media (max-width:1200px) { .stats-grid { grid-template-columns:repeat(3,1fr); } .filter-grid { grid-template-columns:repeat(3,1fr); } }
+    @media (max-width:700px) { .products-header { align-items:flex-start; flex-direction:column; } .stats-grid { grid-template-columns:repeat(2,1fr); } .filter-grid { grid-template-columns:1fr; } .filter-actions { display:grid; grid-template-columns:1fr 1fr; } }
+</style>
 
-<div class="container-fluid px-0">
-    <div class="dashboard-card p-4">
-
-        <h1 class="h4 mb-3">
-            {{ page_title }}
-        </h1>
-
-        <p class="text-secondary mb-0">
-            این صفحه در مراحل بعد تکمیل خواهد شد.
-        </p>
-
+<div class="container-fluid px-0 products-page">
+    <div class="products-header">
+        <div><h1>مدیریت محصولات</h1><p>بررسی وضعیت فروش، موجودی و کامل‌بودن اطلاعات محصولات</p></div>
+        <span class="badge bg-dark">{{ paginator.count }} محصول در نتیجه</span>
     </div>
-</div>
 
+    <div class="stats-grid">
+        <div class="stat-card"><span class="stat-label">همه محصولات</span><span class="stat-value">{{ statistics.all }}</span></div>
+        <div class="stat-card"><span class="stat-label">محصول فعال</span><span class="stat-value">{{ statistics.active }}</span></div>
+        <div class="stat-card"><span class="stat-label">محصول غیرفعال</span><span class="stat-value">{{ statistics.inactive }}</span></div>
+        <div class="stat-card"><span class="stat-label">بدون موجودی</span><span class="stat-value">{{ statistics.out_of_stock }}</span></div>
+        <div class="stat-card"><span class="stat-label">بدون تصویر</span><span class="stat-value">{{ statistics.without_image }}</span></div>
+    </div>
+
+    <form method="get" class="filter-card">
+        <div class="filter-grid">
+            <div><label class="form-label" for="product-search">جست‌وجو</label><input id="product-search" name="search" type="search" class="form-control" value="{{ search }}" placeholder="نام، نامک یا SKU"></div>
+            <div><label class="form-label" for="status-filter">وضعیت</label><select id="status-filter" name="status" class="form-select"><option value="">همه</option><option value="active" {% if selected_status == 'active' %}selected{% endif %}>فعال</option><option value="inactive" {% if selected_status == 'inactive' %}selected{% endif %}>غیرفعال</option></select></div>
+            <div><label class="form-label" for="stock-filter">موجودی</label><select id="stock-filter" name="stock" class="form-select"><option value="">همه</option><option value="available" {% if selected_stock == 'available' %}selected{% endif %}>موجود</option><option value="out_of_stock" {% if selected_stock == 'out_of_stock' %}selected{% endif %}>ناموجود</option><option value="low_stock" {% if selected_stock == 'low_stock' %}selected{% endif %}>کم‌موجودی</option></select></div>
+            <div><label class="form-label" for="quality-filter">نقص اطلاعات</label><select id="quality-filter" name="quality" class="form-select"><option value="">همه</option><option value="without_image" {% if selected_quality == 'without_image' %}selected{% endif %}>بدون تصویر</option><option value="without_category" {% if selected_quality == 'without_category' %}selected{% endif %}>بدون دسته</option><option value="without_description" {% if selected_quality == 'without_description' %}selected{% endif %}>بدون توضیحات</option><option value="zero_price" {% if selected_quality == 'zero_price' %}selected{% endif %}>قیمت صفر</option></select></div>
+            <div><label class="form-label" for="category-filter">دسته‌بندی رسمی</label><select id="category-filter" name="category" class="form-select"><option value="">همه دسته‌ها</option>{% for category in categories %}<option value="{{ category.pk }}" {% if selected_category == category.pk|stringformat:'s' %}selected{% endif %}>{{ category.name }}</option>{% endfor %}</select></div>
+            <div><label class="form-label" for="ordering-filter">مرتب‌سازی</label><select id="ordering-filter" name="ordering" class="form-select"><option value="-updated_at" {% if selected_ordering == '-updated_at' %}selected{% endif %}>آخرین ویرایش</option><option value="-created_at" {% if selected_ordering == '-created_at' %}selected{% endif %}>جدیدترین</option><option value="name" {% if selected_ordering == 'name' %}selected{% endif %}>نام محصول</option><option value="minimum_price" {% if selected_ordering == 'minimum_price' %}selected{% endif %}>کمترین قیمت</option><option value="-maximum_price" {% if selected_ordering == '-maximum_price' %}selected{% endif %}>بیشترین قیمت</option></select></div>
+            <div class="filter-actions"><button type="submit" class="btn btn-primary">اعمال</button><a href="{% url 'dashboard:product_list' %}" class="btn btn-outline-secondary">پاک‌کردن</a></div>
+        </div>
+    </form>
+
+    <div class="products-card overflow-hidden">
+        {% if products %}<div class="table-responsive"><table class="table products-table">
+            <thead><tr><th>محصول</th><th>وضعیت</th><th>دسته رسمی</th><th>واریانت</th><th>بازه قیمت</th><th>موجودی قابل فروش</th><th>نقص اطلاعات</th><th></th></tr></thead>
+            <tbody>{% for product in products %}<tr>
+                <td><div class="product-cell">{% if product.dashboard_image_url %}<img class="product-thumb" src="{{ product.dashboard_image_url }}" alt="{{ product.name }}" loading="lazy">{% else %}<div class="product-thumb product-placeholder">بدون تصویر</div>{% endif %}<div><span class="product-title">{{ product.name }}</span><span class="product-slug">{{ product.slug }}</span></div></div></td>
+                <td>{% if product.is_active %}<span class="status-badge status-active">فعال</span>{% else %}<span class="status-badge status-inactive">غیرفعال</span>{% endif %}</td>
+                <td>{% if product.category %}{{ product.category.name }}{% else %}<span class="text-danger">بدون دسته</span>{% endif %}</td>
+                <td>{{ product.variant_count }}</td>
+                <td>{% if product.minimum_price != None %}<strong>{{ product.minimum_price }}</strong>{% if product.maximum_price != product.minimum_price %}<br><small class="text-muted">تا {{ product.maximum_price }}</small>{% endif %}<small> تومان</small>{% else %}<span class="text-danger">بدون قیمت</span>{% endif %}</td>
+                <td>{% if product.available_stock > 0 %}<span class="stock-ok">{{ product.available_stock }}</span>{% else %}<span class="stock-zero">ناموجود</span>{% endif %}<span class="stock-detail">انبار: {{ product.internal_stock }} | تأمین‌کننده: {{ product.supplier_stock }}</span></td>
+                <td><div class="issue-list">{% if not product.has_product_image and not product.has_variant_image %}<span class="issue-badge">بدون تصویر</span>{% endif %}{% if not product.category %}<span class="issue-badge">بدون دسته</span>{% endif %}{% if not product.description %}<span class="issue-badge">بدون توضیحات</span>{% endif %}{% if product.minimum_price == 0 %}<span class="issue-badge">قیمت صفر</span>{% endif %}{% if product.variant_count == 0 %}<span class="issue-badge">بدون واریانت</span>{% endif %}{% if product.has_product_image or product.has_variant_image %}{% if product.category and product.description and product.minimum_price != 0 and product.variant_count > 0 %}<span class="text-success small">کامل</span>{% endif %}{% endif %}</div></td>
+                <td><div class="btn-group"><a href="{% url 'dashboard:product_detail' product.pk %}" class="btn btn-sm btn-outline-primary">جزئیات</a><a href="{% url 'dashboard:product_info_edit' product.pk %}" class="btn btn-sm btn-outline-secondary">ویرایش</a></div></td>
+            </tr>{% endfor %}</tbody>
+        </table></div>{% else %}<div class="empty-products">محصولی مطابق این فیلتر پیدا نشد.</div>{% endif %}
+    </div>
+
+    {% if is_paginated %}<nav aria-label="صفحه‌بندی محصولات"><ul class="pagination justify-content-center">
+        {% if page_obj.has_previous %}<li class="page-item"><a class="page-link" href="?{% if query_without_page %}{{ query_without_page }}&{% endif %}page={{ page_obj.previous_page_number }}">قبلی</a></li>{% endif %}
+        <li class="page-item active"><span class="page-link">صفحه {{ page_obj.number }} از {{ page_obj.paginator.num_pages }}</span></li>
+        {% if page_obj.has_next %}<li class="page-item"><a class="page-link" href="?{% if query_without_page %}{{ query_without_page }}&{% endif %}page={{ page_obj.next_page_number }}">بعدی</a></li>{% endif %}
+    </ul></nav>{% endif %}
+</div>
 {% endblock %}
