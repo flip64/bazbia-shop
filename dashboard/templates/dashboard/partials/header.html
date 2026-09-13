@@ -10,9 +10,7 @@
     </button>
 
     <div class="header-title">
-        {% block page_heading %}
-            مدیریت محصولات
-        {% endblock %}
+        {{ page_title|default:"مدیریت بازبیا" }}
     </div>
 
     <div class="header-user">
