@@ -1,0 +1,56 @@
+{% extends "dashboard/base.html" %}
+
+{% block title %}{{ page_title }}{% endblock %}
+
+{% block content %}
+<style>
+    .manage-product { direction:rtl; }
+    .manage-header { display:flex; justify-content:space-between; align-items:center; gap:15px; margin-bottom:20px; }
+    .manage-header h1 { margin:0 0 6px; font-size:1.45rem; font-weight:800; }
+    .manage-card { margin-bottom:18px; background:#fff; border:1px solid #e4e8ee; border-radius:14px; overflow:hidden; }
+    .manage-title { display:flex; justify-content:space-between; align-items:center; gap:10px; padding:16px 18px; border-bottom:1px solid #edf0f4; }
+    .manage-title h2 { margin:0; font-size:1rem; font-weight:800; }
+    .manage-body { padding:18px; }
+    .form-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:14px; }
+    .form-field label { display:block; margin-bottom:6px; color:#657187; font-size:.8rem; font-weight:700; }
+    .form-field input:not([type=checkbox]), .form-field select, .form-field textarea { width:100%; padding:.55rem .75rem; border:1px solid #ced4da; border-radius:.375rem; }
+    .form-field textarea { min-height:130px; }
+    .field-error { color:#dc2626; font-size:.75rem; }
+    .spec-row { display:grid; grid-template-columns:1fr 2fr auto; gap:10px; align-items:start; margin-bottom:10px; }
+    .spec-row input, .spec-row textarea { width:100%; padding:.55rem .75rem; border:1px solid #ced4da; border-radius:.375rem; }
+    .image-grid, .video-grid { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:12px; }
+    .media-card { padding:10px; border:1px solid #e4e8ee; border-radius:11px; }
+    .media-preview { width:100%; aspect-ratio:1/1; object-fit:contain; background:#f8fafc; border-radius:8px; }
+    .action-links { display:grid; grid-template-columns:repeat(3,1fr); gap:10px; }
+    @media(max-width:900px){.image-grid,.video-grid{grid-template-columns:repeat(2,1fr)}.action-links{grid-template-columns:1fr}.form-grid{grid-template-columns:1fr}}
+    @media(max-width:520px){.manage-header{align-items:flex-start;flex-direction:column}.image-grid,.video-grid{grid-template-columns:1fr}.spec-row{grid-template-columns:1fr}}
+</style>
+
+<div class="container-fluid px-0 manage-product">
+    <div class="manage-header"><div><h1>مدیریت کامل محصول</h1><p class="text-secondary mb-0">{{ product.name }}</p></div><a href="{% url 'dashboard:product_detail' product.pk %}" class="btn btn-outline-secondary">بازگشت به جزئیات</a></div>
+
+    <section class="manage-card"><div class="manage-title"><h2>اطلاعات اصلی و دسته‌بندی</h2></div><div class="manage-body">
+        <form method="post">{% csrf_token %}<input type="hidden" name="action" value="save_info"><div class="form-grid">{% for field in info_form %}<div class="form-field"><label for="{{ field.id_for_label }}">{{ field.label }}</label>{{ field }}{% for error in field.errors %}<div class="field-error">{{ error }}</div>{% endfor %}</div>{% endfor %}</div><button class="btn btn-primary mt-3" type="submit">ذخیره اطلاعات اصلی</button></form>
+    </div></section>
+
+    <section class="manage-card"><div class="manage-title"><h2>تگ‌های محصول</h2><span class="text-secondary small">{{ product.tags.count }} تگ</span></div><div class="manage-body">
+        <form method="post">{% csrf_token %}<input type="hidden" name="action" value="save_tags"><div class="form-grid">{% for field in tags_form %}<div class="form-field"><label for="{{ field.id_for_label }}">{{ field.label }}</label>{{ field }}{% if field.help_text %}<small class="text-muted">{{ field.help_text }}</small>{% endif %}{% for error in field.errors %}<div class="field-error">{{ error }}</div>{% endfor %}</div>{% endfor %}</div><button class="btn btn-primary mt-3" type="submit">ذخیره تگ‌ها</button></form>
+    </div></section>
+
+    <section class="manage-card"><div class="manage-title"><h2>مشخصات فنی</h2><span class="text-secondary small">{{ product.specifications.count }} مشخصه</span></div><div class="manage-body">
+        <form method="post">{% csrf_token %}<input type="hidden" name="action" value="save_specifications">{{ specifications_formset.management_form }}{% if specifications_formset.non_form_errors %}<div class="alert alert-danger">{{ specifications_formset.non_form_errors }}</div>{% endif %}{% for form in specifications_formset %}{% for hidden in form.hidden_fields %}{{ hidden }}{% endfor %}<div class="spec-row"><div>{{ form.name }}{% for error in form.name.errors %}<div class="field-error">{{ error }}</div>{% endfor %}</div><div>{{ form.value }}{% for error in form.value.errors %}<div class="field-error">{{ error }}</div>{% endfor %}</div><label class="pt-2">{% if form.instance.pk %}{{ form.DELETE }} حذف{% endif %}</label></div>{% endfor %}<button class="btn btn-primary" type="submit">ذخیره مشخصات</button></form>
+    </div></section>
+
+    <section class="manage-card"><div class="manage-title"><h2>تصاویر محصول</h2><span class="text-secondary small">{{ product.images.count }} تصویر</span></div><div class="manage-body">
+        <form method="post" enctype="multipart/form-data" class="row g-2 align-items-end mb-4">{% csrf_token %}<input type="hidden" name="action" value="upload_image"><div class="col-md"><label class="form-label">تصویر جدید</label><input name="image" type="file" accept="image/jpeg,image/png,image/webp" class="form-control" required></div><div class="col-md"><label class="form-label">متن جایگزین تصویر</label><input name="alt_text" class="form-control" placeholder="پیش‌فرض: نام محصول"></div><div class="col-md-auto"><button class="btn btn-success" type="submit">افزودن تصویر</button></div></form>
+        {% if product.images.all %}<div class="image-grid">{% for image in product.images.all %}<div class="media-card">{% if image.image %}<img class="media-preview" src="{{ image.image.url }}" alt="{{ image.alt_text|default:product.name }}">{% elif image.source_url %}<img class="media-preview" src="{{ image.source_url }}" alt="{{ image.alt_text|default:product.name }}">{% else %}<div class="media-preview d-flex align-items-center justify-content-center text-muted">بدون فایل</div>{% endif %}<div class="mt-2">{% if image.is_main %}<span class="badge bg-success">تصویر اصلی</span>{% else %}<form method="post" class="d-inline">{% csrf_token %}<input type="hidden" name="action" value="set_main_image"><input type="hidden" name="image_id" value="{{ image.pk }}"><button class="btn btn-sm btn-outline-primary" type="submit">انتخاب به‌عنوان اصلی</button></form>{% endif %}<form method="post" class="d-inline">{% csrf_token %}<input type="hidden" name="action" value="delete_image"><input type="hidden" name="image_id" value="{{ image.pk }}"><button class="btn btn-sm btn-outline-danger" type="submit" onclick="return confirm('تصویر حذف شود؟')">حذف</button></form></div></div>{% endfor %}</div>{% else %}<p class="text-muted mb-0">تصویری ثبت نشده است.</p>{% endif %}
+    </div></section>
+
+    <section class="manage-card"><div class="manage-title"><h2>ویدئوهای محصول</h2><span class="text-secondary small">{{ product.videos.count }} ویدئو</span></div><div class="manage-body">
+        <form method="post" enctype="multipart/form-data" class="row g-2 align-items-end mb-4">{% csrf_token %}<input type="hidden" name="action" value="upload_video">{% for field in video_form %}<div class="col-md form-field"><label for="{{ field.id_for_label }}">{{ field.label }}</label>{{ field }}{% for error in field.errors %}<div class="field-error">{{ error }}</div>{% endfor %}</div>{% endfor %}<div class="col-md-auto"><button class="btn btn-success" type="submit">افزودن ویدئو</button></div></form>
+        {% if product.videos.all %}<div class="video-grid">{% for video in product.videos.all %}<div class="media-card"><video class="w-100 rounded" controls preload="metadata"><source src="{{ video.video.url }}"></video><p class="small mt-2">{{ video.caption|default:"بدون عنوان" }}</p><form method="post">{% csrf_token %}<input type="hidden" name="action" value="delete_video"><input type="hidden" name="video_id" value="{{ video.pk }}"><button class="btn btn-sm btn-outline-danger" type="submit" onclick="return confirm('ویدئو حذف شود؟')">حذف</button></form></div>{% endfor %}</div>{% else %}<p class="text-muted mb-0">ویدئویی ثبت نشده است.</p>{% endif %}
+    </div></section>
+
+    <section class="manage-card"><div class="manage-title"><h2>واریانت، قیمت و سود</h2></div><div class="manage-body"><div class="alert alert-info">موجودی داخلی از بخش انبار مدیریت می‌شود و در این صفحه تغییر نمی‌کند.</div><div class="action-links"><a href="{% url 'dashboard:product_variants_edit' product.pk %}" class="btn btn-outline-primary">مدیریت واریانت‌ها</a><a href="{% url 'dashboard:product_price' %}?search={{ product.name|urlencode }}" class="btn btn-outline-primary">مدیریت قیمت فروش</a><a href="{% url 'dashboard:product_profit' %}?search={{ product.name|urlencode }}" class="btn btn-outline-primary">مدیریت درصد سود</a></div></div></section>
+</div>
+{% endblock %}
