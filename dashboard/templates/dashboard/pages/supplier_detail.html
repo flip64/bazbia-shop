@@ -11,17 +11,31 @@
 {% block content %}
 
 <div class="container-fluid px-0">
-    <div class="dashboard-card p-4">
 
-        <h1 class="h4 mb-3">
-            {{ page_title }}
-        </h1>
+    {% include "dashboard/pages/product_detail/_header.html" %}
 
-        <p class="text-secondary mb-0">
-            این صفحه در مراحل بعد تکمیل خواهد شد.
-        </p>
+    {% include "dashboard/pages/product_detail/_product_info.html" %}
+
+    {% include "dashboard/pages/product_detail/_images.html" %}
+
+    {% include "dashboard/pages/product_detail/_videos.html" %}
+
+    <div class="row g-4 mb-4">
+
+        <div class="col-12 col-xl-8">
+            {% include "dashboard/pages/product_detail/_specifications.html" %}
+        </div>
+
+        <div class="col-12 col-xl-4">
+            {% include "dashboard/pages/product_detail/_tags.html" %}
+        </div>
 
     </div>
+
+    {% include "dashboard/pages/product_detail/_variants.html" %}
+
+    {% include "dashboard/pages/product_detail/_price_history.html" %}
+
 </div>
 
 {% endblock %}
