@@ -232,7 +232,12 @@ USE_TZ = True
 
 
 
-
+BASALAM_DEFAULT_COMMISSION_PERCENT = Decimal(
+    os.environ.get(
+        "BASALAM_DEFAULT_COMMISSION_PERCENT",
+        "15",
+    )
+)
 
 
 
