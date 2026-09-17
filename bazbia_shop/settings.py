@@ -67,7 +67,7 @@ INSTALLED_APPS = [
     'django.contrib.humanize',
     'django.contrib.sitemaps',
     
-       # Third-party apps
+    # Third-party apps
     "rest_framework_simplejwt.token_blacklist",
 
 
@@ -88,7 +88,8 @@ INSTALLED_APPS = [
     'bazbia_packing',
     'dashboard',
     'torob_integration.apps.TorobIntegrationConfig',
-    "contact",
+    'basalam_integration.apps.BasalamIntegrationConfig',
+    'contact',
     "analytics",
     "purchases",
     "community",
