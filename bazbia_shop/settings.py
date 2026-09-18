@@ -25,6 +25,64 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 load_dotenv(os.path.join(BASE_DIR, '.env'))
 
 
+# ==========================================
+# تنظیمات اتصال به باسلام
+# ==========================================
+
+BASALAM_API_BASE_URL = os.environ.get(
+    "BASALAM_API_BASE_URL",
+    "https://openapi.basalam.com",
+).rstrip("/")
+
+BASALAM_ACCESS_TOKEN = os.environ.get(
+    "BASALAM_ACCESS_TOKEN",
+    "",
+).strip()
+
+BASALAM_VENDOR_ID = os.environ.get(
+    "BASALAM_VENDOR_ID",
+    "",
+).strip()
+
+BASALAM_DEFAULT_COMMISSION_PERCENT = Decimal(
+    os.environ.get(
+        "BASALAM_DEFAULT_COMMISSION_PERCENT",
+        "15",
+    )
+)
+
+BASALAM_PRICE_ROUNDING = int(
+    os.environ.get(
+        "BASALAM_PRICE_ROUNDING",
+        "1000",
+    )
+)
+
+BASALAM_STOCK_CAP = int(
+    os.environ.get(
+        "BASALAM_STOCK_CAP",
+        "5",
+    )
+)
+
+BASALAM_STOCK_SAFETY_BUFFER = int(
+    os.environ.get(
+        "BASALAM_STOCK_SAFETY_BUFFER",
+        "0",
+    )
+)
+
+BASALAM_SYNC_ENABLED = os.environ.get(
+    "BASALAM_SYNC_ENABLED",
+    "False",
+).lower() in {
+    "1",
+    "true",
+    "yes",
+    "on",
+}
+
+
 # مسیر ذخیره‌سازی فایل‌های استاتیک جمع‌آوری‌شده
 
 STATIC_URL = '/static/'
@@ -233,12 +291,6 @@ USE_TZ = True
 
 
 
-BASALAM_DEFAULT_COMMISSION_PERCENT = Decimal(
-    os.environ.get(
-        "BASALAM_DEFAULT_COMMISSION_PERCENT",
-        "15",
-    )
-)
 
 
 
