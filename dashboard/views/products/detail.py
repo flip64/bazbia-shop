@@ -2,6 +2,7 @@
 
 from django.contrib.auth.decorators import login_required
 from django.db.models import Prefetch
+from django.http import Http404
 from django.shortcuts import get_object_or_404, render
 from suppliers.models import SupplierOffer,SupplierPriceHistory
 from products.models import ProductVariant,Product
@@ -24,6 +25,9 @@ def product_detail(request, pk):
     - پیشنهادهای تأمین‌کنندگان
     - ۱۰ رکورد آخر تاریخچه قیمت خرید
     """
+
+    if not request.user.is_staff:
+        raise Http404
 
     supplier_offers_queryset = (
         SupplierOffer.objects
