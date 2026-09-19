@@ -4,13 +4,20 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.http import Http404
 from django.shortcuts import get_object_or_404, redirect, render
+from django.views.decorators.http import require_POST
 
 from dashboard.forms import ProductEditForm, ProductVariantFormSet
-from products.models import Product,ProductImage
+from products.models import Product, ProductImage
+
+
+def _require_staff(request):
+    if not request.user.is_staff:
+        raise Http404
 
 
 @login_required
 def product_info_edit(request, pk):
+    _require_staff(request)
     product = get_object_or_404(Product, pk=pk)
 
     if request.method == "POST":
@@ -51,22 +58,8 @@ def product_info_edit(request, pk):
 
 
 @login_required
-def product_images_edit(request, pk):
-    product = get_object_or_404(Product, pk=pk)
-
-    messages.info(
-        request,
-        "بخش مدیریت تصاویر در مرحله بعد تکمیل می‌شود.",
-    )
-
-    return redirect(
-        "dashboard:product_detail",
-        pk=product.pk,
-    )
-
-
-@login_required
 def product_specifications_edit(request, pk):
+    _require_staff(request)
     product = get_object_or_404(Product, pk=pk)
 
     messages.info(
@@ -82,6 +75,7 @@ def product_specifications_edit(request, pk):
 
 @login_required
 def product_tags_edit(request, pk):
+    _require_staff(request)
     product = get_object_or_404(Product, pk=pk)
 
     messages.info(
@@ -100,8 +94,7 @@ def product_tags_edit(request, pk):
 
 @login_required
 def product_variants_edit(request, pk):
-    if not request.user.is_staff:
-        raise Http404
+    _require_staff(request)
 
     product = get_object_or_404(
         Product.objects.prefetch_related(
@@ -133,7 +126,7 @@ def product_variants_edit(request, pk):
 
     return render(
         request,
-        "dashboard/pages/product_edit/product_variants_edit.html",
+        "dashboard/pages/product_variants_edit.html",
         {
             "page_title": f"مدیریت واریانت‌های {product.name}",
             "product": product,
@@ -144,6 +137,7 @@ def product_variants_edit(request, pk):
 
 @login_required
 def product_images_edit(request, pk):
+    _require_staff(request)
 
     product = get_object_or_404(
         Product.objects.prefetch_related("images"),
@@ -212,7 +206,10 @@ def product_images_edit(request, pk):
         context,
     )
 
+@login_required
+@require_POST
 def product_image_delete(request, image_id):
+    _require_staff(request)
     image = get_object_or_404(
         ProductImage,
         pk=image_id,
@@ -220,13 +217,12 @@ def product_image_delete(request, image_id):
 
     product_pk = image.product_id
 
-    if request.method == "POST":
-        image.delete()
+    image.delete()
 
-        messages.success(
-            request,
-            "تصویر با موفقیت حذف شد.",
-        )
+    messages.success(
+        request,
+        "تصویر با موفقیت حذف شد.",
+    )
 
     return redirect(
         "dashboard:product_images_edit",
