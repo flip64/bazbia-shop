@@ -104,7 +104,7 @@ urlpatterns = [
         "products/<int:pk>/edit/images/",
         product_images_edit,
         name="product_images_edit",
-      ),
+    ),
 
     path(
         "products/<int:pk>/edit/specifications/",
@@ -118,23 +118,16 @@ urlpatterns = [
         name="product_tags_edit",
      ),
 
-       path(
+    path(
         "products/<int:pk>/edit/variant/",
         product_variants_edit,
         name="product_variants_edit",
-     ),
-     path(
-    "products/<int:pk>/images/edit/",
-      product_images_edit,
-      name="product_images_edit",
-),
-
-
-path(
-    "products/images/<int:image_id>/delete/",
-    product_image_delete,
-    name="product_image_delete",
-),
+    ),
+    path(
+        "products/images/<int:image_id>/delete/",
+        product_image_delete,
+        name="product_image_delete",
+    ),
 
 
 path(
