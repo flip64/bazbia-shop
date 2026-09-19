@@ -50,6 +50,9 @@
                 {% elif request.resolver_match.url_name == 'product_detail' %}active
                 {% elif request.resolver_match.url_name == 'product_info_edit' %}active
                 {% elif request.resolver_match.url_name == 'product_images_edit' %}active
+                {% elif request.resolver_match.url_name == 'product_variants_edit' %}active
+                {% elif request.resolver_match.url_name == 'product_tags_edit' %}active
+                {% elif request.resolver_match.url_name == 'product_specifications_edit' %}active
                 {% endif %}"
             href="{% url 'dashboard:product_list' %}"
         >
