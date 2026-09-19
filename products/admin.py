@@ -56,8 +56,6 @@ class ProductAdmin(LargeTableAdminMixin, admin.ModelAdmin):
     autocomplete_fields = ("category", "tags")
     list_select_related = ("category",)
     readonly_fields = ("created_at", "updated_at")
-    "
-    """date_hierarchy = "created_at"    """
     ordering = ("-updated_at",)
 
 
