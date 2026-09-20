@@ -23,6 +23,14 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # تنظیمات SMTP برای Gmail
 # تنظیمات ایمیل
 load_dotenv(os.path.join(BASE_DIR, '.env'))
+# ==========================================
+#  تنظیمات اتصال به بله
+# ==========================================
+
+
+BALE_BOT_TOKEN = os.getenv("BALE_BOT_TOKEN", "")
+BALE_CHANNEL_ID = os.getenv("BALE_CHANNEL_ID", "")
+
 
 
 # ==========================================
