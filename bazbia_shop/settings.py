@@ -29,8 +29,15 @@ load_dotenv(os.path.join(BASE_DIR, '.env'))
 
 
 BALE_BOT_TOKEN = os.getenv("BALE_BOT_TOKEN", "")
-BALE_CHANNEL_ID = os.getenv("BALE_CHANNEL_ID", "")
-
+BALE_CHANNEL_ID = os.getenv("BALE_CHANNEL_ID", "@bazbia")
+BALE_FRONTEND_URL = os.getenv(
+    "BALE_FRONTEND_URL",
+    "https://bazbia.ir",
+)
+BALE_BACKEND_URL = os.getenv(
+    "BALE_BACKEND_URL",
+    "https://backend.bazbia.ir",
+)
 
 
 # ==========================================
