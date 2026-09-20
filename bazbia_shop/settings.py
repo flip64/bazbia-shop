@@ -156,6 +156,7 @@ INSTALLED_APPS = [
     'dashboard',
     'torob_integration.apps.TorobIntegrationConfig',
     'basalam_integration.apps.BasalamIntegrationConfig',
+    "bale_integration.apps.BaleIntegrationConfig",
     'contact',
     "analytics",
     "purchases",
