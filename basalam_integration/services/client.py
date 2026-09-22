@@ -139,4 +139,18 @@ class BasalamClient:
             data={
                 "file_type": file_type,
             },
-    )
+        )
+
+    def create_product(
+        self,
+        *,
+        vendor_id: int,
+        payload: dict[str, Any],
+    ) -> dict[str, Any]:
+        """ایجاد محصول جدید برای غرفه باسلام."""
+
+        return self._request(
+            "POST",
+            f"/v1/vendors/{vendor_id}/products",
+            json=payload,
+        )
