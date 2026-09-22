@@ -11,6 +11,40 @@ from .models import (
 )
 
 
+
+@admin.register(BasalamImageMapping)
+class BasalamImageMappingAdmin(admin.ModelAdmin):
+    list_display = (
+        "product_image",
+        "basalam_file_id",
+        "last_synced_at",
+    )
+
+    search_fields = (
+        "product_image__product__name",
+        "basalam_file_id",
+        "content_hash",
+    )
+
+    list_select_related = (
+        "product_image",
+        "product_image__product",
+    )
+
+    readonly_fields = (
+        "product_image",
+        "basalam_file_id",
+        "content_hash",
+        "last_synced_at",
+        "last_error",
+        "created_at",
+    )
+
+    def has_add_permission(
+        self,
+        request,
+    ):
+        return False
 # =========================================================
 # دسته‌ها و کارمزدهای باسلام
 # =========================================================
