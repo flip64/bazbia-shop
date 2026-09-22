@@ -4,7 +4,9 @@ from django.contrib import admin
 
 from .models import (
     BasalamCategory,
+    BasalamCategoryAttributeSnapshot,
     BasalamCategoryMapping,
+    BasalamImageMapping,
     BasalamOrderMapping,
     BasalamProductMapping,
     BasalamVariationMapping,
