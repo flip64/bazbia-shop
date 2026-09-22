@@ -1,5 +1,3 @@
-# basalam_integration/services/client.py
-
 from typing import Any
 
 import requests
@@ -117,3 +115,28 @@ class BasalamClient:
             "GET",
             f"/v1/categories/{category_id}/attributes",
         )
+
+    def upload_file(
+        self,
+        *,
+        file_object,
+        filename: str,
+        content_type: str,
+        file_type: str = "product.photo",
+    ) -> dict[str, Any]:
+        """آپلود فایل در باسلام."""
+
+        return self._request(
+            "POST",
+            "/v1/files",
+            files={
+                "file": (
+                    filename,
+                    file_object,
+                    content_type,
+                )
+            },
+            data={
+                "file_type": file_type,
+            },
+    )
