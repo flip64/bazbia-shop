@@ -17,6 +17,11 @@ from .price_service import (
 from .stock_service import (
     calculate_variant_basalam_stock,
 )
+from .product_service import (
+    build_product_payload,
+    publish_product_to_basalam,
+    validate_product_for_basalam,
+)
 
 
 __all__ = [
@@ -29,4 +34,7 @@ __all__ = [
     "get_commission_percent",
     "get_product_category_mapping",
     "get_variant_bazbia_price",
+    "build_product_payload",
+    "publish_product_to_basalam",
+    "validate_product_for_basalam",
 ]
