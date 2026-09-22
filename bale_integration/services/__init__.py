@@ -19,6 +19,7 @@ from .price_service import (
     calculate_variant_basalam_price,
     get_variant_bazbia_price,
 )
+
 from .stock_service import (
     calculate_variant_basalam_stock,
 )
@@ -28,8 +29,7 @@ __all__ = [
     "BasalamAPIError",
     "BasalamClient",
     "BasalamUploadedImage",
-    "calculate_price_with_commission",
-    "calculate_variant_basalam_price",
+    "calculate_price_with_commission",                 "calculate_variant_basalam_price",
     "calculate_variant_basalam_stock",
     "get_basalam_category",
     "get_commission_percent",
