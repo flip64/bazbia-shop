@@ -306,3 +306,54 @@ class BasalamOrderMappingAdmin(admin.ModelAdmin):
     def has_add_permission(self, request):
         # این مدل فقط باید توسط سرویس دریافت سفارش ساخته شود.
         return False
+
+
+@admin.register(BasalamCategoryAttributeSnapshot)
+class BasalamCategoryAttributeSnapshotAdmin(
+    admin.ModelAdmin
+):
+    list_display = (
+        "basalam_category",
+        "attributes_count",
+        "fetched_at",
+        "has_error",
+    )
+
+    search_fields = (
+        "basalam_category__title",
+        "basalam_category__basalam_category_id",
+    )
+
+    list_filter = (
+        "fetched_at",
+    )
+
+    list_select_related = (
+        "basalam_category",
+    )
+
+    readonly_fields = (
+        "basalam_category",
+        "attributes_count",
+        "raw_payload",
+        "last_error",
+        "fetched_at",
+        "created_at",
+    )
+
+    ordering = (
+        "basalam_category__title",
+    )
+
+    @admin.display(
+        boolean=True,
+        description="دارای خطا",
+    )
+    def has_error(self, obj):
+        return bool(obj.last_error)
+
+    def has_add_permission(
+        self,
+        request,
+    ):
+        return False
