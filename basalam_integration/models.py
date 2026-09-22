@@ -69,34 +69,46 @@ class BasalamCategory(models.Model):
         )
 
 
+
+
 # =========================================================
 # اتصال دسته بازبیا به دسته باسلام
 # =========================================================
-class BasalamCategoryMapping(models.Model):
+class BasalamCategoryAttributeSnapshot(models.Model):
     """
-    مشخص می‌کند هر دسته بازبیا در کدام دسته باسلام
-    منتشر شود.
+    آخرین پاسخ ویژگی‌های یک دسته باسلام.
 
-    چند دسته بازبیا می‌توانند به یک دسته باسلام متصل شوند.
+    پاسخ کامل API ذخیره می‌شود تا اگر ساختار
+    ویژگی‌های باسلام تغییر کرد اطلاعات از بین نرود.
     """
 
-    bazbia_category = models.OneToOneField(
-        "products.Category",
-        on_delete=models.CASCADE,
-        related_name="basalam_mapping",
-        verbose_name="دسته بازبیا",
-    )
-
-    basalam_category = models.ForeignKey(
+    basalam_category = models.OneToOneField(
         BasalamCategory,
-        on_delete=models.PROTECT,
-        related_name="bazbia_mappings",
+        on_delete=models.CASCADE,
+        related_name="attribute_snapshot",
         verbose_name="دسته باسلام",
     )
 
-    is_active = models.BooleanField(
-        default=True,
-        verbose_name="فعال",
+    raw_payload = models.JSONField(
+        default=dict,
+        blank=True,
+        verbose_name="پاسخ کامل ویژگی‌ها",
+    )
+
+    attributes_count = models.PositiveIntegerField(
+        default=0,
+        verbose_name="تعداد ویژگی‌ها",
+    )
+
+    last_error = models.TextField(
+        blank=True,
+        default="",
+        verbose_name="آخرین خطا",
+    )
+
+    fetched_at = models.DateTimeField(
+        auto_now=True,
+        verbose_name="زمان آخرین دریافت",
     )
 
     created_at = models.DateTimeField(
@@ -104,19 +116,17 @@ class BasalamCategoryMapping(models.Model):
         verbose_name="زمان ایجاد",
     )
 
-    updated_at = models.DateTimeField(
-        auto_now=True,
-        verbose_name="آخرین تغییر",
-    )
-
     class Meta:
-        verbose_name = "نگاشت دسته باسلام"
-        verbose_name_plural = "نگاشت دسته‌های باسلام"
+        verbose_name = "ویژگی‌های دسته باسلام"
+        verbose_name_plural = "ویژگی‌های دسته‌های باسلام"
+        ordering = (
+            "basalam_category__title",
+        )
 
     def __str__(self):
         return (
-            f"{self.bazbia_category} "
-            f"← {self.basalam_category.title}"
+            f"{self.basalam_category.title} "
+            f"({self.attributes_count} ویژگی)"
         )
 
 
@@ -135,39 +145,7 @@ class BasalamProductMapping(models.Model):
         "products.Product",
         on_delete=models.CASCADE,
         related_name="basalam_mapping",
-        verbose_name="محصول بازبیا",
-    )
-
-    basalam_product_id = models.PositiveBigIntegerField(
-        unique=True,
-        verbose_name="شناسه محصول در باسلام",
-    )
-
-    is_active = models.BooleanField(
-        default=True,
-        verbose_name="فعال",
-    )
-
-    last_synced_at = models.DateTimeField(
-        null=True,
-        blank=True,
-        verbose_name="آخرین همگام‌سازی",
-    )
-
-    last_error = models.TextField(
-        blank=True,
-        default="",
-        verbose_name="آخرین خطا",
-    )
-
-    created_at = models.DateTimeField(
-        auto_now_add=True,
-        verbose_name="زمان ایجاد",
-    )
-
-    updated_at = models.DateTimeField(
-        auto_now=True,
-        verbose_name="آخرین تغییر",
+غییر",
     )
 
     class Meta:
