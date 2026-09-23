@@ -213,7 +213,7 @@ def publish_product_to_basalam(
         client.create_product(
             vendor_id=int(vendor_id),
             payload=payload,
-1        )
+        )
     )
     basalam_product_id = response_data.get("id")
     if not basalam_product_id:
