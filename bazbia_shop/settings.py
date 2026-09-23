@@ -97,6 +97,18 @@ BASALAM_SYNC_ENABLED = os.environ.get(
     "on",
 }
 
+BASALAM_DEFAULT_WEIGHT = int(
+    os.environ.get("BASALAM_DEFAULT_WEIGHT", "500")
+)
+
+BASALAM_DEFAULT_PACKAGE_WEIGHT = int(
+    os.environ.get("BASALAM_DEFAULT_PACKAGE_WEIGHT", "700")
+)
+
+BASALAM_DEFAULT_PREPARATION_DAYS = int(
+    os.environ.get("BASALAM_DEFAULT_PREPARATION_DAYS", "2")
+)
+
 
 # مسیر ذخیره‌سازی فایل‌های استاتیک جمع‌آوری‌شده
 
