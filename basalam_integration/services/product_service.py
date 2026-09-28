@@ -12,7 +12,7 @@ from basalam_integration.models import (
 )
 
 from .category_service import get_basalam_category
-from .client import BasalamClient
+from .client import BasalamAPIError, BasalamClient
 from .file_service import upload_product_images
 from .price_service import calculate_variant_basalam_price
 from .stock_service import calculate_variant_basalam_stock
@@ -46,6 +46,14 @@ class ProductSyncResult:
     basalam_product_id: int
     added_count: int
     updated_count: int
+
+
+@dataclass(frozen=True)
+class ProductAvailabilityResult:
+    product_id: int
+    basalam_product_id: int
+    requested_active: bool
+    stock_zero_fallback: bool
 
 
 def _positive_setting(name: str) -> int:
@@ -415,4 +423,131 @@ def sync_product_to_basalam(
         basalam_product_id=plan.basalam_product_id,
         added_count=len(plan.new_variant_ids),
         updated_count=len(plan.existing_variant_ids),
+    )
+
+
+def _require_sync_enabled() -> None:
+    if not settings.BASALAM_SYNC_ENABLED:
+        raise ImproperlyConfigured(
+            "برای ارسال واقعی، BASALAM_SYNC_ENABLED=True تنظیم شود."
+        )
+
+
+def _get_active_product_mapping(product):
+    try:
+        mapping = product.basalam_mapping
+    except BasalamProductMapping.DoesNotExist as exc:
+        raise ValidationError(
+            "این محصول هنوز به محصولی در باسلام متصل نشده است."
+        ) from exc
+
+    if not mapping.is_active:
+        raise ValidationError("اتصال این محصول به باسلام غیرفعال است.")
+    return mapping
+
+
+def zero_product_stock_on_basalam(
+    product,
+    *,
+    client: BasalamClient | None = None,
+) -> int:
+    """موجودی تمام تنوع‌های محصول باسلام را صفر می‌کند."""
+
+    _require_sync_enabled()
+    mapping = _get_active_product_mapping(product)
+    variants = _get_product_variants(product)
+    client = client or BasalamClient()
+    variation_mappings = {
+        item.variant_id: item
+        for item in mapping.variation_mappings.all()
+    }
+
+    if len(variants) == 1 and not variation_mappings:
+        client.update_product(
+            product_id=mapping.basalam_product_id,
+            payload={"stock": 0},
+        )
+        return 1
+
+    if all(variant.pk in variation_mappings for variant in variants):
+        for variant in variants:
+            variation_mapping = variation_mappings[variant.pk]
+            client.update_product_variation(
+                product_id=mapping.basalam_product_id,
+                variation_id=variation_mapping.basalam_variation_id,
+                payload={"stock": 0, "sku": variant.sku},
+            )
+            variation_mapping.last_synced_stock = 0
+            variation_mapping.last_synced_at = timezone.now()
+            variation_mapping.last_error = ""
+            variation_mapping.save(
+                update_fields=[
+                    "last_synced_stock",
+                    "last_synced_at",
+                    "last_error",
+                    "updated_at",
+                ]
+            )
+        return len(variants)
+
+    zero_variants = []
+    for variant in variants:
+        payload = _variant_payload(variant)
+        payload["stock"] = 0
+        zero_variants.append(payload)
+    response = client.update_product(
+        product_id=mapping.basalam_product_id,
+        payload={"variants": zero_variants},
+    )
+    response_variants = _response_variants(response)
+    if response_variants:
+        _save_variation_mappings(
+            mapping,
+            variants,
+            {"variants": response_variants},
+        )
+    return len(variants)
+
+
+def set_product_active_on_basalam(
+    product,
+    *,
+    active: bool,
+    fallback_to_zero_stock: bool = True,
+    client: BasalamClient | None = None,
+) -> ProductAvailabilityResult:
+    """انتشار یا عدم انتشار محصول؛ با جایگزین امن صفرکردن موجودی."""
+
+    _require_sync_enabled()
+    mapping = _get_active_product_mapping(product)
+    client = client or BasalamClient()
+    fallback_used = False
+
+    try:
+        client.update_product(
+            product_id=mapping.basalam_product_id,
+            payload={
+                "status": (
+                    BASALAM_STATUS_PUBLISHED
+                    if active
+                    else BASALAM_STATUS_UNPUBLISHED
+                )
+            },
+        )
+    except BasalamAPIError:
+        if active or not fallback_to_zero_stock:
+            raise
+        zero_product_stock_on_basalam(product, client=client)
+        fallback_used = True
+
+    mapping.last_synced_at = timezone.now()
+    mapping.last_error = ""
+    mapping.save(
+        update_fields=["last_synced_at", "last_error", "updated_at"]
+    )
+    return ProductAvailabilityResult(
+        product_id=product.pk,
+        basalam_product_id=mapping.basalam_product_id,
+        requested_active=active,
+        stock_zero_fallback=fallback_used,
     )

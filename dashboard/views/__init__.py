@@ -5,6 +5,7 @@
 
 
 from .home import dashboard_home
+from .basalam_views import basalam_product_management
 from .imports import import_dashboard
 from .logs import operation_logs
 from .price_history import (
@@ -42,6 +43,7 @@ from .orders import (
 
 __all__ = [
     "dashboard_home",
+    "basalam_product_management",
     "product_list",
     "product_detail",
     "product_info_edit",
@@ -65,4 +67,3 @@ __all__ = [
     "order_detail",
     "order_status_update",
 ]
-

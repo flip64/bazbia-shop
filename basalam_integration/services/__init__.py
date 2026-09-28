@@ -21,8 +21,10 @@ from .product_service import (
     build_product_sync_plan,
     build_product_payload,
     publish_product_to_basalam,
+    set_product_active_on_basalam,
     sync_product_to_basalam,
     validate_product_for_basalam,
+    zero_product_stock_on_basalam,
 )
 
 
@@ -39,6 +41,8 @@ __all__ = [
     "build_product_payload",
     "build_product_sync_plan",
     "publish_product_to_basalam",
+    "set_product_active_on_basalam",
     "sync_product_to_basalam",
     "validate_product_for_basalam",
+    "zero_product_stock_on_basalam",
 ]

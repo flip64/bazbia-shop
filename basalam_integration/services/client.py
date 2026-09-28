@@ -155,6 +155,30 @@ class BasalamClient:
             json=payload,
         )
 
+    def get_vendor_products(
+        self,
+        *,
+        vendor_id: int,
+        product_ids: list[int] | None = None,
+        page: int = 1,
+        per_page: int = 50,
+    ) -> dict[str, Any]:
+        """دریافت محصولات غرفه برای نمایش وضعیت در داشبورد."""
+
+        params: dict[str, Any] = {
+            "page": page,
+            "per_page": per_page,
+            "variants_flatting": False,
+        }
+        if product_ids:
+            params["ids"] = product_ids
+
+        return self._request(
+            "GET",
+            f"/v1/vendors/{vendor_id}/products",
+            params=params,
+        )
+
     def get_product(
         self,
         *,

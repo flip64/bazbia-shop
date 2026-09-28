@@ -1,0 +1,106 @@
+{% extends "dashboard/base.html" %}
+
+{% block title %}مدیریت باسلام | بازبیا{% endblock %}
+
+{% block content %}
+<style>
+    .basalam-page { direction:rtl; }
+    .basalam-header { display:flex; justify-content:space-between; align-items:center; gap:14px; margin-bottom:20px; }
+    .basalam-header h1 { margin:0 0 5px; color:#1f2937; font-size:1.55rem; font-weight:900; }
+    .basalam-header p { margin:0; color:#6b7280; }
+    .basalam-actions { display:flex; flex-wrap:wrap; gap:8px; }
+    .stats-grid { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:12px; margin-bottom:18px; }
+    .stat-card { padding:16px; background:#fff; border:1px solid #e4e8ee; border-radius:13px; }
+    .stat-card span { display:block; color:#64748b; font-size:.75rem; }
+    .stat-card strong { color:#172033; font-size:1.35rem; }
+    .filter-card, .products-card { background:#fff; border:1px solid #e4e8ee; border-radius:14px; box-shadow:0 3px 15px rgba(23,32,51,.04); }
+    .filter-card { padding:17px; margin-bottom:18px; }
+    .filter-grid { display:grid; grid-template-columns:2fr 1fr 1fr auto; gap:10px; align-items:end; }
+    .basalam-table { min-width:1250px; margin:0; vertical-align:middle; }
+    .basalam-table th { padding:12px 10px; color:#64748b; background:#f8fafc; font-size:.76rem; white-space:nowrap; }
+    .basalam-table td { padding:12px 10px; border-color:#edf0f4; }
+    .product-cell { display:flex; align-items:center; gap:10px; min-width:260px; }
+    .product-image { width:54px; height:54px; object-fit:contain; background:#f8fafc; border:1px solid #e8edf3; border-radius:9px; }
+    .image-empty { display:flex; align-items:center; justify-content:center; color:#94a3b8; font-size:.65rem; }
+    .product-name { display:block; color:#1f2937; font-weight:900; }
+    .product-meta { display:block; color:#8b95a7; font-size:.7rem; }
+    .status { display:inline-flex; padding:5px 9px; border-radius:999px; font-size:.7rem; font-weight:900; }
+    .status-success { color:#166534; background:#dcfce7; }
+    .status-warning { color:#92400e; background:#fef3c7; }
+    .status-danger { color:#991b1b; background:#fee2e2; }
+    .status-muted { color:#475569; background:#e2e8f0; }
+    .row-actions { display:flex; flex-wrap:wrap; gap:5px; min-width:330px; }
+    .row-actions form { display:inline; }
+    .last-sync { color:#64748b; font-size:.72rem; white-space:nowrap; }
+    .empty-state { padding:55px 20px; color:#64748b; text-align:center; }
+    @media (max-width:800px) {
+        .basalam-header { align-items:flex-start; flex-direction:column; }
+        .stats-grid, .filter-grid { grid-template-columns:1fr; }
+    }
+</style>
+
+<div class="container-fluid px-0 basalam-page">
+    <div class="basalam-header">
+        <div>
+            <h1>مدیریت محصولات باسلام</h1>
+            <p>افزودن، همگام‌سازی، انتشار و کنترل موجودی محصولات غرفه</p>
+        </div>
+        <div class="basalam-actions">
+            <a class="btn btn-outline-primary" href="?{% if query_without_page %}{{ query_without_page }}&{% endif %}refresh=1">دریافت وضعیت زنده باسلام</a>
+            <a class="btn btn-outline-secondary" href="{% url 'dashboard:basalam_products' %}">پاک‌کردن فیلترها</a>
+        </div>
+    </div>
+
+    <div class="stats-grid">
+        <div class="stat-card"><span>همه محصولات بازبیا</span><strong>{{ statistics.all }}</strong></div>
+        <div class="stat-card"><span>متصل به باسلام</span><strong>{{ statistics.connected }}</strong></div>
+        <div class="stat-card"><span>متصل‌نشده</span><strong>{{ statistics.unconnected }}</strong></div>
+    </div>
+
+    <form method="get" class="filter-card">
+        {% if remote_refreshed %}<input type="hidden" name="refresh" value="1">{% endif %}
+        <div class="filter-grid">
+            <div><label class="form-label">جست‌وجو</label><input class="form-control" type="search" name="search" value="{{ search }}" placeholder="نام، نامک، SKU یا شناسه باسلام"></div>
+            <div><label class="form-label">اتصال</label><select class="form-select" name="connection"><option value="">همه</option><option value="connected" {% if connection == 'connected' %}selected{% endif %}>متصل</option><option value="unconnected" {% if connection == 'unconnected' %}selected{% endif %}>متصل‌نشده</option></select></div>
+            <div><label class="form-label">وضعیت بازبیا</label><select class="form-select" name="local_status"><option value="">همه</option><option value="active" {% if local_status == 'active' %}selected{% endif %}>فعال</option><option value="inactive" {% if local_status == 'inactive' %}selected{% endif %}>غیرفعال</option></select></div>
+            <button class="btn btn-primary" type="submit">اعمال فیلتر</button>
+        </div>
+    </form>
+
+    <div class="products-card overflow-hidden">
+        {% if products %}
+        <div class="table-responsive">
+            <table class="table basalam-table">
+                <thead><tr><th>محصول</th><th>بازبیا</th><th>اتصال باسلام</th><th>وضعیت زنده</th><th>موجودی باسلام</th><th>آخرین همگام‌سازی</th><th>عملیات</th></tr></thead>
+                <tbody>
+                {% for product in products %}
+                    <tr>
+                        <td><div class="product-cell">{% if product.dashboard_image_url %}<img class="product-image" src="{{ product.dashboard_image_url }}" alt="{{ product.name }}">{% else %}<div class="product-image image-empty">بدون تصویر</div>{% endif %}<div><span class="product-name">{{ product.name }}</span><span class="product-meta">#{{ product.pk }} · {{ product.variant_count }} واریانت</span></div></div></td>
+                        <td>{% if product.is_active %}<span class="status status-success">فعال</span>{% else %}<span class="status status-danger">غیرفعال</span>{% endif %}</td>
+                        <td>{% if product.basalam_mapping and product.basalam_mapping.is_active %}<span class="status status-success">متصل</span><span class="product-meta">ID: {{ product.basalam_mapping.basalam_product_id }}</span>{% elif product.basalam_mapping %}<span class="status status-warning">اتصال غیرفعال</span>{% else %}<span class="status status-muted">متصل‌نشده</span>{% endif %}</td>
+                        <td>{% if remote_refreshed %}{% if product.remote_data %}<span class="status status-success">{{ product.remote_status }}</span>{% elif product.basalam_mapping %}<span class="status status-danger">در پاسخ پیدا نشد</span>{% else %}—{% endif %}{% else %}<span class="text-muted small">دریافت نشده</span>{% endif %}</td>
+                        <td>{% if remote_refreshed and product.remote_data %}<strong>{{ product.remote_stock }}</strong>{% else %}—{% endif %}</td>
+                        <td>{% if product.basalam_mapping.last_synced_at %}<span class="last-sync">{{ product.basalam_mapping.last_synced_at|date:"Y/m/d H:i" }}</span>{% else %}<span class="text-muted small">ثبت نشده</span>{% endif %}</td>
+                        <td><div class="row-actions">
+                            <a class="btn btn-sm btn-outline-secondary" href="{% url 'dashboard:product_info_edit' product.pk %}">ویرایش بازبیا</a>
+                            {% if product.basalam_mapping and product.basalam_mapping.is_active %}
+                                <form method="post">{% csrf_token %}<input type="hidden" name="product_id" value="{{ product.pk }}"><input type="hidden" name="action" value="sync"><button class="btn btn-sm btn-primary" type="submit">آپدیت باسلام</button></form>
+                                <form method="post">{% csrf_token %}<input type="hidden" name="product_id" value="{{ product.pk }}"><input type="hidden" name="action" value="activate"><button class="btn btn-sm btn-success" type="submit">فعال‌سازی</button></form>
+                                <form method="post" onsubmit="return confirm('محصول در باسلام غیرفعال شود؟')">{% csrf_token %}<input type="hidden" name="product_id" value="{{ product.pk }}"><input type="hidden" name="action" value="deactivate"><button class="btn btn-sm btn-outline-danger" type="submit">غیرفعال</button></form>
+                                <form method="post" onsubmit="return confirm('موجودی تمام واریانت‌های این محصول در باسلام صفر شود؟')">{% csrf_token %}<input type="hidden" name="product_id" value="{{ product.pk }}"><input type="hidden" name="action" value="zero_stock"><button class="btn btn-sm btn-outline-warning" type="submit">موجودی صفر</button></form>
+                            {% else %}
+                                <form method="post">{% csrf_token %}<input type="hidden" name="product_id" value="{{ product.pk }}"><input type="hidden" name="action" value="add_draft"><button class="btn btn-sm btn-outline-primary" type="submit">افزودن پیش‌نویس</button></form>
+                                <form method="post" onsubmit="return confirm('محصول مستقیماً در باسلام منتشر شود؟')">{% csrf_token %}<input type="hidden" name="product_id" value="{{ product.pk }}"><input type="hidden" name="action" value="add_publish"><button class="btn btn-sm btn-success" type="submit">افزودن و انتشار</button></form>
+                            {% endif %}
+                        </div></td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}<div class="empty-state">محصولی مطابق فیلتر انتخاب‌شده پیدا نشد.</div>{% endif %}
+    </div>
+
+    {% if is_paginated %}<nav class="mt-3"><ul class="pagination justify-content-center">{% if page_obj.has_previous %}<li class="page-item"><a class="page-link" href="?{% if query_without_page %}{{ query_without_page }}&{% endif %}page={{ page_obj.previous_page_number }}">قبلی</a></li>{% endif %}<li class="page-item active"><span class="page-link">صفحه {{ page_obj.number }} از {{ paginator.num_pages }}</span></li>{% if page_obj.has_next %}<li class="page-item"><a class="page-link" href="?{% if query_without_page %}{{ query_without_page }}&{% endif %}page={{ page_obj.next_page_number }}">بعدی</a></li>{% endif %}</ul></nav>{% endif %}
+</div>
+{% endblock %}

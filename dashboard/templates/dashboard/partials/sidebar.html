@@ -73,6 +73,13 @@
             مدیریت درصد سود
         </a>
 
+        <a
+            class="sidebar-link {% if request.resolver_match.url_name == 'basalam_products' %}active{% endif %}"
+            href="{% url 'dashboard:basalam_products' %}"
+        >
+            مدیریت باسلام
+        </a>
+
         <div class="sidebar-title">
             تأمین‌کنندگان
         </div>

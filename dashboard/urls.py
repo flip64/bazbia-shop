@@ -3,6 +3,7 @@ from dashboard.views.torob_views import torob_variant_management
 from django.urls import path
 from dashboard.views import (
     dashboard_home,
+    basalam_product_management,
     import_dashboard,
     offer_price_history,
     operation_logs,
@@ -33,6 +34,11 @@ urlpatterns = [
         "",
         dashboard_home,
         name="home",
+    ),
+    path(
+        "basalam/products/",
+        basalam_product_management,
+        name="basalam_products",
     ),
     path(
         "products/",
