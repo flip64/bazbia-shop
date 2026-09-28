@@ -154,3 +154,49 @@ class BasalamClient:
             f"/v1/vendors/{vendor_id}/products",
             json=payload,
         )
+
+    def get_product(
+        self,
+        *,
+        product_id: int,
+    ) -> dict[str, Any]:
+        """دریافت جزئیات محصول، همراه با تنوع‌ها."""
+
+        return self._request(
+            "GET",
+            f"/v1/products/{product_id}",
+            headers={"Prefer": "return=representation"},
+        )
+
+    def update_product(
+        self,
+        *,
+        product_id: int,
+        payload: dict[str, Any],
+    ) -> dict[str, Any]:
+        """به‌روزرسانی محصول و افزودن تنوع‌های جدید."""
+
+        return self._request(
+            "PATCH",
+            f"/v1/products/{product_id}",
+            headers={"Prefer": "return=representation"},
+            json=payload,
+        )
+
+    def update_product_variation(
+        self,
+        *,
+        product_id: int,
+        variation_id: int,
+        payload: dict[str, Any],
+    ) -> dict[str, Any]:
+        """به‌روزرسانی قیمت، موجودی و SKU یک تنوع."""
+
+        return self._request(
+            "PATCH",
+            (
+                f"/v1/products/{product_id}/variations/"
+                f"{variation_id}"
+            ),
+            json=payload,
+        )
