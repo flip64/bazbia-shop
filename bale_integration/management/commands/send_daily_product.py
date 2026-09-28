@@ -25,7 +25,8 @@ class Command(BaseCommand):
 
         today = timezone.localdate()
         previous = BaleProductPost.objects.filter(
-            publication_date=today,
+            cron_date=today,
+            trigger=BaleProductPost.TRIGGER_CRON,
             is_successful=True,
         ).first()
         if previous:
@@ -52,9 +53,11 @@ class Command(BaseCommand):
             return
 
         log, _ = BaleProductPost.objects.update_or_create(
-            publication_date=today,
+            cron_date=today,
             defaults={
                 "product": product,
+                "publication_date": today,
+                "trigger": BaleProductPost.TRIGGER_CRON,
                 "channel_id": channel_id,
                 "message_id": None,
                 "is_successful": False,

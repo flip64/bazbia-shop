@@ -7,18 +7,22 @@ from .models import BaleProductPost
 class BaleProductPostAdmin(admin.ModelAdmin):
     list_display = (
         "publication_date",
+        "cron_date",
         "product",
         "channel_id",
+        "trigger",
         "is_successful",
         "attempt_count",
         "message_id",
     )
-    list_filter = ("is_successful", "publication_date")
+    list_filter = ("trigger", "is_successful", "publication_date")
     search_fields = ("product__name", "product__slug", "channel_id")
     readonly_fields = (
         "product",
         "publication_date",
+        "cron_date",
         "channel_id",
+        "trigger",
         "message_id",
         "is_successful",
         "attempt_count",

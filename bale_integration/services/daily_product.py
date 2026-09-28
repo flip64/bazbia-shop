@@ -22,10 +22,11 @@ def final_price(variant):
     return variant.price
 
 
-def select_daily_product(exclude_days=30):
+def select_daily_product(exclude_days=30, post_model=BaleProductPost):
     cutoff = timezone.localdate() - timedelta(days=exclude_days)
-    recent_product_ids = BaleProductPost.objects.filter(
+    recent_product_ids = post_model.objects.filter(
         is_successful=True,
+        trigger=post_model.TRIGGER_CRON,
         publication_date__gte=cutoff,
     ).values_list("product_id", flat=True)
 
@@ -57,6 +58,35 @@ def select_daily_product(exclude_days=30):
             return product, variants, image
 
     return None, [], None
+
+
+def select_product_by_id(product_id):
+    available_variants = VariantStockService.filter_available(
+        ProductVariant.objects.filter(price__gt=0)
+    ).order_by("price", "id")
+    try:
+        product = (
+            Product.objects.filter(is_active=True)
+            .prefetch_related(
+                "images",
+                Prefetch(
+                    "variants",
+                    queryset=available_variants,
+                    to_attr="available_bale_variants",
+                ),
+            )
+            .get(pk=product_id)
+        )
+    except Product.DoesNotExist:
+        return None, [], None
+
+    variants = product.available_bale_variants
+    images = list(product.images.all())
+    image = next((item for item in images if item.is_main), None)
+    image = image or (images[0] if images else None)
+    if not variants or not image or not (image.image or image.source_url):
+        return None, [], None
+    return product, variants, image
 
 
 def build_product_post(product, variants, image):

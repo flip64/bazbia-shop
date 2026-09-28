@@ -6,6 +6,7 @@ from .daily_product import (
     build_product_post,
     final_price,
     select_daily_product,
+    select_product_by_id,
 )
 
 
@@ -15,4 +16,5 @@ __all__ = [
     "build_product_post",
     "final_price",
     "select_daily_product",
+    "select_product_by_id",
 ]

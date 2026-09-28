@@ -39,6 +39,12 @@ BALE_BACKEND_URL = os.getenv(
     "https://backend.bazbia.ir",
 )
 
+# ==========================================
+# تنظیمات اتصال به تلگرام
+# ==========================================
+TELEGRAM_BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN", "")
+TELEGRAM_CHANNEL_ID = os.getenv("TELEGRAM_CHANNEL_ID", "")
+
 
 # ==========================================
 # تنظیمات اتصال به باسلام
@@ -183,6 +189,7 @@ INSTALLED_APPS = [
     'torob_integration.apps.TorobIntegrationConfig',
     'basalam_integration.apps.BasalamIntegrationConfig',
     "bale_integration.apps.BaleIntegrationConfig",
+    "telegram_integration.apps.TelegramIntegrationConfig",
     'contact',
     "analytics",
     "purchases",
