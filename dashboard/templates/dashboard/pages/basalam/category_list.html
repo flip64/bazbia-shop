@@ -45,7 +45,7 @@
 <div class="container-fluid px-0 category-page">
     <div class="page-header">
         <div><h1>دسته‌بندی و نگاشت باسلام</h1><p>ساخت و ویرایش دسته‌های بازبیا و اتصال آن‌ها به دسته‌های رسمی باسلام</p></div>
-        {% if edit_category %}<a class="btn btn-outline-primary" href="{% url 'dashboard:basalam_categories' %}">افزودن دسته جدید</a>{% endif %}
+        <div class="d-flex gap-2"><a class="btn btn-outline-success" href="{% url 'dashboard:category_tree' %}">نمای درختی دسته‌ها</a>{% if edit_category %}<a class="btn btn-outline-primary" href="{% url 'dashboard:basalam_categories' %}">افزودن دسته جدید</a>{% endif %}</div>
     </div>
 
     <div class="stats-grid">

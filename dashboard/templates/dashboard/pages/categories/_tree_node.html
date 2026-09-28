@@ -1,0 +1,30 @@
+<li class="tree-node" data-search="{{ node.category.name|lower }} {{ node.category.slug|lower }}">
+    <div class="node-row {% if selected_category.pk == node.category.pk %}selected{% endif %}">
+        {% if node.children %}
+            <button class="tree-toggle" type="button" aria-label="باز و بسته کردن">−</button>
+        {% else %}
+            <span class="tree-spacer"></span>
+        {% endif %}
+        <a class="node-name" href="{% url 'dashboard:category_tree' %}?edit={{ node.category.pk }}">
+            {{ node.category.name }}
+            <small>{{ node.category.slug }}</small>
+        </a>
+        <span class="node-count" title="تعداد محصولات">{{ node.category.product_count }}</span>
+        {% if node.category.basalam_mapping.is_active %}<span class="mapped-dot" title="نگاشت فعال باسلام"></span>{% endif %}
+        <div class="node-actions">
+            <a class="btn btn-sm btn-outline-success" href="{% url 'dashboard:category_tree' %}?parent={{ node.category.pk }}">+ زیردسته</a>
+            <a class="btn btn-sm btn-outline-primary" href="{% url 'dashboard:category_tree' %}?edit={{ node.category.pk }}">ویرایش</a>
+            <form method="post" onsubmit="return confirm('این دسته خالی حذف شود؟')">
+                {% csrf_token %}<input type="hidden" name="action" value="delete"><input type="hidden" name="category_id" value="{{ node.category.pk }}">
+                <button class="btn btn-sm btn-outline-danger" type="submit" {% if node.category.product_count or node.children %}disabled title="دسته محصول یا زیردسته دارد"{% endif %}>حذف</button>
+            </form>
+        </div>
+    </div>
+    {% if node.children %}
+        <ul class="tree-children">
+            {% for child in node.children %}
+                {% include "dashboard/pages/categories/_tree_node.html" with node=child %}
+            {% endfor %}
+        </ul>
+    {% endif %}
+</li>

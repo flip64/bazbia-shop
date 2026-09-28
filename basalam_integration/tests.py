@@ -374,3 +374,51 @@ class ProductSyncServiceTests(TestCase):
 
         self.assertEqual(response.status_code, 302)
         self.assertFalse(Category.objects.filter(pk=category.pk).exists())
+
+    def test_category_tree_page_is_available(self):
+        self._login_staff()
+
+        response = self.client.get(reverse("dashboard:category_tree"))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "مدیریت درختی دسته‌ها")
+        self.assertContains(response, self.product.category.name)
+
+    def test_category_tree_creates_subcategory(self):
+        self._login_staff()
+        parent = self.product.category
+
+        response = self.client.post(
+            reverse("dashboard:category_tree"),
+            {
+                "action": "save",
+                "name": "پیراهن",
+                "slug": "shirts",
+                "parent": parent.pk,
+                "basalam_category": "",
+            },
+        )
+
+        self.assertEqual(response.status_code, 302)
+        subcategory = Category.objects.get(slug="shirts")
+        self.assertEqual(subcategory.parent, parent)
+
+    def test_category_tree_does_not_delete_parent_with_children(self):
+        self._login_staff()
+        parent = Category.objects.create(
+            name="خانه",
+            slug="home",
+        )
+        Category.objects.create(
+            name="آشپزخانه",
+            slug="kitchen",
+            parent=parent,
+        )
+
+        response = self.client.post(
+            reverse("dashboard:category_tree"),
+            {"action": "delete", "category_id": parent.pk},
+        )
+
+        self.assertEqual(response.status_code, 302)
+        self.assertTrue(Category.objects.filter(pk=parent.pk).exists())

@@ -87,6 +87,13 @@
             دسته‌ها و نگاشت باسلام
         </a>
 
+        <a
+            class="sidebar-link {% if request.resolver_match.url_name == 'category_tree' %}active{% endif %}"
+            href="{% url 'dashboard:category_tree' %}"
+        >
+            مدیریت درخت دسته‌ها
+        </a>
+
         <div class="sidebar-title">
             تأمین‌کنندگان
         </div>

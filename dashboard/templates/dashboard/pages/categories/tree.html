@@ -1,0 +1,112 @@
+{% extends "dashboard/base.html" %}
+
+{% block title %}مدیریت درختی دسته‌ها | بازبیا{% endblock %}
+
+{% block content %}
+<style>
+    .tree-page { direction:rtl; }
+    .tree-header { display:flex; justify-content:space-between; align-items:center; gap:12px; margin-bottom:18px; }
+    .tree-header h1 { margin:0 0 5px; color:#1f2937; font-size:1.55rem; font-weight:900; }
+    .tree-header p { margin:0; color:#64748b; }
+    .tree-layout { display:grid; grid-template-columns:minmax(420px,1.3fr) minmax(360px,.7fr); gap:18px; align-items:start; }
+    .tree-panel, .editor-panel { background:#fff; border:1px solid #e4e8ee; border-radius:15px; box-shadow:0 3px 15px rgba(23,32,51,.05); }
+    .panel-head { padding:16px; border-bottom:1px solid #edf0f4; }
+    .panel-head-row { display:flex; justify-content:space-between; align-items:center; gap:10px; margin-bottom:12px; }
+    .panel-head h2 { margin:0; font-size:1rem; font-weight:900; }
+    .tree-tools { display:grid; grid-template-columns:1fr auto auto; gap:7px; }
+    .tree-container { max-height:72vh; padding:12px; overflow:auto; }
+    .category-tree, .tree-children { margin:0; padding:0; list-style:none; }
+    .tree-children { margin-right:26px; border-right:1px dashed #cbd5e1; }
+    .node-row { display:flex; align-items:center; gap:7px; min-width:620px; margin:3px 0; padding:7px 8px; border:1px solid transparent; border-radius:10px; transition:.15s; }
+    .node-row:hover { background:#f8fafc; border-color:#e2e8f0; }
+    .node-row.selected { background:#eff6ff; border-color:#93c5fd; }
+    .tree-toggle { flex:0 0 25px; width:25px; height:25px; padding:0; color:#334155; background:#e2e8f0; border:0; border-radius:6px; font-weight:900; }
+    .tree-spacer { flex:0 0 25px; }
+    .node-name { flex:1; color:#1f2937; font-weight:850; text-decoration:none; }
+    .node-name small { display:block; color:#94a3b8; font-size:.65rem; font-weight:400; direction:ltr; text-align:right; }
+    .node-count { min-width:27px; padding:3px 6px; color:#475569; background:#f1f5f9; border-radius:999px; font-size:.68rem; text-align:center; }
+    .mapped-dot { width:9px; height:9px; background:#22c55e; border-radius:50%; box-shadow:0 0 0 3px #dcfce7; }
+    .node-actions { display:flex; gap:4px; }
+    .node-actions form { display:inline; }
+    .editor-panel { position:sticky; top:18px; }
+    .editor-body { padding:17px; }
+    .field { margin-bottom:13px; }
+    .field label { margin-bottom:5px; color:#475569; font-size:.78rem; font-weight:850; }
+    .field-error { margin-top:4px; color:#b91c1c; font-size:.72rem; }
+    .mapping-note { padding:10px; color:#1e40af; background:#eff6ff; border-radius:9px; font-size:.75rem; }
+    .check-field { display:flex; align-items:center; gap:8px; margin:12px 0; }
+    .editor-actions { display:flex; flex-wrap:wrap; gap:7px; margin-top:15px; }
+    .empty-tree { padding:45px; color:#64748b; text-align:center; }
+    @media (max-width:1000px) { .tree-layout { grid-template-columns:1fr; } .editor-panel { position:static; } }
+    @media (max-width:650px) { .tree-header { align-items:flex-start; flex-direction:column; } .tree-tools { grid-template-columns:1fr; } }
+</style>
+
+<div class="container-fluid px-0 tree-page">
+    <div class="tree-header">
+        <div><h1>مدیریت درختی دسته‌ها</h1><p>دسته اصلی یا زیردسته بسازید و ساختار والد و فرزند را آسان ویرایش کنید.</p></div>
+        <div class="d-flex gap-2"><a class="btn btn-success" href="{% url 'dashboard:category_tree' %}">+ دسته اصلی جدید</a><a class="btn btn-outline-primary" href="{% url 'dashboard:basalam_categories' %}">جدول نگاشت‌ها</a></div>
+    </div>
+
+    <div class="tree-layout">
+        <section class="tree-panel">
+            <div class="panel-head">
+                <div class="panel-head-row"><h2>ساختار دسته‌ها</h2><span class="badge bg-dark">{{ category_count }} دسته</span></div>
+                <div class="tree-tools"><input id="treeSearch" class="form-control" placeholder="جست‌وجوی نام یا نامک"><button id="expandAll" class="btn btn-outline-secondary" type="button">بازکردن همه</button><button id="collapseAll" class="btn btn-outline-secondary" type="button">بستن همه</button></div>
+            </div>
+            <div class="tree-container">
+                {% if tree_nodes %}<ul class="category-tree">{% for node in tree_nodes %}{% include "dashboard/pages/categories/_tree_node.html" with node=node %}{% endfor %}</ul>{% else %}<div class="empty-tree">هنوز دسته‌ای ساخته نشده است.</div>{% endif %}
+            </div>
+        </section>
+
+        <section class="editor-panel">
+            <div class="panel-head"><div class="panel-head-row"><h2>{% if selected_category %}ویرایش {{ selected_category.name }}{% elif form.initial.parent %}افزودن زیردسته به {{ form.initial.parent.name }}{% else %}افزودن دسته اصلی{% endif %}</h2>{% if selected_category %}<span class="badge bg-secondary">#{{ selected_category.pk }}</span>{% endif %}</div></div>
+            <div class="editor-body">
+                <form method="post" enctype="multipart/form-data">
+                    {% csrf_token %}<input type="hidden" name="action" value="save">{% if selected_category %}<input type="hidden" name="category_id" value="{{ selected_category.pk }}">{% endif %}
+                    {% if form.non_field_errors %}<div class="alert alert-danger">{{ form.non_field_errors }}</div>{% endif %}
+                    <div class="field"><label>{{ form.name.label }}</label>{{ form.name }}{% for error in form.name.errors %}<div class="field-error">{{ error }}</div>{% endfor %}</div>
+                    <div class="field"><label>{{ form.slug.label }}</label>{{ form.slug }}{% for error in form.slug.errors %}<div class="field-error">{{ error }}</div>{% endfor %}</div>
+                    <div class="field"><label>{{ form.parent.label }}</label>{{ form.parent }}{% for error in form.parent.errors %}<div class="field-error">{{ error }}</div>{% endfor %}</div>
+                    <div class="field"><label>{{ form.image.label }}</label>{{ form.image }}{% for error in form.image.errors %}<div class="field-error">{{ error }}</div>{% endfor %}</div>
+                    <hr>
+                    <div class="field"><label>{{ form.basalam_category.label }}</label>{{ form.basalam_category }}{% for error in form.basalam_category.errors %}<div class="field-error">{{ error }}</div>{% endfor %}</div>
+                    <div class="mapping-note">نگاشت باسلام اختیاری است و می‌توانید بعداً آن را از صفحه جدول نگاشت‌ها هم تغییر دهید.</div>
+                    <div class="check-field">{{ form.mapping_active }}<label>{{ form.mapping_active.label }}</label></div>
+                    <div class="editor-actions"><button class="btn btn-primary" type="submit">ذخیره دسته</button>{% if selected_category %}<a class="btn btn-outline-success" href="{% url 'dashboard:category_tree' %}?parent={{ selected_category.pk }}">+ افزودن زیردسته</a>{% endif %}<a class="btn btn-outline-secondary" href="{% url 'dashboard:category_tree' %}">پاک‌کردن فرم</a></div>
+                </form>
+            </div>
+        </section>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+(() => {
+    const nodes = [...document.querySelectorAll('.tree-node')];
+    const search = document.getElementById('treeSearch');
+    document.getElementById('expandAll')?.addEventListener('click', () => document.querySelectorAll('.tree-children').forEach(el => el.hidden = false));
+    document.getElementById('collapseAll')?.addEventListener('click', () => document.querySelectorAll('.tree-children').forEach(el => el.hidden = true));
+    document.querySelectorAll('.tree-toggle').forEach(button => button.addEventListener('click', () => {
+        const children = button.closest('.tree-node').querySelector(':scope > .tree-children');
+        if (!children) return;
+        children.hidden = !children.hidden;
+        button.textContent = children.hidden ? '+' : '−';
+    }));
+    search?.addEventListener('input', () => {
+        const term = search.value.trim().toLowerCase();
+        nodes.forEach(node => node.hidden = Boolean(term) && !node.dataset.search.includes(term));
+        if (term) {
+            nodes.filter(node => !node.hidden).forEach(node => {
+                let parent = node.parentElement.closest('.tree-node');
+                while (parent) {
+                    parent.hidden = false;
+                    parent = parent.parentElement.closest('.tree-node');
+                }
+            });
+            document.querySelectorAll('.tree-children').forEach(el => el.hidden = false);
+        }
+    });
+})();
+</script>
+{% endblock %}

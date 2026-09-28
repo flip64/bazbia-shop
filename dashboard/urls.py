@@ -5,6 +5,7 @@ from dashboard.views import (
     dashboard_home,
     basalam_product_management,
     basalam_category_management,
+    category_tree_management,
     import_dashboard,
     offer_price_history,
     operation_logs,
@@ -45,6 +46,11 @@ urlpatterns = [
         "basalam/categories/",
         basalam_category_management,
         name="basalam_categories",
+    ),
+    path(
+        "categories/tree/",
+        category_tree_management,
+        name="category_tree",
     ),
     path(
         "products/",
