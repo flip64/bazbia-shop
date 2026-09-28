@@ -107,6 +107,10 @@ class ProductSyncServiceTests(TestCase):
             basalam_variation_id=7001,
         )
         client = Mock()
+        client.get_product.return_value = {
+            "id": 9001,
+            "variants": [{"id": 7001, "sku": "SKU-OLD"}],
+        }
         client.update_product.return_value = {
             "id": 9001,
             "variants": [
@@ -139,6 +143,90 @@ class ProductSyncServiceTests(TestCase):
                 "stock": 4,
                 "sku": "SKU-OLD",
             },
+        )
+
+    @patch(
+        "basalam_integration.services.product_service."
+        "calculate_variant_basalam_stock",
+        return_value=6,
+    )
+    @patch(
+        "basalam_integration.services.product_service."
+        "calculate_variant_basalam_price",
+        return_value=125000,
+    )
+    def test_sync_updates_single_variant_as_product_fields(
+        self,
+        _price_mock,
+        _stock_mock,
+    ):
+        self.create_variant(sku="SKU-ONE", value="قرمز")
+        client = Mock()
+        client.update_product.return_value = {}
+
+        result = sync_product_to_basalam(
+            self.product,
+            client=client,
+        )
+
+        self.assertEqual(result.added_count, 0)
+        self.assertEqual(result.updated_count, 1)
+        client.update_product.assert_called_once_with(
+            product_id=9001,
+            payload={
+                "primary_price": 125000,
+                "stock": 6,
+                "sku": "SKU-ONE",
+            },
+        )
+        client.update_product_variation.assert_not_called()
+
+    @patch(
+        "basalam_integration.services.product_service."
+        "calculate_variant_basalam_stock",
+        return_value=5,
+    )
+    @patch(
+        "basalam_integration.services.product_service."
+        "calculate_variant_basalam_price",
+        return_value=121000,
+    )
+    def test_sync_recovers_missing_mapping_from_remote_sku(
+        self,
+        _price_mock,
+        _stock_mock,
+    ):
+        first = self.create_variant(sku="SKU-FIRST", value="قرمز")
+        second = self.create_variant(sku="SKU-SECOND", value="آبی")
+        client = Mock()
+        client.get_product.return_value = {
+            "id": 9001,
+            "variants": [
+                {"id": 7101, "sku": "SKU-FIRST"},
+                {"id": 7102, "sku": "SKU-SECOND"},
+            ],
+        }
+
+        result = sync_product_to_basalam(
+            self.product,
+            client=client,
+        )
+
+        self.assertEqual(result.added_count, 0)
+        self.assertEqual(result.updated_count, 2)
+        client.update_product.assert_not_called()
+        self.assertEqual(client.update_product_variation.call_count, 2)
+        self.assertTrue(
+            BasalamVariationMapping.objects.filter(
+                variant=first,
+                basalam_variation_id=7101,
+            ).exists()
+        )
+        self.assertTrue(
+            BasalamVariationMapping.objects.filter(
+                variant=second,
+                basalam_variation_id=7102,
+            ).exists()
         )
 
     @patch(

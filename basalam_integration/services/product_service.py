@@ -338,10 +338,64 @@ def sync_product_to_basalam(
     variants_by_id = {variant.pk: variant for variant in variants}
     client = client or BasalamClient()
 
-    if plan.new_variant_ids:
+    if len(variants) == 1 and not plan.existing_variant_ids:
+        variant = variants[0]
+        payload = _variant_payload(variant)
+        payload.pop("properties", None)
+        client.update_product(
+            product_id=plan.basalam_product_id,
+            payload=payload,
+        )
+        now = timezone.now()
+        product_mapping.last_synced_at = now
+        product_mapping.last_error = ""
+        product_mapping.save(
+            update_fields=["last_synced_at", "last_error", "updated_at"]
+        )
+        return ProductSyncResult(
+            product_id=plan.product_id,
+            basalam_product_id=plan.basalam_product_id,
+            added_count=0,
+            updated_count=1,
+        )
+
+    new_variant_ids = list(plan.new_variant_ids)
+    existing_variant_ids = list(plan.existing_variant_ids)
+
+    if new_variant_ids:
+        remote_response = client.get_product(
+            product_id=plan.basalam_product_id,
+        )
+        candidate_variants = [
+            variants_by_id[variant_id]
+            for variant_id in new_variant_ids
+        ]
+        _save_variation_mappings(
+            product_mapping,
+            candidate_variants,
+            remote_response,
+        )
+        mapped_ids = set(
+            product_mapping.variation_mappings.values_list(
+                "variant_id", flat=True
+            )
+        )
+        reconciled_ids = [
+            variant_id
+            for variant_id in new_variant_ids
+            if variant_id in mapped_ids
+        ]
+        existing_variant_ids.extend(reconciled_ids)
+        new_variant_ids = [
+            variant_id
+            for variant_id in new_variant_ids
+            if variant_id not in mapped_ids
+        ]
+
+    if new_variant_ids:
         new_variants = [
             variants_by_id[variant_id]
-            for variant_id in plan.new_variant_ids
+            for variant_id in new_variant_ids
         ]
         response = client.update_product(
             product_id=plan.basalam_product_id,
@@ -366,7 +420,7 @@ def sync_product_to_basalam(
         }
         missing_skus = [
             variants_by_id[variant_id].sku
-            for variant_id in plan.new_variant_ids
+            for variant_id in new_variant_ids
             if not response_by_sku.get(
                 str(variants_by_id[variant_id].sku)
             )
@@ -388,7 +442,7 @@ def sync_product_to_basalam(
             )
 
     now = timezone.now()
-    for variant_id in plan.existing_variant_ids:
+    for variant_id in existing_variant_ids:
         variant = variants_by_id[variant_id]
         variation_mapping = variant.basalam_mapping
         payload = _variant_payload(variant)
@@ -420,8 +474,8 @@ def sync_product_to_basalam(
     return ProductSyncResult(
         product_id=plan.product_id,
         basalam_product_id=plan.basalam_product_id,
-        added_count=len(plan.new_variant_ids),
-        updated_count=len(plan.existing_variant_ids),
+        added_count=len(new_variant_ids),
+        updated_count=len(existing_variant_ids),
     )
 
 
