@@ -4,6 +4,7 @@ from django.urls import path
 from dashboard.views import (
     dashboard_home,
     basalam_product_management,
+    basalam_category_management,
     import_dashboard,
     offer_price_history,
     operation_logs,
@@ -39,6 +40,11 @@ urlpatterns = [
         "basalam/products/",
         basalam_product_management,
         name="basalam_products",
+    ),
+    path(
+        "basalam/categories/",
+        basalam_category_management,
+        name="basalam_categories",
     ),
     path(
         "products/",

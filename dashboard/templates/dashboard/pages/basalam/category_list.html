@@ -1,0 +1,102 @@
+{% extends "dashboard/base.html" %}
+
+{% block title %}دسته‌بندی و نگاشت باسلام | بازبیا{% endblock %}
+
+{% block content %}
+<style>
+    .category-page { direction:rtl; }
+    .page-header { display:flex; justify-content:space-between; align-items:center; gap:14px; margin-bottom:20px; }
+    .page-header h1 { margin:0 0 5px; color:#1f2937; font-size:1.55rem; font-weight:900; }
+    .page-header p { margin:0; color:#64748b; }
+    .stats-grid { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:12px; margin-bottom:18px; }
+    .stat-card, .edit-card, .filter-card, .list-card { background:#fff; border:1px solid #e4e8ee; border-radius:14px; box-shadow:0 3px 15px rgba(23,32,51,.04); }
+    .stat-card { padding:15px; }
+    .stat-card span { display:block; color:#64748b; font-size:.75rem; }
+    .stat-card strong { color:#172033; font-size:1.35rem; }
+    .edit-card { padding:18px; margin-bottom:18px; border-color:#cbdcfb; }
+    .edit-title { display:flex; justify-content:space-between; align-items:center; margin-bottom:15px; }
+    .edit-title h2 { margin:0; font-size:1.05rem; font-weight:900; }
+    .form-grid { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:13px; }
+    .form-field label { margin-bottom:6px; color:#475569; font-size:.78rem; font-weight:800; }
+    .field-error { margin-top:4px; color:#b91c1c; font-size:.72rem; }
+    .mapping-field { grid-column:span 2; }
+    .check-field { display:flex; align-items:center; gap:8px; padding-top:30px; }
+    .form-actions { display:flex; gap:8px; margin-top:16px; }
+    .filter-card { padding:16px; margin-bottom:18px; }
+    .filter-grid { display:grid; grid-template-columns:2fr 1fr auto; gap:10px; align-items:end; }
+    .category-table { min-width:1050px; margin:0; vertical-align:middle; }
+    .category-table th { padding:12px 10px; color:#64748b; background:#f8fafc; font-size:.76rem; white-space:nowrap; }
+    .category-table td { padding:12px 10px; border-color:#edf0f4; }
+    .category-name { display:block; color:#1f2937; font-weight:900; }
+    .category-slug { color:#94a3b8; font-size:.7rem; direction:ltr; }
+    .mapping-box { min-width:260px; }
+    .mapping-title { color:#1e3a8a; font-weight:800; }
+    .mapping-meta { display:block; color:#64748b; font-size:.7rem; }
+    .status { display:inline-flex; padding:4px 8px; border-radius:999px; font-size:.68rem; font-weight:900; }
+    .status-success { color:#166534; background:#dcfce7; }
+    .status-warning { color:#92400e; background:#fef3c7; }
+    .status-muted { color:#475569; background:#e2e8f0; }
+    .row-actions { display:flex; flex-wrap:wrap; gap:5px; min-width:250px; }
+    .row-actions form { display:inline; }
+    .empty-state { padding:50px; color:#64748b; text-align:center; }
+    @media (max-width:800px) { .page-header { align-items:flex-start; flex-direction:column; } .stats-grid, .form-grid, .filter-grid { grid-template-columns:1fr; } .mapping-field { grid-column:auto; } .check-field { padding-top:0; } }
+</style>
+
+<div class="container-fluid px-0 category-page">
+    <div class="page-header">
+        <div><h1>دسته‌بندی و نگاشت باسلام</h1><p>ساخت و ویرایش دسته‌های بازبیا و اتصال آن‌ها به دسته‌های رسمی باسلام</p></div>
+        {% if edit_category %}<a class="btn btn-outline-primary" href="{% url 'dashboard:basalam_categories' %}">افزودن دسته جدید</a>{% endif %}
+    </div>
+
+    <div class="stats-grid">
+        <div class="stat-card"><span>همه دسته‌های بازبیا</span><strong>{{ statistics.all }}</strong></div>
+        <div class="stat-card"><span>نگاشت فعال</span><strong>{{ statistics.mapped }}</strong></div>
+        <div class="stat-card"><span>بدون نگاشت فعال</span><strong>{{ statistics.unmapped }}</strong></div>
+    </div>
+
+    <section class="edit-card">
+        <div class="edit-title"><h2>{% if edit_category %}ویرایش «{{ edit_category.name }}»{% else %}افزودن دسته جدید{% endif %}</h2>{% if edit_category %}<span class="badge bg-secondary">شناسه {{ edit_category.pk }}</span>{% endif %}</div>
+        <form method="post" enctype="multipart/form-data">
+            {% csrf_token %}<input type="hidden" name="action" value="save">{% if edit_category %}<input type="hidden" name="category_id" value="{{ edit_category.pk }}">{% endif %}
+            {% if form.non_field_errors %}<div class="alert alert-danger">{{ form.non_field_errors }}</div>{% endif %}
+            <div class="form-grid">
+                <div class="form-field"><label for="{{ form.name.id_for_label }}">{{ form.name.label }}</label>{{ form.name }}{% for error in form.name.errors %}<div class="field-error">{{ error }}</div>{% endfor %}</div>
+                <div class="form-field"><label for="{{ form.slug.id_for_label }}">{{ form.slug.label }}</label>{{ form.slug }}{% for error in form.slug.errors %}<div class="field-error">{{ error }}</div>{% endfor %}</div>
+                <div class="form-field"><label for="{{ form.parent.id_for_label }}">{{ form.parent.label }}</label>{{ form.parent }}{% for error in form.parent.errors %}<div class="field-error">{{ error }}</div>{% endfor %}</div>
+                <div class="form-field"><label for="{{ form.image.id_for_label }}">{{ form.image.label }}</label>{{ form.image }}{% for error in form.image.errors %}<div class="field-error">{{ error }}</div>{% endfor %}</div>
+                <div class="form-field mapping-field"><label for="{{ form.basalam_category.id_for_label }}">{{ form.basalam_category.label }}</label>{{ form.basalam_category }}{% for error in form.basalam_category.errors %}<div class="field-error">{{ error }}</div>{% endfor %}<small class="text-muted">انتخاب «بدون نگاشت» اتصال قبلی را حذف می‌کند.</small></div>
+                <div class="check-field">{{ form.mapping_active }}<label for="{{ form.mapping_active.id_for_label }}">{{ form.mapping_active.label }}</label></div>
+            </div>
+            <div class="form-actions"><button class="btn btn-primary" type="submit">{% if edit_category %}ذخیره تغییرات و نگاشت{% else %}ایجاد دسته{% endif %}</button>{% if edit_category %}<a class="btn btn-outline-secondary" href="{% url 'dashboard:basalam_categories' %}">انصراف</a>{% endif %}</div>
+        </form>
+    </section>
+
+    <form method="get" class="filter-card">
+        <div class="filter-grid">
+            <div><label class="form-label">جست‌وجو</label><input class="form-control" name="search" value="{{ search }}" placeholder="نام، نامک یا دسته باسلام"></div>
+            <div><label class="form-label">وضعیت نگاشت</label><select class="form-select" name="mapping"><option value="">همه</option><option value="mapped" {% if mapping_status == 'mapped' %}selected{% endif %}>نگاشت‌شده</option><option value="unmapped" {% if mapping_status == 'unmapped' %}selected{% endif %}>بدون نگاشت</option></select></div>
+            <button class="btn btn-primary" type="submit">اعمال فیلتر</button>
+        </div>
+    </form>
+
+    <div class="list-card overflow-hidden">
+        {% if categories %}<div class="table-responsive"><table class="table category-table">
+            <thead><tr><th>دسته بازبیا</th><th>والد</th><th>محصول</th><th>زیردسته</th><th>نگاشت باسلام</th><th>وضعیت</th><th>عملیات</th></tr></thead>
+            <tbody>{% for category in categories %}<tr>
+                <td><span class="category-name">{{ category.name }}</span><span class="category-slug">{{ category.slug }}</span></td>
+                <td>{% if category.parent %}{{ category.parent.name }}{% else %}<span class="text-muted">دسته اصلی</span>{% endif %}</td>
+                <td>{{ category.product_count }}</td><td>{{ category.child_count }}</td>
+                <td><div class="mapping-box">{% if category.basalam_mapping %}<span class="mapping-title">{{ category.basalam_mapping.basalam_category.title }}</span><span class="mapping-meta">ID: {{ category.basalam_mapping.basalam_category.basalam_category_id }} · کارمزد {{ category.basalam_mapping.basalam_category.commission_percent }}٪</span>{% else %}<span class="text-muted">بدون نگاشت</span>{% endif %}</div></td>
+                <td>{% if category.basalam_mapping.is_active %}<span class="status status-success">فعال</span>{% elif category.basalam_mapping %}<span class="status status-warning">غیرفعال</span>{% else %}<span class="status status-muted">بدون نگاشت</span>{% endif %}</td>
+                <td><div class="row-actions">
+                    <a class="btn btn-sm btn-outline-primary" href="?edit={{ category.pk }}">ویرایش و نگاشت</a>
+                    {% if category.basalam_mapping %}<form method="post" onsubmit="return confirm('نگاشت این دسته از باسلام حذف شود؟')">{% csrf_token %}<input type="hidden" name="action" value="unmap"><input type="hidden" name="category_id" value="{{ category.pk }}"><button class="btn btn-sm btn-outline-warning" type="submit">حذف نگاشت</button></form>{% endif %}
+                    <form method="post" onsubmit="return confirm('این دسته خالی حذف شود؟')">{% csrf_token %}<input type="hidden" name="action" value="delete"><input type="hidden" name="category_id" value="{{ category.pk }}"><button class="btn btn-sm btn-outline-danger" type="submit" {% if category.product_count or category.child_count %}disabled title="دسته وابستگی دارد"{% endif %}>حذف دسته</button></form>
+                </div></td>
+            </tr>{% endfor %}</tbody>
+        </table></div>{% else %}<div class="empty-state">دسته‌ای مطابق فیلتر پیدا نشد.</div>{% endif %}
+    </div>
+
+    {% if is_paginated %}<nav class="mt-3"><ul class="pagination justify-content-center">{% if page_obj.has_previous %}<li class="page-item"><a class="page-link" href="?{% if query_without_page %}{{ query_without_page }}&{% endif %}page={{ page_obj.previous_page_number }}">قبلی</a></li>{% endif %}<li class="page-item active"><span class="page-link">صفحه {{ page_obj.number }} از {{ paginator.num_pages }}</span></li>{% if page_obj.has_next %}<li class="page-item"><a class="page-link" href="?{% if query_without_page %}{{ query_without_page }}&{% endif %}page={{ page_obj.next_page_number }}">بعدی</a></li>{% endif %}</ul></nav>{% endif %}
+</div>
+{% endblock %}

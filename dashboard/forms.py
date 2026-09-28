@@ -6,7 +6,11 @@ from django import forms
 
 from django.forms import inlineformset_factory
 
-from products.models import Product, ProductVariant
+from products.models import Category, Product, ProductVariant
+from basalam_integration.models import (
+    BasalamCategory,
+    BasalamCategoryMapping,
+)
 
 
 class ProductEditForm(forms.ModelForm):
@@ -86,3 +90,89 @@ ProductVariantFormSet = inlineformset_factory(
     extra=1,
     can_delete=False,
 )
+
+
+class BasalamCategoryManagementForm(forms.ModelForm):
+    slug = forms.SlugField(
+        allow_unicode=True,
+        label="نامک",
+        help_text="برای آدرس و شناسایی دسته استفاده می‌شود.",
+    )
+    basalam_category = forms.ModelChoiceField(
+        queryset=BasalamCategory.objects.none(),
+        required=False,
+        label="دسته متناظر در باسلام",
+        empty_label="بدون نگاشت",
+    )
+    mapping_active = forms.BooleanField(
+        required=False,
+        initial=True,
+        label="نگاشت فعال باشد",
+    )
+
+    class Meta:
+        model = Category
+        fields = ["name", "slug", "parent", "image"]
+        labels = {
+            "name": "نام دسته بازبیا",
+            "parent": "دسته والد",
+            "image": "تصویر دسته",
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        for field_name, field in self.fields.items():
+            css_class = (
+                "form-check-input"
+                if isinstance(field.widget, forms.CheckboxInput)
+                else "form-control"
+            )
+            if isinstance(field.widget, forms.Select):
+                css_class = "form-select"
+            field.widget.attrs["class"] = css_class
+        self.fields["parent"].queryset = Category.objects.order_by("name")
+        self.fields["parent"].required = False
+        self.fields["basalam_category"].queryset = (
+            BasalamCategory.objects.filter(is_active=True).order_by("title")
+        )
+
+        if self.instance and self.instance.pk:
+            excluded_ids = {self.instance.pk}
+            pending_ids = [self.instance.pk]
+            while pending_ids:
+                child_ids = list(
+                    Category.objects.filter(parent_id__in=pending_ids)
+                    .exclude(pk__in=excluded_ids)
+                    .values_list("pk", flat=True)
+                )
+                excluded_ids.update(child_ids)
+                pending_ids = child_ids
+            self.fields["parent"].queryset = (
+                self.fields["parent"].queryset.exclude(pk__in=excluded_ids)
+            )
+            try:
+                mapping = self.instance.basalam_mapping
+            except BasalamCategoryMapping.DoesNotExist:
+                mapping = None
+            if mapping:
+                self.fields["basalam_category"].initial = (
+                    mapping.basalam_category_id
+                )
+                self.fields["mapping_active"].initial = mapping.is_active
+
+    def save_mapping(self, category):
+        basalam_category = self.cleaned_data.get("basalam_category")
+        if basalam_category is None:
+            BasalamCategoryMapping.objects.filter(
+                bazbia_category=category
+            ).delete()
+            return None
+
+        mapping, _ = BasalamCategoryMapping.objects.update_or_create(
+            bazbia_category=category,
+            defaults={
+                "basalam_category": basalam_category,
+                "is_active": self.cleaned_data.get("mapping_active", False),
+            },
+        )
+        return mapping

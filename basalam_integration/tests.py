@@ -36,13 +36,13 @@ class ProductSyncServiceTests(TestCase):
             name="پوشاک",
             slug="clothes",
         )
-        basalam_category = BasalamCategory.objects.create(
+        self.basalam_category = BasalamCategory.objects.create(
             basalam_category_id=123,
             title="پوشاک",
         )
         BasalamCategoryMapping.objects.create(
             bazbia_category=category,
-            basalam_category=basalam_category,
+            basalam_category=self.basalam_category,
         )
         self.product = Product.objects.create(
             name="محصول آزمایشی",
@@ -283,3 +283,94 @@ class ProductSyncServiceTests(TestCase):
 
         self.assertEqual(response.status_code, 302)
         sync_mock.assert_called_once()
+
+    def _login_staff(self, username="category-manager"):
+        user = get_user_model().objects.create_user(
+            username=username,
+            password="test-password",
+            is_staff=True,
+        )
+        self.client.force_login(user)
+
+    def test_basalam_category_page_is_available(self):
+        self._login_staff()
+
+        response = self.client.get(reverse("dashboard:basalam_categories"))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "دسته‌بندی و نگاشت باسلام")
+
+    def test_dashboard_creates_category_with_mapping(self):
+        self._login_staff()
+
+        response = self.client.post(
+            reverse("dashboard:basalam_categories"),
+            {
+                "action": "save",
+                "name": "لوازم ورزشی",
+                "slug": "sports",
+                "parent": "",
+                "basalam_category": self.basalam_category.pk,
+                "mapping_active": "on",
+            },
+        )
+
+        self.assertEqual(response.status_code, 302)
+        category = Category.objects.get(slug="sports")
+        mapping = BasalamCategoryMapping.objects.get(
+            bazbia_category=category
+        )
+        self.assertEqual(mapping.basalam_category, self.basalam_category)
+        self.assertTrue(mapping.is_active)
+
+    def test_dashboard_updates_category_and_removes_mapping(self):
+        self._login_staff()
+        category = self.product.category
+
+        response = self.client.post(
+            reverse("dashboard:basalam_categories"),
+            {
+                "action": "save",
+                "category_id": category.pk,
+                "name": "پوشاک جدید",
+                "slug": category.slug,
+                "parent": "",
+                "basalam_category": "",
+            },
+        )
+
+        self.assertEqual(response.status_code, 302)
+        category.refresh_from_db()
+        self.assertEqual(category.name, "پوشاک جدید")
+        self.assertFalse(
+            BasalamCategoryMapping.objects.filter(
+                bazbia_category=category
+            ).exists()
+        )
+
+    def test_dashboard_does_not_delete_category_with_products(self):
+        self._login_staff()
+        category = self.product.category
+
+        response = self.client.post(
+            reverse("dashboard:basalam_categories"),
+            {"action": "delete", "category_id": category.pk},
+        )
+
+        self.assertEqual(response.status_code, 302)
+        self.assertTrue(Category.objects.filter(pk=category.pk).exists())
+
+    def test_dashboard_deletes_empty_category(self):
+        self._login_staff()
+        category = Category.objects.create(
+            name="دسته خالی",
+            slug="empty-category",
+        )
+
+        response = self.client.post(
+            reverse("dashboard:basalam_categories"),
+            {"action": "delete", "category_id": category.pk},
+        )
+
+        self.assertEqual(response.status_code, 302)
+        self.assertFalse(Category.objects.filter(pk=category.pk).exists())

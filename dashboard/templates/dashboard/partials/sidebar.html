@@ -80,6 +80,13 @@
             مدیریت باسلام
         </a>
 
+        <a
+            class="sidebar-link {% if request.resolver_match.url_name == 'basalam_categories' %}active{% endif %}"
+            href="{% url 'dashboard:basalam_categories' %}"
+        >
+            دسته‌ها و نگاشت باسلام
+        </a>
+
         <div class="sidebar-title">
             تأمین‌کنندگان
         </div>
