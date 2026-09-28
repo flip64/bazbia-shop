@@ -129,8 +129,17 @@ class ProductSyncServiceTests(TestCase):
             ).exists()
         )
         payload = client.update_product.call_args.kwargs["payload"]
-        self.assertEqual(len(payload["variants"]), 2)
-        client.update_product_variation.assert_not_called()
+        self.assertEqual(len(payload["variants"]), 1)
+        self.assertEqual(payload["variants"][0]["sku"], "SKU-NEW")
+        client.update_product_variation.assert_called_once_with(
+            product_id=9001,
+            variation_id=7001,
+            payload={
+                "primary_price": 118000,
+                "stock": 4,
+                "sku": "SKU-OLD",
+            },
+        )
 
     @patch(
         "basalam_integration.services.product_service."

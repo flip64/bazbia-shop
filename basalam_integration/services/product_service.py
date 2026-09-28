@@ -339,11 +339,15 @@ def sync_product_to_basalam(
     client = client or BasalamClient()
 
     if plan.new_variant_ids:
+        new_variants = [
+            variants_by_id[variant_id]
+            for variant_id in plan.new_variant_ids
+        ]
         response = client.update_product(
             product_id=plan.basalam_product_id,
             payload={
                 "variants": [
-                    _variant_payload(variant) for variant in variants
+                    _variant_payload(variant) for variant in new_variants
                 ]
             },
         )
@@ -379,44 +383,39 @@ def sync_product_to_basalam(
         with transaction.atomic():
             _save_variation_mappings(
                 product_mapping,
-                variants,
+                new_variants,
                 {"variants": response_variants},
             )
-            product_mapping.last_synced_at = timezone.now()
-            product_mapping.last_error = ""
-            product_mapping.save(
-                update_fields=["last_synced_at", "last_error", "updated_at"]
-            )
-    else:
-        now = timezone.now()
-        for variant_id in plan.existing_variant_ids:
-            variant = variants_by_id[variant_id]
-            variation_mapping = variant.basalam_mapping
-            payload = _variant_payload(variant)
-            payload.pop("properties", None)
-            client.update_product_variation(
-                product_id=plan.basalam_product_id,
-                variation_id=variation_mapping.basalam_variation_id,
-                payload=payload,
-            )
-            variation_mapping.last_synced_price = payload["primary_price"]
-            variation_mapping.last_synced_stock = payload["stock"]
-            variation_mapping.last_synced_at = now
-            variation_mapping.last_error = ""
-            variation_mapping.save(
-                update_fields=[
-                    "last_synced_price",
-                    "last_synced_stock",
-                    "last_synced_at",
-                    "last_error",
-                    "updated_at",
-                ]
-            )
-        product_mapping.last_synced_at = now
-        product_mapping.last_error = ""
-        product_mapping.save(
-            update_fields=["last_synced_at", "last_error", "updated_at"]
+
+    now = timezone.now()
+    for variant_id in plan.existing_variant_ids:
+        variant = variants_by_id[variant_id]
+        variation_mapping = variant.basalam_mapping
+        payload = _variant_payload(variant)
+        payload.pop("properties", None)
+        client.update_product_variation(
+            product_id=plan.basalam_product_id,
+            variation_id=variation_mapping.basalam_variation_id,
+            payload=payload,
         )
+        variation_mapping.last_synced_price = payload["primary_price"]
+        variation_mapping.last_synced_stock = payload["stock"]
+        variation_mapping.last_synced_at = now
+        variation_mapping.last_error = ""
+        variation_mapping.save(
+            update_fields=[
+                "last_synced_price",
+                "last_synced_stock",
+                "last_synced_at",
+                "last_error",
+                "updated_at",
+            ]
+        )
+    product_mapping.last_synced_at = now
+    product_mapping.last_error = ""
+    product_mapping.save(
+        update_fields=["last_synced_at", "last_error", "updated_at"]
+    )
 
     return ProductSyncResult(
         product_id=plan.product_id,
