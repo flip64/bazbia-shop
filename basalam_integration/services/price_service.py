@@ -85,7 +85,8 @@ def get_variant_bazbia_price(variant) -> Decimal:
 
 def calculate_variant_basalam_price(variant) -> int:
     """
-    محاسبه قیمت باسلام برای واریانت.
+    محاسبه قیمت باسلام برای واریانت و تبدیل تومان بازبیا
+    به واحد قیمت مورد انتظار API باسلام.
     """
 
     bazbia_price = get_variant_bazbia_price(
@@ -96,7 +97,17 @@ def calculate_variant_basalam_price(variant) -> int:
         variant.product
     )
 
-    return calculate_price_with_commission(
+    calculated_price = calculate_price_with_commission(
         bazbia_price,
         commission_percent,
     )
+
+    unit_multiplier = int(
+        settings.BASALAM_PRICE_UNIT_MULTIPLIER
+    )
+    if unit_multiplier <= 0:
+        raise ValueError(
+            "ضریب تبدیل واحد قیمت باسلام باید بیشتر از صفر باشد."
+        )
+
+    return calculated_price * unit_multiplier

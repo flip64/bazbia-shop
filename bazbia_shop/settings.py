@@ -73,6 +73,13 @@ BASALAM_PRICE_ROUNDING = int(
     )
 )
 
+BASALAM_PRICE_UNIT_MULTIPLIER = int(
+    os.environ.get(
+        "BASALAM_PRICE_UNIT_MULTIPLIER",
+        "10",
+    )
+)
+
 BASALAM_STOCK_CAP = int(
     os.environ.get(
         "BASALAM_STOCK_CAP",

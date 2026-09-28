@@ -27,6 +27,9 @@ from basalam_integration.services.product_service import (
     sync_product_to_basalam,
 )
 from basalam_integration.services.client import BasalamAPIError
+from basalam_integration.services.price_service import (
+    calculate_variant_basalam_price,
+)
 
 
 @override_settings(BASALAM_SYNC_ENABLED=True)
@@ -83,6 +86,19 @@ class ProductSyncServiceTests(TestCase):
 
         self.assertEqual(plan.existing_variant_ids, (existing.pk,))
         self.assertEqual(plan.new_variant_ids, (new.pk,))
+
+    @override_settings(
+        BASALAM_PRICE_ROUNDING=1000,
+        BASALAM_PRICE_UNIT_MULTIPLIER=10,
+    )
+    def test_basalam_price_is_converted_from_toman_to_api_unit(self):
+        variant = self.create_variant(sku="SKU-PRICE", value="مشکی")
+        variant.price = 288600
+        variant.save(update_fields=["price"])
+
+        price = calculate_variant_basalam_price(variant)
+
+        self.assertEqual(price, 3400000)
 
     @patch(
         "basalam_integration.services.product_service."
