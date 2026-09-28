@@ -18,8 +18,10 @@ from .stock_service import (
     calculate_variant_basalam_stock,
 )
 from .product_service import (
+    build_product_sync_plan,
     build_product_payload,
     publish_product_to_basalam,
+    sync_product_to_basalam,
     validate_product_for_basalam,
 )
 
@@ -35,6 +37,8 @@ __all__ = [
     "get_product_category_mapping",
     "get_variant_bazbia_price",
     "build_product_payload",
+    "build_product_sync_plan",
     "publish_product_to_basalam",
+    "sync_product_to_basalam",
     "validate_product_for_basalam",
 ]
