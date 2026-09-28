@@ -32,6 +32,22 @@ class ProductPublishResult:
     published: bool
 
 
+@dataclass(frozen=True)
+class ProductSyncPlan:
+    product_id: int
+    basalam_product_id: int
+    new_variant_ids: tuple[int, ...]
+    existing_variant_ids: tuple[int, ...]
+
+
+@dataclass(frozen=True)
+class ProductSyncResult:
+    product_id: int
+    basalam_product_id: int
+    added_count: int
+    updated_count: int
+
+
 def _positive_setting(name: str) -> int:
     value = int(getattr(settings, name))
     if value <= 0:
@@ -51,21 +67,7 @@ def _variant_properties(variant) -> list[dict[str, str]]:
     ]
 
 
-def validate_product_for_basalam(product) -> list:
-    if not product.is_active:
-        raise ValidationError("محصول بازبیا غیرفعال است.")
-
-    if BasalamProductMapping.objects.filter(product=product).exists():
-        raise ValidationError(
-            "این محصول قبلاً به یک محصول باسلام متصل شده است."
-        )
-
-    basalam_category = get_basalam_category(product)
-    if basalam_category is None:
-        raise ValidationError(
-            "دسته محصول به دسته فعالی در باسلام نگاشت نشده است."
-        )
-
+def _get_product_variants(product) -> list:
     variants = list(
         product.variants.prefetch_related("attributes__attribute")
         .order_by("id")
@@ -81,6 +83,33 @@ def validate_product_for_basalam(product) -> list:
                 )
 
     return variants
+
+
+def _variant_payload(variant) -> dict[str, Any]:
+    return {
+        "primary_price": calculate_variant_basalam_price(variant),
+        "stock": calculate_variant_basalam_stock(variant),
+        "sku": variant.sku,
+        "properties": _variant_properties(variant),
+    }
+
+
+def validate_product_for_basalam(product) -> list:
+    if not product.is_active:
+        raise ValidationError("محصول بازبیا غیرفعال است.")
+
+    if BasalamProductMapping.objects.filter(product=product).exists():
+        raise ValidationError(
+            "این محصول قبلاً به یک محصول باسلام متصل شده است."
+        )
+
+    basalam_category = get_basalam_category(product)
+    if basalam_category is None:
+        raise ValidationError(
+            "دسته محصول به دسته فعالی در باسلام نگاشت نشده است."
+        )
+
+    return _get_product_variants(product)
 
 
 def build_product_payload(
@@ -139,13 +168,7 @@ def build_product_payload(
         )
     else:
         payload["variants"] = [
-            {
-                "primary_price": calculate_variant_basalam_price(variant),
-                "stock": calculate_variant_basalam_stock(variant),
-                "sku": variant.sku,
-                "properties": _variant_properties(variant),
-            }
-            for variant in variants
+            _variant_payload(variant) for variant in variants
         ]
 
     return {key: value for key, value in payload.items() if value is not None}
@@ -160,7 +183,11 @@ def _response_data(response: dict[str, Any]) -> dict[str, Any]:
 
 
 def _save_variation_mappings(product_mapping, variants, response_data):
-    response_variants = response_data.get("variants") or []
+    response_variants = (
+        response_data.get("variants")
+        or response_data.get("variant")
+        or []
+    )
     by_sku = {
         str(item.get("sku")): item
         for item in response_variants
@@ -241,4 +268,151 @@ def publish_product_to_basalam(
         variation_count=len(variants),
         image_count=len(uploaded_images),
         published=published,
+    )
+
+
+def build_product_sync_plan(product) -> ProductSyncPlan:
+    if not product.is_active:
+        raise ValidationError("محصول بازبیا غیرفعال است.")
+
+    try:
+        product_mapping = product.basalam_mapping
+    except BasalamProductMapping.DoesNotExist as exc:
+        raise ValidationError(
+            "این محصول هنوز به محصولی در باسلام متصل نشده است."
+        ) from exc
+
+    if not product_mapping.is_active:
+        raise ValidationError("اتصال این محصول به باسلام غیرفعال است.")
+
+    variants = _get_product_variants(product)
+    mapped_variant_ids = set(
+        product_mapping.variation_mappings.values_list(
+            "variant_id", flat=True
+        )
+    )
+    new_ids = tuple(
+        variant.pk
+        for variant in variants
+        if variant.pk not in mapped_variant_ids
+    )
+    existing_ids = tuple(
+        variant.pk
+        for variant in variants
+        if variant.pk in mapped_variant_ids
+    )
+    return ProductSyncPlan(
+        product_id=product.pk,
+        basalam_product_id=product_mapping.basalam_product_id,
+        new_variant_ids=new_ids,
+        existing_variant_ids=existing_ids,
+    )
+
+
+def _response_variants(response_data):
+    data = _response_data(response_data)
+    return data.get("variants") or data.get("variant") or []
+
+
+def sync_product_to_basalam(
+    product,
+    *,
+    client: BasalamClient | None = None,
+) -> ProductSyncResult:
+    if not settings.BASALAM_SYNC_ENABLED:
+        raise ImproperlyConfigured(
+            "برای ارسال واقعی، BASALAM_SYNC_ENABLED=True تنظیم شود."
+        )
+
+    plan = build_product_sync_plan(product)
+    product_mapping = product.basalam_mapping
+    variants = _get_product_variants(product)
+    variants_by_id = {variant.pk: variant for variant in variants}
+    client = client or BasalamClient()
+
+    if plan.new_variant_ids:
+        response = client.update_product(
+            product_id=plan.basalam_product_id,
+            payload={
+                "variants": [
+                    _variant_payload(variant) for variant in variants
+                ]
+            },
+        )
+        response_variants = _response_variants(response)
+        if not response_variants:
+            response_variants = _response_variants(
+                client.get_product(
+                    product_id=plan.basalam_product_id,
+                )
+            )
+
+        response_by_sku = {
+            str(item.get("sku")): item
+            for item in response_variants
+            if isinstance(item, dict) and item.get("sku")
+        }
+        missing_skus = [
+            variants_by_id[variant_id].sku
+            for variant_id in plan.new_variant_ids
+            if not response_by_sku.get(
+                str(variants_by_id[variant_id].sku)
+            )
+            or not response_by_sku[
+                str(variants_by_id[variant_id].sku)
+            ].get("id")
+        ]
+        if missing_skus:
+            raise ValidationError(
+                "باسلام شناسه تنوع‌های جدید را برنگرداند: "
+                + "، ".join(missing_skus)
+            )
+
+        with transaction.atomic():
+            _save_variation_mappings(
+                product_mapping,
+                variants,
+                {"variants": response_variants},
+            )
+            product_mapping.last_synced_at = timezone.now()
+            product_mapping.last_error = ""
+            product_mapping.save(
+                update_fields=["last_synced_at", "last_error", "updated_at"]
+            )
+    else:
+        now = timezone.now()
+        for variant_id in plan.existing_variant_ids:
+            variant = variants_by_id[variant_id]
+            variation_mapping = variant.basalam_mapping
+            payload = _variant_payload(variant)
+            payload.pop("properties", None)
+            client.update_product_variation(
+                product_id=plan.basalam_product_id,
+                variation_id=variation_mapping.basalam_variation_id,
+                payload=payload,
+            )
+            variation_mapping.last_synced_price = payload["primary_price"]
+            variation_mapping.last_synced_stock = payload["stock"]
+            variation_mapping.last_synced_at = now
+            variation_mapping.last_error = ""
+            variation_mapping.save(
+                update_fields=[
+                    "last_synced_price",
+                    "last_synced_stock",
+                    "last_synced_at",
+                    "last_error",
+                    "updated_at",
+                ]
+            )
+        product_mapping.last_synced_at = now
+        product_mapping.last_error = ""
+        product_mapping.save(
+            update_fields=["last_synced_at", "last_error", "updated_at"]
+        )
+
+    return ProductSyncResult(
+        product_id=plan.product_id,
+        basalam_product_id=plan.basalam_product_id,
+        added_count=len(plan.new_variant_ids),
+        updated_count=len(plan.existing_variant_ids),
     )
