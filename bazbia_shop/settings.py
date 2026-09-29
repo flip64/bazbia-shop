@@ -39,6 +39,10 @@ BALE_BACKEND_URL = os.getenv(
     "https://backend.bazbia.ir",
 )
 
+# آدرس‌های مشترک انتشار محصول در شبکه‌های اجتماعی
+SOCIAL_FRONTEND_URL = os.getenv("SOCIAL_FRONTEND_URL", BALE_FRONTEND_URL)
+SOCIAL_BACKEND_URL = os.getenv("SOCIAL_BACKEND_URL", BALE_BACKEND_URL)
+
 # ==========================================
 # تنظیمات اتصال به تلگرام
 # ==========================================

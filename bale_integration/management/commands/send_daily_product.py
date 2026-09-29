@@ -5,9 +5,9 @@ from django.utils import timezone
 
 from bale_integration.models import BaleProductPost
 from bale_integration.services.bale_client import BaleAPIError, BaleClient
-from bale_integration.services.daily_product import (
+from products.services.social_product_post import (
     build_product_post,
-    select_daily_product,
+    select_random_product,
 )
 
 
@@ -35,7 +35,10 @@ class Command(BaseCommand):
             )
             return
 
-        product, variants, image = select_daily_product(options["exclude_days"])
+        product, variants, image = select_random_product(
+            BaleProductPost,
+            exclude_days=options["exclude_days"],
+        )
         if product is None:
             raise CommandError("محصول فعال، موجود و دارای تصویر پیدا نشد.")
 

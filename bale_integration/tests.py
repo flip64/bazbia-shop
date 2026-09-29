@@ -4,13 +4,15 @@ from unittest.mock import Mock, patch
 from django.test import SimpleTestCase, override_settings
 
 from bale_integration.services.bale_client import BaleAPIError, BaleClient
-from bale_integration.services.daily_product import build_product_post
+from products.services.social_product_post import build_product_post
 
 
 @override_settings(
     BALE_BOT_TOKEN="test-token",
     BALE_FRONTEND_URL="https://bazbia.ir",
     BALE_BACKEND_URL="https://backend.bazbia.ir",
+    SOCIAL_FRONTEND_URL="https://bazbia.ir",
+    SOCIAL_BACKEND_URL="https://backend.bazbia.ir",
 )
 class BaleClientTests(SimpleTestCase):
     @patch("bale_integration.services.bale_client.requests.post")

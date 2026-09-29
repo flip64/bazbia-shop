@@ -4,7 +4,7 @@ from django.utils import timezone
 
 from bale_integration.models import BaleProductPost
 from bale_integration.services.bale_client import BaleAPIError, BaleClient
-from bale_integration.services.daily_product import build_product_post, select_product_by_id
+from products.services.social_product_post import build_product_post, select_product_by_id
 
 
 class Command(BaseCommand):

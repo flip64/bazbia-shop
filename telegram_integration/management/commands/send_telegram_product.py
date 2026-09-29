@@ -2,7 +2,7 @@ from django.conf import settings
 from django.core.management.base import BaseCommand, CommandError
 from django.utils import timezone
 
-from bale_integration.services.daily_product import build_product_post, select_product_by_id
+from products.services.social_product_post import build_product_post, select_product_by_id
 from telegram_integration.models import TelegramProductPost
 from telegram_integration.services import TelegramAPIError, TelegramClient
 

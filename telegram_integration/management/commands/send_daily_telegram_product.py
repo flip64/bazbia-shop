@@ -3,7 +3,7 @@ from django.core.management.base import BaseCommand, CommandError
 from django.db.models import F
 from django.utils import timezone
 
-from bale_integration.services.daily_product import build_product_post, select_daily_product
+from products.services.social_product_post import build_product_post, select_random_product
 from telegram_integration.models import TelegramProductPost
 from telegram_integration.services import TelegramAPIError, TelegramClient
 
@@ -28,9 +28,9 @@ class Command(BaseCommand):
             self.stdout.write(self.style.WARNING("محصول امروز قبلاً در تلگرام ارسال شده است."))
             return
 
-        product, variants, image = select_daily_product(
-            options["exclude_days"],
-            post_model=TelegramProductPost,
+        product, variants, image = select_random_product(
+            TelegramProductPost,
+            exclude_days=options["exclude_days"],
         )
         if product is None:
             raise CommandError("محصول فعال، موجود و دارای تصویر پیدا نشد.")
