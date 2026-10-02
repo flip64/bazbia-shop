@@ -39,6 +39,7 @@ urlpatterns = [
     path("api/payments/", include("payments.api.urls")),
     path("api/contact/", include("contact.api.urls")),
     path("api/analytics/", include("analytics.api.urls")),
+    path("api/bale/", include("bale_integration.urls")),
 
     # =========================================================
     # Torob API

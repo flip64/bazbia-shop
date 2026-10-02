@@ -30,6 +30,13 @@ load_dotenv(os.path.join(BASE_DIR, '.env'))
 
 BALE_BOT_TOKEN = os.getenv("BALE_BOT_TOKEN", "")
 BALE_CHANNEL_ID = os.getenv("BALE_CHANNEL_ID", "@bazbia")
+BALE_WEBHOOK_SECRET = os.getenv("BALE_WEBHOOK_SECRET", "").strip()
+BALE_ADMIN_USER_IDS = tuple(
+    item.strip()
+    for item in os.getenv("BALE_ADMIN_USER_IDS", "").split(",")
+    if item.strip()
+)
+BALE_RANDOM_EXCLUDE_DAYS = int(os.getenv("BALE_RANDOM_EXCLUDE_DAYS", "30") or "30")
 BALE_FRONTEND_URL = os.getenv(
     "BALE_FRONTEND_URL",
     "https://bazbia.ir",

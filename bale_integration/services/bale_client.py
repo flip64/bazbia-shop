@@ -39,8 +39,20 @@ class BaleClient:
     def get_chat(self, chat_id):
         return self._request("getChat", {"chat_id": chat_id})
 
-    def send_message(self, chat_id, text):
-        return self._request("sendMessage", {"chat_id": chat_id, "text": text})
+    def send_message(self, chat_id, text, reply_markup=None):
+        payload = {"chat_id": chat_id, "text": text}
+        if reply_markup is not None:
+            payload["reply_markup"] = reply_markup
+        return self._request("sendMessage", payload)
+
+    def answer_callback_query(self, callback_query_id, text=None):
+        payload = {"callback_query_id": callback_query_id}
+        if text:
+            payload["text"] = text
+        return self._request("answerCallbackQuery", payload)
+
+    def set_webhook(self, url):
+        return self._request("setWebhook", {"url": url})
 
     def send_photo(self, chat_id, photo, caption, product_url):
         return self._request(
