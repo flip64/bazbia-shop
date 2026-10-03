@@ -1,6 +1,4 @@
 from io import BytesIO
-from pathlib import PurePosixPath
-from urllib.parse import urlparse
 
 import requests
 from django.conf import settings
@@ -103,7 +101,6 @@ class RubikaClient:
                     output,
                     format="JPEG",
                     quality=90,
-                    optimize=True,
                     progressive=False,
                 )
                 return output.getvalue()
@@ -127,12 +124,16 @@ class RubikaClient:
         if not upload_url:
             raise RubikaAPIError("آدرس آپلود تصویر از روبیکا دریافت نشد.")
 
-        original_filename = (
-            PurePosixPath(urlparse(photo_url).path).name or "product.jpg"
-        )
-        filename = f"{PurePosixPath(original_filename).stem or 'product'}.jpg"
+        # نام ثابت و JPEG ساده با رفتار فعلی sendFile روبیکا سازگارتر است.
+        filename = "product.jpg"
         image_content = self._normalize_image(image_response.content)
         content_type = "image/jpeg"
+        logger.info(
+            "تصویر محصول برای روبیکا استاندارد شد | original_bytes=%s | "
+            "converted_bytes=%s",
+            len(image_response.content),
+            len(image_content),
+        )
         try:
             upload_response = requests.post(
                 upload_url,
