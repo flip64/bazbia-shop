@@ -61,6 +61,19 @@ TELEGRAM_CHANNEL_ID = os.getenv("TELEGRAM_CHANNEL_ID", "")
 # ==========================================
 RUBIKA_BOT_TOKEN = os.getenv("RUBIKA_BOT_TOKEN", "")
 RUBIKA_CHANNEL_ID = os.getenv("RUBIKA_CHANNEL_ID", "")
+RUBIKA_WEBHOOK_SECRET = os.getenv("RUBIKA_WEBHOOK_SECRET", "").strip()
+RUBIKA_ADMIN_USER_IDS = tuple(
+    item.strip()
+    for item in os.getenv("RUBIKA_ADMIN_USER_IDS", "").split(",")
+    if item.strip()
+)
+RUBIKA_RANDOM_EXCLUDE_DAYS = int(
+    os.getenv("RUBIKA_RANDOM_EXCLUDE_DAYS", "30") or "30"
+)
+RUBIKA_BACKEND_URL = os.getenv(
+    "RUBIKA_BACKEND_URL",
+    SOCIAL_BACKEND_URL,
+)
 
 
 # ==========================================
@@ -164,7 +177,7 @@ LOGOUT_REDIRECT_URL = 'login'
 SECRET_KEY = os.environ["DJANGO_SECRET_KEY"]
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = True
 
 ALLOWED_HOSTS = ["*"]
 

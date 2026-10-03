@@ -12,6 +12,10 @@ TELEGRAM_BOT_TOKEN=...
 TELEGRAM_CHANNEL_ID=@your_telegram_channel
 RUBIKA_BOT_TOKEN=...
 RUBIKA_CHANNEL_ID=c0...
+RUBIKA_WEBHOOK_SECRET=change_this_to_a_long_random_secret
+RUBIKA_ADMIN_USER_IDS=u0...
+RUBIKA_RANDOM_EXCLUDE_DAYS=30
+RUBIKA_BACKEND_URL=https://backend.bazbia.ir
 ```
 
 ربات هر شبکه باید مدیر کانال خودش باشد و اجازه ارسال پیام داشته باشد.
@@ -19,6 +23,10 @@ RUBIKA_CHANNEL_ID=c0...
 `BALE_ADMIN_USER_IDS` شناسه عددی مدیرانی است که اجازه اجرای دستور از داخل
 ربات بله را دارند. برای چند مدیر، شناسه‌ها را با ویرگول جدا کنید. ربات هیچ
 management command دلخواهی اجرا نمی‌کند و فقط دو دستور ارسال محصول را می‌شناسد.
+
+`RUBIKA_ADMIN_USER_IDS` نیز شناسه مدیرانی است که اجازه اجرای فرمان از داخل
+ربات روبیکا را دارند. مقدار آن با `u` شروع می‌شود و برای چند مدیر باید
+شناسه‌ها را با ویرگول جدا کنید.
 
 ## آماده‌سازی دیتابیس
 
@@ -56,6 +64,31 @@ python manage.py set_bale_webhook
 دکمه «ارسال محصول تصادفی» نیز همان management command مربوط به ارسال تصادفی
 را اجرا می‌کند. محدودیت ۳۰ روزه فقط برای انتخاب تکراری محصول است و با متغیر
 `BALE_RANDOM_EXCLUDE_DAYS` قابل تغییر است.
+
+## فعال‌سازی کنترل از داخل ربات روبیکا
+
+پس از قراردادن متغیرهای روبیکا و راه‌اندازی مجدد برنامه، این دستور را یک بار
+اجرا کنید:
+
+```bash
+python manage.py set_rubika_webhook
+```
+
+سپس در گفت‌وگوی خصوصی با ربات روبیکا می‌توانید از این فرمان‌ها استفاده کنید:
+
+```text
+/id                 نمایش شناسه کاربری برای RUBIKA_ADMIN_USER_IDS
+/start              نمایش راهنما
+/random             اجرای send_random_rubika_product
+/product 4206       اجرای send_rubika_product --product-id 4206
+```
+
+ربات فقط همین دو management command ارسال را اجرا می‌کند و فرمان دلخواه از
+پیام کاربر پذیرفته نمی‌شود. پیام‌های تکراری webhook نیز تا ۲۴ ساعت دوباره
+اجرا نخواهند شد.
+
+تمام اجراهای روبیکا در مدل `RubikaProductPost` ثبت می‌شوند و شروع، پایان و
+خطاهای آن‌ها نیز در `logs/application.log` و `logs/errors.log` ذخیره می‌شود.
 
 ## ارسال تصادفی مخصوص کرون
 

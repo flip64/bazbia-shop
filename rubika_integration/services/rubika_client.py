@@ -6,6 +6,11 @@ import requests
 from django.conf import settings
 from PIL import Image, ImageOps, UnidentifiedImageError
 
+from core.logging_config import get_logger
+
+
+logger = get_logger(__name__)
+
 
 class RubikaAPIError(RuntimeError):
     """خطای ارتباط یا پاسخ ناموفق API روبیکا."""
@@ -48,8 +53,17 @@ class RubikaClient:
                 timeout=self.timeout,
             )
         except requests.RequestException as exc:
+            logger.exception("ارتباط با API روبیکا ناموفق بود | method=%s", method)
             raise RubikaAPIError(f"ارتباط با روبیکا برقرار نشد: {exc}") from exc
-        return self._response_data(response)
+        try:
+            return self._response_data(response)
+        except RubikaAPIError:
+            logger.exception(
+                "پاسخ ناموفق API روبیکا | method=%s | http_status=%s",
+                method,
+                response.status_code,
+            )
+            raise
 
     def get_me(self):
         return self._request("getMe")
@@ -58,6 +72,15 @@ class RubikaClient:
         return self._request(
             "sendMessage",
             {"chat_id": chat_id, "text": text},
+        )
+
+    def set_commands(self, commands):
+        return self._request("setCommands", {"bot_commands": commands})
+
+    def update_endpoint(self, url, endpoint_type="ReceiveUpdate"):
+        return self._request(
+            "updateBotEndpoints",
+            {"url": url, "type": endpoint_type},
         )
 
     @staticmethod
@@ -85,12 +108,14 @@ class RubikaClient:
                 )
                 return output.getvalue()
         except (UnidentifiedImageError, OSError, ValueError) as exc:
+            logger.exception("تبدیل تصویر محصول برای روبیکا ناموفق بود.")
             raise RubikaAPIError("تصویر محصول معتبر نیست یا قابل تبدیل نیست.") from exc
 
     def _upload_image(self, photo_url):
         try:
             image_response = requests.get(photo_url, timeout=self.timeout)
         except requests.RequestException as exc:
+            logger.exception("دریافت تصویر محصول برای روبیکا ناموفق بود.")
             raise RubikaAPIError(f"دریافت تصویر محصول ناموفق بود: {exc}") from exc
         if not image_response.ok:
             raise RubikaAPIError(
@@ -121,6 +146,7 @@ class RubikaClient:
                 timeout=self.timeout,
             )
         except requests.RequestException as exc:
+            logger.exception("آپلود تصویر محصول در روبیکا ناموفق بود.")
             raise RubikaAPIError(f"آپلود تصویر در روبیکا ناموفق بود: {exc}") from exc
 
         upload_data = self._response_data(upload_response)
@@ -132,7 +158,7 @@ class RubikaClient:
     def send_product(self, chat_id, photo_url, caption, product_url):
         file_id = self._upload_image(photo_url)
         text = f"{caption}\n\n🛒 مشاهده و خرید محصول:\n{product_url}"
-        return self._request(
+        result = self._request(
             "sendFile",
             {
                 "chat_id": chat_id,
@@ -140,3 +166,9 @@ class RubikaClient:
                 "text": text,
             },
         )
+        logger.info(
+            "محصول در روبیکا ارسال شد | chat_id=%s | message_id=%s",
+            chat_id,
+            result.get("message_id", "-"),
+        )
+        return result

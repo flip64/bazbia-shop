@@ -2,11 +2,13 @@ from django.conf import settings
 from django.core.management.base import BaseCommand, CommandError
 
 from rubika_integration.services import RubikaAPIError, RubikaClient
+from rubika_integration.services.run_logging import logged_rubika_command
 
 
 class Command(BaseCommand):
     help = "اتصال ربات روبیکا به کانال را با یک پیام واقعی آزمایش می‌کند."
 
+    @logged_rubika_command("test_rubika_channel")
     def handle(self, *args, **options):
         channel_id = settings.RUBIKA_CHANNEL_ID
         if not channel_id:

@@ -6,6 +6,7 @@ from django.utils import timezone
 from products.services.social_product_post import build_product_post, select_random_product
 from rubika_integration.models import RubikaProductPost
 from rubika_integration.services import RubikaAPIError, RubikaClient
+from rubika_integration.services.run_logging import logged_rubika_command
 
 
 class Command(BaseCommand):
@@ -15,6 +16,7 @@ class Command(BaseCommand):
         parser.add_argument("--dry-run", action="store_true")
         parser.add_argument("--exclude-days", type=int, default=30)
 
+    @logged_rubika_command("send_daily_rubika_product")
     def handle(self, *args, **options):
         channel_id = settings.RUBIKA_CHANNEL_ID
         if not channel_id:
