@@ -1,9 +1,10 @@
-import mimetypes
+from io import BytesIO
 from pathlib import PurePosixPath
 from urllib.parse import urlparse
 
 import requests
 from django.conf import settings
+from PIL import Image, ImageOps, UnidentifiedImageError
 
 
 class RubikaAPIError(RuntimeError):
@@ -33,6 +34,7 @@ class RubikaClient:
             description = (
                 payload.get("status_det")
                 or payload.get("message")
+                or payload.get("status")
                 or "خطای نامشخص API روبیکا"
             )
             raise RubikaAPIError(description)
@@ -58,6 +60,33 @@ class RubikaClient:
             {"chat_id": chat_id, "text": text},
         )
 
+    @staticmethod
+    def _normalize_image(image_content):
+        """تصویر را به JPEG استاندارد و سازگار با sendFile روبیکا تبدیل می‌کند."""
+        try:
+            with Image.open(BytesIO(image_content)) as source:
+                image = ImageOps.exif_transpose(source)
+                if image.mode in {"RGBA", "LA"} or "transparency" in image.info:
+                    rgba = image.convert("RGBA")
+                    background = Image.new("RGB", rgba.size, "white")
+                    background.paste(rgba, mask=rgba.getchannel("A"))
+                    image = background
+                else:
+                    image = image.convert("RGB")
+
+                image.thumbnail((1600, 1600), Image.Resampling.LANCZOS)
+                output = BytesIO()
+                image.save(
+                    output,
+                    format="JPEG",
+                    quality=90,
+                    optimize=True,
+                    progressive=False,
+                )
+                return output.getvalue()
+        except (UnidentifiedImageError, OSError, ValueError) as exc:
+            raise RubikaAPIError("تصویر محصول معتبر نیست یا قابل تبدیل نیست.") from exc
+
     def _upload_image(self, photo_url):
         try:
             image_response = requests.get(photo_url, timeout=self.timeout)
@@ -73,17 +102,19 @@ class RubikaClient:
         if not upload_url:
             raise RubikaAPIError("آدرس آپلود تصویر از روبیکا دریافت نشد.")
 
-        filename = PurePosixPath(urlparse(photo_url).path).name or "product.jpg"
-        content_type = image_response.headers.get("Content-Type")
-        content_type = content_type or mimetypes.guess_type(filename)[0]
-        content_type = content_type or "image/jpeg"
+        original_filename = (
+            PurePosixPath(urlparse(photo_url).path).name or "product.jpg"
+        )
+        filename = f"{PurePosixPath(original_filename).stem or 'product'}.jpg"
+        image_content = self._normalize_image(image_response.content)
+        content_type = "image/jpeg"
         try:
             upload_response = requests.post(
                 upload_url,
                 files={
                     "file": (
                         filename,
-                        image_response.content,
+                        image_content,
                         content_type,
                     )
                 },

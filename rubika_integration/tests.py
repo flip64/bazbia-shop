@@ -1,6 +1,8 @@
+from io import BytesIO
 from unittest.mock import Mock, patch
 
 from django.test import SimpleTestCase, override_settings
+from PIL import Image
 
 from rubika_integration.services import RubikaAPIError, RubikaClient
 
@@ -11,6 +13,12 @@ def api_response(data, status="OK"):
     response.status_code = 200
     response.json.return_value = {"status": status, "data": data}
     return response
+
+
+def jpeg_bytes():
+    output = BytesIO()
+    Image.new("RGB", (20, 10), "red").save(output, format="JPEG")
+    return output.getvalue()
 
 
 @override_settings(RUBIKA_BOT_TOKEN="test-token")
@@ -37,7 +45,7 @@ class RubikaClientTests(SimpleTestCase):
         image_response = Mock()
         image_response.ok = True
         image_response.status_code = 200
-        image_response.content = b"image-bytes"
+        image_response.content = jpeg_bytes()
         image_response.headers = {"Content-Type": "image/jpeg"}
         get.return_value = image_response
         post.side_effect = [
@@ -63,6 +71,12 @@ class RubikaClientTests(SimpleTestCase):
             post.call_args_list[1].args[0],
             "https://upload.rubika.test/file",
         )
+        filename, uploaded_content, content_type = post.call_args_list[1].kwargs[
+            "files"
+        ]["file"]
+        self.assertEqual(filename, "product.jpg")
+        self.assertEqual(content_type, "image/jpeg")
+        self.assertTrue(uploaded_content.startswith(b"\xff\xd8"))
         self.assertEqual(
             post.call_args_list[2].kwargs["json"]["file_id"],
             "file-1",
@@ -84,4 +98,15 @@ class RubikaClientTests(SimpleTestCase):
         post.return_value = response
 
         with self.assertRaisesMessage(RubikaAPIError, "INVALID_AUTH"):
+            RubikaClient().get_me()
+
+    @patch("rubika_integration.services.rubika_client.requests.post")
+    def test_status_is_used_when_api_omits_error_description(self, post):
+        response = Mock()
+        response.ok = True
+        response.status_code = 200
+        response.json.return_value = {"status": "INVALID_ACCESS"}
+        post.return_value = response
+
+        with self.assertRaisesMessage(RubikaAPIError, "INVALID_ACCESS"):
             RubikaClient().get_me()
