@@ -56,6 +56,12 @@ SOCIAL_BACKEND_URL = os.getenv("SOCIAL_BACKEND_URL", BALE_BACKEND_URL)
 TELEGRAM_BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN", "")
 TELEGRAM_CHANNEL_ID = os.getenv("TELEGRAM_CHANNEL_ID", "")
 
+# ==========================================
+# تنظیمات اتصال به روبیکا
+# ==========================================
+RUBIKA_BOT_TOKEN = os.getenv("RUBIKA_BOT_TOKEN", "")
+RUBIKA_CHANNEL_ID = os.getenv("RUBIKA_CHANNEL_ID", "")
+
 
 # ==========================================
 # تنظیمات اتصال به باسلام
@@ -201,6 +207,7 @@ INSTALLED_APPS = [
     'basalam_integration.apps.BasalamIntegrationConfig',
     "bale_integration.apps.BaleIntegrationConfig",
     "telegram_integration.apps.TelegramIntegrationConfig",
+    "rubika_integration.apps.RubikaIntegrationConfig",
     'contact',
     "analytics",
     "purchases",
