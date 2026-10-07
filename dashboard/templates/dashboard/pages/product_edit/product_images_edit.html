@@ -179,13 +179,16 @@
 
                                 <div class="d-grid gap-2">
 
-                                    <button
-                                        type="button"
-                                        class="btn btn-sm btn-outline-primary"
-                                        disabled
-                                    >
-                                        انتخاب به‌عنوان تصویر اصلی
-                                    </button>
+                                    {% if not product_image.is_main %}
+                                    <form method="post" action="{% url 'dashboard:product_images_edit' pk=product.pk %}">
+                                        {% csrf_token %}
+                                        <input type="hidden" name="action" value="set_main_image">
+                                        <input type="hidden" name="image_id" value="{{ product_image.pk }}">
+                                        <button type="submit" class="btn btn-sm btn-outline-primary w-100">
+                                            انتخاب به‌عنوان تصویر اصلی
+                                        </button>
+                                    </form>
+                                    {% endif %}
 <form
     method="post"
     action="{% url 'dashboard:product_image_delete' image_id=product_image.pk %}"
