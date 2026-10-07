@@ -2,6 +2,7 @@
 
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
+from django.db import transaction
 from django.http import Http404
 from django.shortcuts import get_object_or_404, redirect, render
 from django.views.decorators.http import require_POST
@@ -145,6 +146,22 @@ def product_images_edit(request, pk):
     )
 
     if request.method == "POST":
+        if request.POST.get("action") == "set_main_image":
+            image_id = request.POST.get("image_id", "")
+            if not image_id.isdecimal():
+                raise Http404
+
+            with transaction.atomic():
+                get_object_or_404(Product.objects.select_for_update(), pk=product.pk)
+                image = get_object_or_404(
+                    ProductImage, pk=image_id, product_id=product.pk,
+                )
+                ProductImage.objects.filter(product_id=product.pk).update(is_main=False)
+                ProductImage.objects.filter(pk=image.pk).update(is_main=True)
+
+            messages.success(request, "تصویر اصلی محصول با موفقیت تغییر کرد.")
+            return redirect("dashboard:product_images_edit", pk=product.pk)
+
         uploaded_image = request.FILES.get("image")
 
         if not uploaded_image:
