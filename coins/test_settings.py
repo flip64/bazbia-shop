@@ -17,6 +17,8 @@ INSTALLED_APPS = [
     "django.contrib.admin",
     "coins.test_settings.ProductsForCoinTests",
     "coins.apps.CoinsConfig",
+    "suppliers",
+    "rest_framework",
 ]
 DATABASES = {"default": {"ENGINE": "django.db.backends.sqlite3", "NAME": ":memory:"}}
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
