@@ -225,6 +225,7 @@ INSTALLED_APPS = [
     "analytics",
     "purchases",
     "community",
+    "coins",
     
 
 ]
