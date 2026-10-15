@@ -41,6 +41,7 @@ urlpatterns = [
     path("api/analytics/", include("analytics.api.urls")),
     path("api/bale/", include("bale_integration.urls")),
     path("api/rubika/", include("rubika_integration.urls")),
+    path("api/coins/", include("coins.urls")),
 
     # =========================================================
     # Torob API
