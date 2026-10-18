@@ -14,6 +14,7 @@ class CoinAPITests(TestCase):
         cls.coin = m.CoinType.objects.create(
             name="۲۵۰ ریالی",
             slug="250-rial",
+            is_published=True,
             issuer=cls.issuer,
             calendar=m.Calendar.SOLAR_HIJRI,
         )
@@ -87,8 +88,7 @@ class CoinAPITests(TestCase):
     def test_available_price_filter_uses_matching_specimen(self):
         card = self.get(in_stock="true")["results"][0]
         self.assertEqual(card["min_price"], "9000")
-        self.assertEqual(card["image"]["view_type"], "obverse")
-        self.assertEqual(card["image"]["url"], "https://example.com/coin.jpg")
+        self.assertIsNone(card["image"])  # Offer photos are not catalog images.
 
     def test_filter_year_matches_actual_issue_not_type_range(self):
         self.assertEqual(self.get(year=1373, calendar="solar_hijri")["count"], 1)
@@ -158,13 +158,13 @@ class CoinAPITests(TestCase):
         self.product.save()
         self.pack_product.is_active = False
         self.pack_product.save()
-        self.assertEqual(self.get()["count"], 0)
+        self.assertEqual(self.get()["count"], 1)
         self.assertEqual(self.get("packs/")["count"], 0)
-        for path in ("250-rial/", "packs/pack-1373/"):
-            self.assertEqual(self.client.get("/api/coins/" + path).status_code, 404)
-        filters = self.get("filters/")
-        self.assertEqual(filters["issuers"], [])
-        self.assertEqual(filters["years"], [])
+        self.assertEqual(self.get("250-rial/")["issues"][0]["specimens"], [])
+        self.assertEqual(
+            self.client.get("/api/coins/packs/pack-1373/").status_code, 404
+        )
+        self.assertEqual(self.get("filters/")["issuers"][0]["slug"], "iran")
 
     def test_inactive_sample_hidden_in_active_type(self):
         self.product.is_active = False
@@ -223,13 +223,16 @@ class CoinAPITests(TestCase):
 
     def test_list_query_count_bounded(self):
         # Count + page + image query; annotations include existing stock service.
-        with self.assertNumQueries(3):
+        with self.assertNumQueries(4):
             self.get(in_stock="true")
 
-    def test_out_of_stock_filter_reports_only_sold_out_price(self):
+    def test_out_of_stock_filter_requires_no_purchasable_sample(self):
+        self.assertEqual(self.get(in_stock="false")["count"], 0)
+        self.product.is_active = False
+        self.product.save()
         card = self.get(in_stock="false")["results"][0]
         self.assertFalse(card["in_stock"])
-        self.assertEqual(card["min_price"], "3000")
+        self.assertIsNone(card["min_price"])
 
     def test_zero_price_cannot_purchase(self):
         self.variant.price = 0
@@ -277,7 +280,11 @@ class CoinAPITests(TestCase):
 
     def test_price_ordering_and_stable_pagination(self):
         coin = m.CoinType.objects.create(
-            name="دیگر", slug="second", issuer=self.issuer, calendar="solar_hijri"
+            name="دیگر",
+            slug="second",
+            issuer=self.issuer,
+            calendar="solar_hijri",
+            is_published=True,
         )
         issue = m.CoinIssue.objects.create(
             coin_type=coin, year=1373, calendar="solar_hijri"
@@ -293,3 +300,80 @@ class CoinAPITests(TestCase):
         self.assertIsNotNone(data["next"])
         data = self.get(ordering="-price", page_size=1, page=2)
         self.assertEqual(data["results"][0]["slug"], "250-rial")
+
+
+class IndependentCatalogTests(TestCase):
+    def setUp(self):
+        self.client = APIClient()
+        self.issuer = m.CoinIssuer.objects.create(name="ایران", slug="iran")
+        self.coin = m.CoinType.objects.create(
+            name="کاتالوگ مستقل",
+            slug="catalog-only",
+            issuer=self.issuer,
+            is_published=True,
+            introduction="معرفی",
+            story="## تاریخچه\n\nداستان سکه",
+            story_sources="منبع تاریخی",
+        )
+        self.issue = m.CoinIssue.objects.create(
+            coin_type=self.coin, year=2000, description="داستان سال"
+        )
+
+    def test_catalog_without_product_or_stock(self):
+        card = self.client.get("/api/coins/").data["results"][0]
+        self.assertIsNone(card["min_price"])
+        self.assertFalse(card["in_stock"])
+        detail = self.client.get("/api/coins/catalog-only/").data
+        self.assertEqual(detail["story"], self.coin.story)
+        self.assertEqual(detail["issues"][0]["description"], "داستان سال")
+        self.assertEqual(detail["issues"][0]["specimens"], [])
+        self.assertEqual(self.client.get("/api/coins/?in_stock=false").data["count"], 1)
+        self.assertEqual(self.client.get("/api/coins/?in_stock=true").data["count"], 0)
+
+    def test_draft_catalog_hidden_and_filters_removed(self):
+        self.coin.is_published = False
+        self.coin.save()
+        self.assertEqual(self.client.get("/api/coins/").data["count"], 0)
+        self.assertEqual(self.client.get("/api/coins/catalog-only/").status_code, 404)
+        self.assertEqual(self.client.get("/api/coins/filters/").data["issuers"], [])
+
+    def test_catalog_image_and_credit(self):
+        m.CoinCatalogImage.objects.create(
+            coin_type=self.coin,
+            source_url="https://example.com/reference.jpg",
+            caption="مرجع",
+            credit="مالک عکس",
+        )
+        card = self.client.get("/api/coins/").data["results"][0]
+        self.assertEqual(card["image"]["credit"], "مالک عکس")
+        self.assertEqual(
+            self.client.get("/api/coins/catalog-only/").data["images"][0]["caption"],
+            "مرجع",
+        )
+
+    def test_issue_image_must_belong_to_type(self):
+        from django.core.exceptions import ValidationError
+
+        other = m.CoinType.objects.create(name="دیگر", slug="other", issuer=self.issuer)
+        with self.assertRaises(ValidationError):
+            m.CoinCatalogImage.objects.create(
+                coin_type=other,
+                issue=self.issue,
+                source_url="https://example.com/image.jpg",
+            )
+
+    def test_catalog_year_and_metadata_filters_without_sales(self):
+        self.assertEqual(
+            self.client.get("/api/coins/?year=2000&calendar=gregorian").data["count"], 1
+        )
+        self.assertEqual(
+            self.client.get("/api/coins/?year=2001&calendar=gregorian").data["count"], 0
+        )
+        self.assertEqual(
+            self.client.get("/api/coins/?issuer=iran&q=داستان").data["count"], 1
+        )
+        self.assertEqual(self.client.get("/api/coins/?min_price=1").data["count"], 0)
+        self.assertIn(
+            {"calendar": "gregorian", "year": 2000},
+            self.client.get("/api/coins/filters/").data["years"],
+        )

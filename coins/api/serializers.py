@@ -53,6 +53,37 @@ class ImageSerializer(serializers.Serializer):
         return detail.caption if detail else ""
 
 
+class CatalogImageSerializer(serializers.ModelSerializer):
+    url = serializers.SerializerMethodField()
+    alt_text = serializers.CharField(source="caption")
+    is_main = serializers.SerializerMethodField()
+    pack_item_id = serializers.SerializerMethodField()
+
+    def get_url(self, obj):
+        value = obj.image.url if obj.image else obj.source_url
+        request = self.context.get("request")
+        return request.build_absolute_uri(value) if value and request else value
+
+    def get_is_main(self, obj):
+        return obj.position == 0
+
+    def get_pack_item_id(self, obj):
+        return None
+
+    class Meta:
+        model = m.CoinCatalogImage
+        fields = (
+            "id",
+            "url",
+            "alt_text",
+            "is_main",
+            "pack_item_id",
+            "view_type",
+            "caption",
+            "credit",
+        )
+
+
 class SaleSerializer(serializers.Serializer):
     """Shared shape for loose specimens and prepared pack variants."""
 
@@ -117,6 +148,7 @@ class SpecimenSerializer(SaleSerializer):
 
 
 class IssueSerializer(serializers.ModelSerializer):
+    images = CatalogImageSerializer(source="catalog_images", many=True)
     mint = NamedSerializer(allow_null=True)
     finish_label = serializers.CharField(source="get_finish_display")
     date_status_label = serializers.CharField(source="get_date_status_display")
@@ -138,6 +170,8 @@ class IssueSerializer(serializers.ModelSerializer):
             "mint_mark",
             "variety_code",
             "variety_description",
+            "description",
+            "images",
             "finish",
             "finish_label",
             "mintage",
@@ -165,6 +199,7 @@ class CoinCardSerializer(serializers.ModelSerializer):
             "issuer",
             "period",
             "denomination_label",
+            "introduction",
             "calendar",
             "year_start",
             "year_end",
@@ -180,11 +215,19 @@ class CoinCardSerializer(serializers.ModelSerializer):
         return "IRT"
 
     def get_image(self, obj):
+        if isinstance(obj, m.CoinType):
+            image = next(iter(obj.catalog_images.all()), None)
+            return (
+                CatalogImageSerializer(image, context=self.context).data
+                if image
+                else None
+            )
         image = obj.card_image
         return ImageSerializer(image, context=self.context).data if image else None
 
 
 class CoinDetailSerializer(serializers.ModelSerializer):
+    images = CatalogImageSerializer(source="catalog_images", many=True)
     issuer = NamedSerializer()
     period = NamedSerializer(allow_null=True)
     ruler = NamedSerializer(allow_null=True)
@@ -240,6 +283,10 @@ class CoinDetailSerializer(serializers.ModelSerializer):
             "languages",
             "themes",
             "series_name",
+            "introduction",
+            "story",
+            "story_sources",
+            "images",
             "description",
             "composition_parts",
             "references",

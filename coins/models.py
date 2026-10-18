@@ -246,6 +246,16 @@ class CoinType(ValidatedModel):
         MIXED = "mixed", "ترکیبی"
         OTHER = "other", "سایر"
 
+    is_published = models.BooleanField(
+        "انتشار در کاتالوگ", default=False, db_index=True
+    )
+    introduction = models.TextField("معرفی کوتاه", blank=True)
+    story = models.TextField(
+        "داستان سکه",
+        blank=True,
+        help_text="متن ساده؛ تیتر با ## و فهرست با - در ابتدای خط",
+    )
+    story_sources = models.TextField("منابع داستان", blank=True)
     name = models.CharField("عنوان کاتالوگی", max_length=200)
     slug = models.SlugField("نامک", max_length=180, unique=True)
     issuer = models.ForeignKey(
@@ -472,6 +482,7 @@ class CoinIssue(ValidatedModel):
     mint_mark = models.CharField("علامت ضرابخانه", max_length=50, blank=True)
     variety_code = models.CharField("کد گونه", max_length=80, blank=True)
     variety_description = models.TextField("تفاوت گونه", blank=True)
+    description = models.TextField("داستان و توضیحات این نوبت ضرب", blank=True)
     finish = models.CharField(
         "پرداخت ضرب", max_length=20, choices=Finish.choices, default=Finish.UNKNOWN
     )
@@ -983,3 +994,53 @@ class PackAssemblyAllocation(ValidatedModel):
     class Meta:
         verbose_name = "مصرف سکه برای پک"
         verbose_name_plural = "مصرف سکه برای پک"
+
+
+class CoinCatalogImage(ValidatedModel):
+    coin_type = models.ForeignKey(
+        CoinType,
+        on_delete=models.CASCADE,
+        related_name="catalog_images",
+        verbose_name="نوع سکه",
+    )
+    issue = models.ForeignKey(
+        CoinIssue,
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        related_name="catalog_images",
+        verbose_name="نوبت ضرب (اختیاری)",
+    )
+    image = models.ImageField(
+        "تصویر مرجع", upload_to="coins/catalog/%Y/%m/", blank=True
+    )
+    source_url = models.URLField("نشانی تصویر", blank=True)
+    view_type = models.CharField(
+        "نما",
+        max_length=20,
+        choices=[
+            ("obverse", "رو"),
+            ("reverse", "پشت"),
+            ("edge", "لبه"),
+            ("detail", "جزئیات"),
+        ],
+        default="obverse",
+    )
+    caption = models.CharField("عنوان تصویر", max_length=250, blank=True)
+    credit = models.CharField("منبع یا صاحب تصویر", max_length=250, blank=True)
+    position = models.PositiveSmallIntegerField("ترتیب", default=0)
+
+    class Meta:
+        ordering = ["position", "pk"]
+        verbose_name = "تصویر مرجع کاتالوگ"
+        verbose_name_plural = "تصاویر مرجع کاتالوگ"
+
+    def clean(self):
+        super().clean()
+        if not self.image and not self.source_url:
+            raise ValidationError("فایل تصویر یا نشانی آن را وارد کنید.")
+        if self.issue_id and self.issue.coin_type_id != self.coin_type_id:
+            raise ValidationError({"issue": "نوبت ضرب متعلق به این سکه نیست."})
+
+    def __str__(self):
+        return self.caption or str(self.coin_type)

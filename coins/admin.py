@@ -41,13 +41,33 @@ class CompositionInline(admin.TabularInline):
     autocomplete_fields = ("material",)
 
 
+class CatalogImageInline(admin.TabularInline):
+    model = m.CoinCatalogImage
+    extra = 0
+    autocomplete_fields = ("issue",)
+
+
+@admin.register(m.CoinCatalogImage)
+class CatalogImageAdmin(BaseAdmin):
+    search_fields = ("coin_type__name", "caption", "credit")
+    autocomplete_fields = ("coin_type", "issue")
+    list_display = ("coin_type", "issue", "view_type", "credit")
+
+
 @admin.register(m.CoinType)
 class TypeAdmin(BaseAdmin):
     search_fields = ("name", "slug", "denomination_label", "issuer__name")
-    list_display = ("name", "issuer", "period", "construction", "shape")
-    list_filter = ("issuer", "issue_kind", "construction", "shape", "calendar")
+    list_display = ("name", "issuer", "period", "is_published", "construction", "shape")
+    list_filter = (
+        "is_published",
+        "issuer",
+        "issue_kind",
+        "construction",
+        "shape",
+        "calendar",
+    )
     autocomplete_fields = ("issuer", "period", "ruler", "currency", "themes")
-    inlines = (CompositionInline,)
+    inlines = (CompositionInline, CatalogImageInline)
 
 
 @admin.register(m.CoinIssue)
