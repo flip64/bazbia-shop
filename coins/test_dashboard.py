@@ -116,7 +116,7 @@ class CatalogDashboardTests(TestCase):
                 "description": "داستان سال",
             },
         )
-        self.assertRedirects(response, self.url("detail", pk=self.coin.pk))
+        self.assertRedirects(response, self.url("detail", pk=self.coin.pk) + "#years")
         issue = m.CoinIssue.objects.get()
         self.assertContains(
             self.client.get(self.url("record-detail", kind="issue", pk=issue.pk)),
@@ -174,3 +174,107 @@ class CatalogDashboardTests(TestCase):
                 self.assertEqual(
                     self.client.get(self.url("records", kind=kind)).status_code, 200
                 )
+
+    def test_country_and_period_browsing(self):
+        period = m.HistoricalPeriod.objects.create(
+            name="دوره آزمایشی", slug="period", issuer=self.issuer
+        )
+        self.coin.period = period
+        self.coin.save()
+        response = self.client.get(self.url("countries"))
+        self.assertContains(response, "ایران")
+        response = self.client.get(
+            self.url("list"), {"issuer": "iran", "period": "period"}
+        )
+        self.assertEqual(response.context["page"].paginator.count, 1)
+        self.assertEqual(response.context["selected_period"], period)
+        other = m.CoinIssuer.objects.create(name="دیگر", slug="elsewhere")
+        response = self.client.get(
+            self.url("list"), {"issuer": other.slug, "period": period.slug}
+        )
+        self.assertTrue(response.context["filters"].errors)
+        self.assertEqual(response.context["page"].paginator.count, 0)
+
+    def test_year_filter_requires_calendar_and_matches_actual_issue(self):
+        m.CoinIssue.objects.create(coin_type=self.coin, year=2000)
+        response = self.client.get(self.url("list"), {"year": "2000"})
+        self.assertContains(response, "برای فیلتر سال، تقویم را انتخاب کنید.")
+        response = self.client.get(
+            self.url("list"), {"year": "۲۰۰۰", "calendar": "gregorian"}
+        )
+        self.assertEqual(response.context["page"].paginator.count, 1)
+        response = self.client.get(
+            self.url("list"), {"year": 2001, "calendar": "gregorian"}
+        )
+        self.assertEqual(response.context["page"].paginator.count, 0)
+
+    def test_material_filter_does_not_duplicate_types(self):
+        material = m.CoinMaterial.objects.create(name="مس", slug="copper")
+        for part in ("center", "ring"):
+            m.CoinCompositionPart.objects.create(
+                coin_type=self.coin, material=material, part=part
+            )
+        response = self.client.get(self.url("list"), {"material": "copper"})
+        self.assertEqual(response.context["page"].paginator.count, 1)
+
+    def test_image_pair_never_combines_different_issue_photos(self):
+        first = m.CoinIssue.objects.create(coin_type=self.coin, year=2000)
+        second = m.CoinIssue.objects.create(coin_type=self.coin, year=2001)
+        m.CoinCatalogImage.objects.create(
+            coin_type=self.coin,
+            issue=first,
+            view_type="obverse",
+            source_url="https://example.com/first.jpg",
+        )
+        m.CoinCatalogImage.objects.create(
+            coin_type=self.coin,
+            issue=second,
+            view_type="reverse",
+            source_url="https://example.com/second.jpg",
+        )
+        tile = self.client.get(self.url("list")).context["tiles"][0]
+        self.assertEqual(tile["pair"]["obverse"].issue_id, first.pk)
+        self.assertIsNone(tile["pair"]["reverse"])
+
+    def test_image_permission_is_honored(self):
+        m.CoinCatalogImage.objects.create(
+            coin_type=self.coin, source_url="https://example.com/private-photo.jpg"
+        )
+        self.staff.user_permissions.add(
+            Permission.objects.get(codename="view_cointype")
+        )
+        self.client.force_login(self.staff)
+        self.assertNotContains(self.client.get(self.url("list")), "private-photo.jpg")
+        self.assertNotContains(
+            self.client.get(self.url("detail", pk=self.coin.pk)), "private-photo.jpg"
+        )
+
+    def test_grid_links_preserve_encoded_filters_and_pagination(self):
+        m.CoinType.objects.bulk_create(
+            [
+                m.CoinType(name=f"سکه {i}", slug=f"coin-{i}", issuer=self.issuer)
+                for i in range(25)
+            ]
+        )
+        response = self.client.get(self.url("list"), {"issuer": "iran", "view": "grid"})
+        self.assertTrue(response.context["page"].has_next())
+        self.assertContains(response, "grid-view")
+        self.assertContains(response, "issuer=iran&amp;view=grid&amp;page=2")
+
+    def test_new_coin_keeps_selected_country_and_new_image_keeps_issue(self):
+        response = self.client.get(self.url("create", kind="type"), {"issuer": "iran"})
+        self.assertEqual(response.context["form"].initial["issuer"], self.issuer.pk)
+        issue = m.CoinIssue.objects.create(coin_type=self.coin, year=2000)
+        response = self.client.get(
+            self.url("create", kind="image"), {"coin": self.coin.pk, "issue": issue.pk}
+        )
+        self.assertEqual(response.context["form"].initial["issue"], issue.pk)
+        self.assertEqual(response.context["parent_coin"], self.coin)
+
+    def test_invalid_filters_are_explained(self):
+        for data in ({"year": "abc"}, {"shape": "invalid"}, {"issuer": "unknown"}):
+            with self.subTest(data=data):
+                response = self.client.get(self.url("list"), data)
+                self.assertEqual(response.status_code, 200)
+                self.assertTrue(response.context["filters"].errors)
+                self.assertEqual(response.context["page"].paginator.count, 0)
