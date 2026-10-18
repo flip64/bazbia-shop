@@ -7,20 +7,23 @@ from django.db.models import Q
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_protect
 from django.views.decorators.http import require_GET, require_POST
-from products.models import Product, ProductVariant
+from products.models import Product, ProductVariant, ProductVariantImage
 from . import models as m
 from .variant_forms import QuickVariantForm
 
 
 def check_access(request, create=False):
-    model = {"specimen": m.CoinSpecimen, "pack-variant": m.CoinPackVariant}.get(
-        request.GET.get("kind")
-    )
+    model = {
+        "specimen": m.CoinSpecimen,
+        "pack-variant": m.CoinPackVariant,
+        "variant-image": ProductVariantImage,
+    }.get(request.GET.get("kind"))
     if model is None:
         raise PermissionDenied
     name = model._meta.model_name
     if not any(
-        request.user.has_perm(f"coins.{action}_{name}") for action in ("add", "change")
+        request.user.has_perm(f"{model._meta.app_label}.{action}_{name}")
+        for action in ("add", "change")
     ):
         raise PermissionDenied
     if not request.user.has_perm("products.view_productvariant"):
@@ -54,11 +57,11 @@ def lookup(request):
         label = lambda obj: obj.name
     else:
         # Already linked variants cannot represent a second specimen/pack.
-        qs = (
-            ProductVariant.objects.select_related("product")
-            .exclude(pk__in=m.CoinSpecimen.objects.values("variant_id"))
-            .exclude(pk__in=m.CoinPackVariant.objects.values("variant_id"))
-        )
+        qs = ProductVariant.objects.select_related("product")
+        if request.GET.get("kind") != "variant-image":
+            qs = qs.exclude(pk__in=m.CoinSpecimen.objects.values("variant_id")).exclude(
+                pk__in=m.CoinPackVariant.objects.values("variant_id")
+            )
         if q:
             qs = qs.filter(
                 Q(sku__icontains=q)

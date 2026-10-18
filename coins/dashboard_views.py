@@ -13,6 +13,7 @@ from django.urls import reverse
 from django.views.decorators.http import require_http_methods
 from django.views.decorators.csrf import csrf_protect
 from . import models as m
+from products.models import ProductVariantImage
 
 NS = "dashboard:coin_catalog:"
 # Fixed allowlist: a URL can never select an unrelated application/model.
@@ -34,11 +35,12 @@ MODELS = {
     "pack-variant": m.CoinPackVariant,
     "pack-item": m.CoinPackItem,
     "sale-image": m.CoinImageDetail,
+    "variant-image": ProductVariantImage,
 }
 
 
 def allowed(user, model, action):
-    return user.has_perm(f"coins.{action}_{model._meta.model_name}")
+    return user.has_perm(f"{model._meta.app_label}.{action}_{model._meta.model_name}")
 
 
 def check(user, model, action):
@@ -48,7 +50,14 @@ def check(user, model, action):
 
 def context(request, **values):
     values["sections"] = [
-        {"key": key, "label": model._meta.verbose_name_plural}
+        {
+            "key": key,
+            "label": (
+                "بارگذاری عکس واریانت سکه"
+                if key == "variant-image"
+                else model._meta.verbose_name_plural
+            ),
+        }
         for key, model in MODELS.items()
         if allowed(request.user, model, "view")
     ]
@@ -68,6 +77,13 @@ def object_coin(obj):
         return obj.coin_type
     if hasattr(obj, "issue_id") and obj.issue_id:
         return obj.issue.coin_type
+    if isinstance(obj, ProductVariantImage):
+        specimen = (
+            m.CoinSpecimen.objects.select_related("issue__coin_type")
+            .filter(variant_id=obj.variant_id)
+            .first()
+        )
+        return specimen.issue.coin_type if specimen else None
     return None
 
 
@@ -482,7 +498,11 @@ def record_list(request, kind):
         context(
             request,
             kind=kind,
-            title=model._meta.verbose_name_plural,
+            title=(
+                "عکس‌های واریانت سکه"
+                if model is ProductVariantImage
+                else model._meta.verbose_name_plural
+            ),
             page=Paginator(qs, 30).get_page(request.GET.get("page")),
             q=q,
             can_add=allowed(request.user, model, "add"),
@@ -498,7 +518,13 @@ def record_edit(request, kind, pk=None):
     model = model_for(kind)
     check(request.user, model, "change" if pk else "add")
     obj = get_object_or_404(model, pk=pk) if pk else None
-    Form = forms.modelform_factory(model, fields="__all__")
+    if model is ProductVariantImage:
+        check(request.user, m.CoinImageDetail, "change" if pk else "add")
+        from .variant_forms import CoinVariantImageForm
+
+        Form = CoinVariantImageForm
+    else:
+        Form = forms.modelform_factory(model, fields="__all__")
     initial = {}
     coin_id = request.GET.get("coin")
     if not obj and model is m.CoinType and request.GET.get("issuer"):
@@ -522,16 +548,18 @@ def record_edit(request, kind, pk=None):
         instance=obj,
         initial=initial,
     )
-    variant_picker = model in (m.CoinSpecimen, m.CoinPackVariant)
+    variant_picker = model in (m.CoinSpecimen, m.CoinPackVariant, ProductVariantImage)
     if variant_picker:
         from products.models import ProductVariant
 
         selected = (
             request.POST.get("variant")
             if request.method == "POST"
-            else getattr(obj, "variant_id", None)
+            else getattr(obj, "variant_id", None) or request.GET.get("variant")
         )
         selected = str(selected or "")
+        if not form.is_bound and not obj and selected.isdecimal():
+            form.initial["variant"] = int(selected)
         form.fields["variant"].queryset = (
             ProductVariant.objects.filter(pk=int(selected)).select_related("product")
             if selected.isdecimal()
@@ -566,6 +594,7 @@ def record_edit(request, kind, pk=None):
                 section = {
                     "issue": "years",
                     "image": "images",
+                    "variant-image": "sales",
                     "composition": "specs",
                     "reference": "references",
                     "specimen": "sales",
@@ -665,13 +694,18 @@ def record_edit(request, kind, pk=None):
             variant_picker=variant_picker,
             can_create_variant=(
                 variant_picker
+                and model is not ProductVariantImage
                 and request.user.has_perm("products.add_productvariant")
                 and request.user.has_perm("products.view_productvariant")
                 and request.user.has_perm("products.view_product")
             ),
             kind=kind,
             obj=obj,
-            title=model._meta.verbose_name,
+            title=(
+                "عکس واریانت سکه"
+                if model is ProductVariantImage
+                else model._meta.verbose_name
+            ),
         ),
     )
 
@@ -705,7 +739,11 @@ def record_detail(request, kind, pk):
             obj=obj,
             kind=kind,
             rows=rows,
-            title=model._meta.verbose_name,
+            title=(
+                "عکس واریانت سکه"
+                if model is ProductVariantImage
+                else model._meta.verbose_name
+            ),
             can_edit=allowed(request.user, model, "change"),
             product_id=(
                 obj.variant.product_id
