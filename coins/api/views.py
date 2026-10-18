@@ -116,7 +116,7 @@ class PublicAPI:
     authentication_classes = []
 
 
-def sales(queryset):
+def stock_sales(queryset):
     stock = VariantStockService.annotate(
         ProductVariant.objects.filter(pk=OuterRef("variant_id"))
     )
@@ -134,6 +134,42 @@ def sales(queryset):
             ),
         )
     )
+
+
+def sales(queryset):
+    queryset = stock_sales(queryset).filter(is_published=True, effective_price__gt=0)
+    usable_images = m.CoinImageDetail.objects.exclude(
+        image__image="", image__source_url__isnull=True
+    ).exclude(image__image="", image__source_url="")
+    if queryset.model is m.CoinSpecimen:
+        for side in ("obverse", "reverse"):
+            queryset = queryset.filter(
+                Exists(
+                    usable_images.filter(
+                        image__variant_id=OuterRef("variant_id"), view_type=side
+                    )
+                )
+            )
+    else:
+        queryset = queryset.filter(
+            Exists(
+                usable_images.filter(
+                    image__variant_id=OuterRef("variant_id"), view_type="pack"
+                )
+            )
+        )
+        items = m.CoinPackItem.objects.filter(pack_variant_id=OuterRef("pk"))
+        bad_items = items
+        covered = usable_images.filter(
+            pack_item_id=OuterRef("pk"),
+            image__variant_id=OuterRef("pack_variant__variant_id"),
+        )
+        bad_items = bad_items.filter(
+            ~Exists(covered.filter(view_type="obverse"))
+            | ~Exists(covered.filter(view_type="reverse"))
+        )
+        queryset = queryset.filter(Exists(items), ~Exists(bad_items))
+    return queryset
 
 
 def filter_sale(queryset, p):
@@ -349,7 +385,7 @@ class FilterView(PublicAPI, APIView):
     def get(self, request):
         public_sales = sales(m.CoinSpecimen.objects.all())
         pack_items = m.CoinPackItem.objects.filter(
-            pack_variant__variant__product__is_active=True
+            pack_variant_id__in=sales(m.CoinPackVariant.objects.all()).values("pk")
         )
         public_types = m.CoinType.objects.filter(
             Q(pk__in=public_sales.values("issue__coin_type_id"))
@@ -407,3 +443,55 @@ class FilterView(PublicAPI, APIView):
                 ],
             }
         )
+
+
+class ManageAssemblyView(APIView):
+    from rest_framework.permissions import IsAdminUser
+
+    permission_classes = [IsAdminUser]
+
+    def post(self, request):
+        from django.core.exceptions import ValidationError as ModelError
+        from .management_serializers import AssemblyInput
+        from coins.assembly import assemble_pack
+
+        data = AssemblyInput(data=request.data)
+        data.is_valid(raise_exception=True)
+        try:
+            assembly = assemble_pack(**data.validated_data)
+        except (m.CoinPackVariant.DoesNotExist, ModelError) as error:
+            raise ValidationError(getattr(error, "messages", ["پک یافت نشد."]))
+        return Response(
+            {
+                "id": assembly.pk,
+                "request_key": assembly.request_key,
+                "quantity": assembly.quantity,
+                "total_cost": str(assembly.total_cost),
+            }
+        )
+
+
+class ManagePublicationView(APIView):
+    from rest_framework.permissions import IsAdminUser
+
+    permission_classes = [IsAdminUser]
+
+    def post(self, request, kind, pk):
+        from django.core.exceptions import ValidationError as ModelError
+        from django.shortcuts import get_object_or_404
+        from coins.services import set_publication
+
+        class Input(serializers.Serializer):
+            is_published = serializers.BooleanField()
+
+        data = Input(data=request.data)
+        data.is_valid(raise_exception=True)
+        model = {"coin": m.CoinSpecimen, "pack": m.CoinPackVariant}.get(kind)
+        if model is None:
+            raise ValidationError("نوع باید coin یا pack باشد.")
+        listing = get_object_or_404(model, pk=pk)
+        try:
+            set_publication(listing, data.validated_data["is_published"])
+        except ModelError as error:
+            raise ValidationError(error.messages)
+        return Response({"id": listing.pk, "is_published": listing.is_published})

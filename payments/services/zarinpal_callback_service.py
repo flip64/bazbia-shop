@@ -1,3 +1,4 @@
+from orders.models import Order
 from dataclasses import dataclass
 
 from django.db import transaction
@@ -35,15 +36,13 @@ class ZarinpalCallbackService:
     ):
         self.payment = payment
         self.authority = authority.strip()
-        self.callback_status = (
-            callback_status.strip().upper()
-        )
+        self.callback_status = callback_status.strip().upper()
 
     @transaction.atomic
     def run(self) -> ZarinpalCallbackResult:
+        Order.objects.select_for_update().get(pk=self.payment.order_id)
         payment = (
-            Payment.objects
-            .select_for_update()
+            Payment.objects.select_for_update()
             .select_related("order")
             .get(pk=self.payment.pk)
         )
@@ -55,31 +54,20 @@ class ZarinpalCallbackService:
             return ZarinpalCallbackResult(
                 payment=payment,
                 is_successful=True,
-                message=(
-                    "این پرداخت قبلاً "
-                    "با موفقیت تأیید شده است."
-                ),
+                message=("این پرداخت قبلاً " "با موفقیت تأیید شده است."),
             )
 
         # -----------------------------------------
         # بررسی درگاه
         # -----------------------------------------
         if payment.gateway != "zarinpal":
-            raise ValueError(
-                "این تراکنش متعلق به زرین‌پال نیست."
-            )
+            raise ValueError("این تراکنش متعلق به زرین‌پال نیست.")
 
         # -----------------------------------------
         # بررسی Authority
         # -----------------------------------------
-        if (
-            not payment.authority
-            or payment.authority != self.authority
-        ):
-            raise ValueError(
-                "شناسه Authority با تراکنش "
-                "ثبت‌شده مطابقت ندارد."
-            )
+        if not payment.authority or payment.authority != self.authority:
+            raise ValueError("شناسه Authority با تراکنش " "ثبت‌شده مطابقت ندارد.")
 
         # -----------------------------------------
         # پرداخت توسط کاربر لغو شده
@@ -87,10 +75,7 @@ class ZarinpalCallbackService:
         # -----------------------------------------
         if self.callback_status != "OK":
             payment.mark_cancelled(
-                error_message=(
-                    "پرداخت توسط کاربر لغو شد "
-                    "یا در درگاه ناموفق بود."
-                ),
+                error_message=("پرداخت توسط کاربر لغو شد " "یا در درگاه ناموفق بود."),
                 gateway_response={
                     "gateway": "zarinpal",
                     "authority": self.authority,
@@ -101,10 +86,7 @@ class ZarinpalCallbackService:
             return ZarinpalCallbackResult(
                 payment=payment,
                 is_successful=False,
-                message=(
-                    "پرداخت لغو شد یا "
-                    "ناموفق بود."
-                ),
+                message=("پرداخت لغو شد یا " "ناموفق بود."),
             )
 
         # -----------------------------------------
@@ -124,9 +106,7 @@ class ZarinpalCallbackService:
                 gateway_response=error.response_data,
             )
 
-            raise ValueError(
-                str(error)
-            ) from error
+            raise ValueError(str(error)) from error
 
         # -----------------------------------------
         # Verify ناموفق
@@ -140,10 +120,7 @@ class ZarinpalCallbackService:
             return ZarinpalCallbackResult(
                 payment=payment,
                 is_successful=False,
-                message=(
-                    result.error_message
-                    or "تأیید پرداخت ناموفق بود."
-                ),
+                message=(result.error_message or "تأیید پرداخت ناموفق بود."),
             )
 
         # -----------------------------------------
@@ -185,7 +162,8 @@ class ZarinpalCallbackService:
             payment=payment,
             is_successful=True,
             message=(
-                "پرداخت با موفقیت "
-                "تأیید شد."
+                "پرداخت پس از لغو سفارش ثبت شد؛ پشتیبانی باید وجه را بررسی کند."
+                if payment.requires_review
+                else "پرداخت با موفقیت تأیید شد."
             ),
         )

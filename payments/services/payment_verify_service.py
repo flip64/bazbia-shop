@@ -1,3 +1,4 @@
+from django.conf import settings
 from dataclasses import dataclass
 
 from django.db import transaction
@@ -32,12 +33,20 @@ class PaymentVerifyService:
 
     @transaction.atomic
     def run(self) -> PaymentVerifyResult:
+        Order.objects.select_for_update().get(pk=self.payment.order_id)
         payment = (
-            Payment.objects
-            .select_for_update()
+            Payment.objects.select_for_update()
             .select_related("order")
             .get(pk=self.payment.pk)
         )
+
+        if (
+            payment.gateway != "mock"
+            or str(getattr(settings, "PAYMENT_GATEWAY", "mock")).lower() != "mock"
+        ):
+            raise ValueError(
+                "تأیید آزمایشی برای پرداخت واقعی یا محیط درگاه واقعی مجاز نیست."
+            )
 
         if payment.status == Payment.Status.SUCCESSFUL:
             return PaymentVerifyResult(
@@ -62,7 +71,11 @@ class PaymentVerifyService:
 
             return PaymentVerifyResult(
                 payment=payment,
-                message="پرداخت با موفقیت تأیید شد.",
+                message=(
+                    "پرداخت پس از لغو سفارش ثبت شد؛ پشتیبانی باید وجه را بررسی کند."
+                    if payment.requires_review
+                    else "پرداخت با موفقیت تأیید شد."
+                ),
             )
 
         if self.mock_status == "cancelled":

@@ -1,5 +1,7 @@
 # orders/api/views.py
 
+from django.core.exceptions import ValidationError as ModelValidationError
+from coins.services import assert_purchasable, order_has_coins
 from datetime import timedelta
 from decimal import Decimal, InvalidOperation
 
@@ -715,6 +717,11 @@ class AddToCartView(
             id=variant_id,
         )
 
+        try:
+            assert_purchasable(variant, quantity)
+        except ModelValidationError as error:
+            return Response({'error': error.messages}, status=400)
+
         available_stock = (
             calculate_variant_available_stock(
                 variant
@@ -949,6 +956,11 @@ class UpdateCartItemView(
             id=pk,
             cart=cart,
         )
+
+        try:
+            assert_purchasable(cart_item.variant, quantity)
+        except ModelValidationError as error:
+            return Response({'error': error.messages}, status=400)
 
         available_stock = (
             calculate_variant_available_stock(
@@ -1259,6 +1271,11 @@ class CreateOrderView(
                         .HTTP_400_BAD_REQUEST
                     ),
                 )
+
+            try:
+                assert_purchasable(variant, cart_item.quantity)
+            except ModelValidationError as error:
+                return Response({'error': error.messages, 'variant_id': variant.pk}, status=400)
 
             available_stock = (
                 calculate_variant_available_stock(
@@ -1881,6 +1898,10 @@ class CancelOrderView(
                 ),
             )
 
+        from payments.models import Payment
+        if order_has_coins(order) and Payment.objects.filter(order=order, status=Payment.Status.PROCESSING).exists():
+            return Response({'error': 'پرداخت در حال پردازش است؛ ابتدا نتیجه پرداخت مشخص شود.'}, status=400)
+
         order_items = list(
             order.items.all()
         )
@@ -1982,6 +2003,11 @@ class CancelOrderView(
                 )
             )
         }
+
+        # Release unique reservations in the same transaction as stock restoration.
+        if order_has_coins(order):
+            order.status = Order.STATUS_CANCELLED
+            order.save(update_fields=['status', 'updated_at'])
 
         # -------------------------------------------------
         # بازگرداندن موجودی

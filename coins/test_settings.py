@@ -18,6 +18,11 @@ INSTALLED_APPS = [
     "coins.test_settings.ProductsForCoinTests",
     "coins.apps.CoinsConfig",
     "suppliers",
+    "customers",
+    "orders",
+    "inventory",
+    "purchases",
+    "payments",
     "rest_framework",
 ]
 DATABASES = {"default": {"ENGINE": "django.db.backends.sqlite3", "NAME": ":memory:"}}
@@ -42,3 +47,5 @@ TEMPLATES = [
     }
 ]
 ROOT_URLCONF = "coins.test_urls"
+
+PASSWORD_HASHERS = ["django.contrib.auth.hashers.MD5PasswordHasher"]

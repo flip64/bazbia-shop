@@ -1,3 +1,4 @@
+from coins.testing import publish_fixture
 from decimal import Decimal
 from django.test import TestCase
 from rest_framework.test import APIClient
@@ -62,6 +63,10 @@ class CoinAPITests(TestCase):
         cls.item = m.CoinPackItem.objects.create(
             pack_variant=cls.pv, issue=cls.issue, quantity=3, condition_grade="xf"
         )
+
+        publish_fixture(cls.specimen)
+        publish_fixture(cls.empty_specimen)
+        publish_fixture(cls.pv)
 
     def setUp(self):
         self.client = APIClient()
@@ -170,13 +175,17 @@ class CoinAPITests(TestCase):
         variant = ProductVariant.objects.create(
             product=other_product, sku="OTHER", price=12000, stock=1
         )
-        m.CoinSpecimen.objects.create(issue=self.issue, variant=variant)
+        publish_fixture(
+            m.CoinSpecimen.objects.create(issue=self.issue, variant=variant)
+        )
         data = self.get("250-rial/")
         self.assertEqual(len(data["issues"][0]["specimens"]), 1)
         self.assertEqual(data["issues"][0]["specimens"][0]["variant_id"], variant.pk)
         self.assertEqual(data["issues"][1]["specimens"], [])
 
     def test_supplier_stock_agrees_with_existing_service(self):
+        self.empty_specimen.sale_mode = "similar"
+        self.empty_specimen.save()
         supplier = Supplier.objects.create(name="تأمین‌کننده", slug="test")
         SupplierOffer.objects.create(
             supplier=supplier,
@@ -226,8 +235,7 @@ class CoinAPITests(TestCase):
         self.variant.price = 0
         self.variant.discount_price = None
         self.variant.save()
-        sample = self.get("250-rial/")["issues"][0]["specimens"][0]
-        self.assertFalse(sample["can_purchase"])
+        self.assertEqual(self.get("250-rial/")["issues"][0]["specimens"], [])
 
     def test_reserved_routes_not_interpreted_as_slugs(self):
         self.assertEqual(self.client.get("/api/coins/filters/").status_code, 200)
@@ -254,6 +262,7 @@ class CoinAPITests(TestCase):
         m.CoinPackItem.objects.create(
             pack_variant=self.pv, issue=other_issue, condition_grade="vf"
         )
+        publish_fixture(self.pv)
         self.assertEqual(self.get("packs/", shape="square", condition="xf")["count"], 0)
         self.assertEqual(self.get("packs/", shape="square", condition="vf")["count"], 1)
 
@@ -277,7 +286,7 @@ class CoinAPITests(TestCase):
         variant = ProductVariant.objects.create(
             product=product, sku="SECOND", price=15000, stock=1
         )
-        m.CoinSpecimen.objects.create(issue=issue, variant=variant)
+        publish_fixture(m.CoinSpecimen.objects.create(issue=issue, variant=variant))
         data = self.get(ordering="-price", page_size=1)
         self.assertEqual(data["count"], 2)
         self.assertEqual(data["results"][0]["slug"], "second")

@@ -3,9 +3,7 @@ from rest_framework import serializers
 from payments.models import Payment
 
 
-class PaymentSerializer(
-    serializers.ModelSerializer
-):
+class PaymentSerializer(serializers.ModelSerializer):
     """
     نمایش اطلاعات کامل یک تراکنش پرداخت.
     """
@@ -35,6 +33,7 @@ class PaymentSerializer(
         model = Payment
 
         fields = [
+            "requires_review",
             "id",
             "order",
             "order_status",
@@ -71,7 +70,4 @@ class PaymentSerializer(
             Payment.Status.CANCELLED,
         }
 
-        return (
-            obj.status in retryable_statuses
-            and obj.order.status != "paid"
-        )
+        return obj.status in retryable_statuses and obj.order.status == "pending"

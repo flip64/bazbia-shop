@@ -3,7 +3,6 @@ from orders.models import Order, OrderItem, Cart, CartItem, SalesSummary
 from products.services.variant_stock import calculate_variant_available_stock
 
 
-
 # ==============================
 # ورودی ثبت سفارش
 # ==============================
@@ -37,11 +36,10 @@ class CreateOrderSerializer(serializers.Serializer):
         required=True,
     )
 
+
 # ==============================
 # 🎯 سریالایزر آیتم سبد خرید
 # ==============================
-
-
 
 
 class CartItemSerializer(serializers.ModelSerializer):
@@ -74,23 +72,18 @@ class CartItemSerializer(serializers.ModelSerializer):
         model = CartItem
         fields = [
             "id",
-
             # شناسه واریانت
             "variant",
-
             # اطلاعات محصول
             "product_name",
             "product_slug",
-
             # اطلاعات واریانت
             "variant_name",
             "variant_stock",
-
             # اطلاعات خرید
             "quantity",
             "price",
             "total_price",
-
             # تصویر
             "image",
         ]
@@ -146,10 +139,8 @@ class CartItemSerializer(serializers.ModelSerializer):
 
         return image_url
 
-
     def get_variant_stock(self, obj):
-     return calculate_variant_available_stock(obj.variant)
-
+        return calculate_variant_available_stock(obj.variant)
 
 
 # ==============================
@@ -183,10 +174,7 @@ class CartSerializer(serializers.ModelSerializer):
         return obj.total_price()
 
     def get_total_items(self, obj):
-        return sum(
-            item.quantity
-            for item in obj.items.all()
-        )
+        return sum(item.quantity for item in obj.items.all())
 
 
 # ==============================
@@ -223,8 +211,6 @@ class CartItemUpdateSerializer(serializers.Serializer):
     )
 
 
-
-
 # ==============================
 # 🎯 سریالایزر آیتم سفارش
 # ==============================
@@ -232,24 +218,30 @@ class OrderItemSerializer(serializers.ModelSerializer):
     """
     نمایش آیتم‌های داخل سفارش
     """
-    variant_name = serializers.CharField(source='variant.__str__', read_only=True)
-    product_name = serializers.CharField(source='variant.product.name', read_only=True)
+
+    variant_name = serializers.CharField(source="variant.__str__", read_only=True)
+    product_name = serializers.SerializerMethodField()
+
+    def get_product_name(self, obj):
+        return obj.catalog_snapshot.get("name") or obj.variant.product.name
 
     class Meta:
         model = OrderItem
         fields = [
-            'id',
-            'variant',
-            'variant_name',
-            'product_name',
-            'quantity',
-            'price',
+            "catalog_snapshot",
+            "id",
+            "variant",
+            "variant_name",
+            "product_name",
+            "quantity",
+            "price",
         ]
 
 
 # ==============================
 # 🎯 سریالایزر سفارش
 # ==============================
+
 
 class OrderSerializer(serializers.ModelSerializer):
     """
@@ -284,35 +276,29 @@ class OrderSerializer(serializers.ModelSerializer):
         fields = [
             "id",
             "user",
-
             "status",
             "status_display",
-
             "payment_method",
             "payment_method_display",
-
             "shipping_address",
             "shipping_address_snapshot",
-
             "shipping_method_code",
             "shipping_method_title",
             "shipping_quote_id",
-
             "tracking_code",
             "shipped_at",
-
             "items_total",
             "shipping_cost",
             "discount_amount",
             "total_price",
-
             "created_at",
             "updated_at",
-
             "items",
         ]
 
         read_only_fields = fields
+
+
 # ==============================
 # 🎯 سریالایزر خلاصه فروش (SalesSummary)
 # ==============================
@@ -320,20 +306,18 @@ class SalesSummarySerializer(serializers.ModelSerializer):
     """
     نمایش داده‌های آماری خلاصه فروش محصولات
     """
-    product_name = serializers.CharField(source='product.name', read_only=True)
-    variant_name = serializers.CharField(source='variant.__str__', read_only=True)
+
+    product_name = serializers.CharField(source="product.name", read_only=True)
+    variant_name = serializers.CharField(source="variant.__str__", read_only=True)
 
     class Meta:
         model = SalesSummary
         fields = [
-            'id',
-            'product_name',
-            'variant_name',
-            'total_quantity',
-            'total_amount',
-            'period_start',
-            'period_end',
+            "id",
+            "product_name",
+            "variant_name",
+            "total_quantity",
+            "total_amount",
+            "period_start",
+            "period_end",
         ]
-
-
-

@@ -68,7 +68,44 @@ class Supplier(models.Model):
         return self.name
 
 
+from coins.guards import GuardedStockQuerySetMixin, inventory_write
+from django.db import router
+
+
+class SupplierOfferQuerySet(GuardedStockQuerySetMixin, models.QuerySet):
+    pass
+
+
 class SupplierOffer(models.Model):
+    def clean(self):
+        super().clean()
+        from coins.guards import validate_offer_candidate
+
+        validate_offer_candidate(self)
+
+    objects = SupplierOfferQuerySet.as_manager()
+
+    def save(self, *args, **kwargs):
+        fields = kwargs.get("update_fields")
+        if fields is not None and not {
+            "supplier_stock",
+            "is_available",
+            "variant",
+            "variant_id",
+        }.intersection(fields):
+            return super().save(*args, **kwargs)
+        using = kwargs.get("using") or router.db_for_write(type(self), instance=self)
+        ids = [self.variant_id]
+        if self.pk:
+            ids += list(
+                type(self)
+                .objects.using(using)
+                .filter(pk=self.pk)
+                .values_list("variant_id", flat=True)
+            )
+        with inventory_write(ids, using):
+            return super().save(*args, **kwargs)
+
     """
     ==========================================================
     پیشنهاد تأمین‌کننده (Supplier Offer)

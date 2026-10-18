@@ -66,8 +66,18 @@ class ValidatedModel(models.Model):
         abstract = True
 
     def save(self, *args, **kwargs):
-        self.full_clean()
-        return super().save(*args, **kwargs)
+        from .guards import inventory_write
+        from django.db import router
+
+        using = kwargs.get("using") or router.db_for_write(type(self), instance=self)
+        ids = [self.variant_id] if hasattr(self, "variant_id") else []
+        if self._meta.model_name == "coinpackitem" and self.pack_variant_id:
+            ids.append(self.pack_variant.variant_id)
+        if self._meta.model_name == "coinimagedetail" and self.image_id:
+            ids.append(self.image.variant_id)
+        with inventory_write(ids, using, force=bool(ids)):
+            self.full_clean()
+            return super().save(*args, **kwargs)
 
 
 class NamedModel(ValidatedModel):
@@ -573,6 +583,9 @@ class CoinCatalogReference(ValidatedModel):
 
 
 class CoinSpecimen(ValidatedModel):
+    is_published = models.BooleanField(
+        "منتشرشده برای فروش", default=False, db_index=True
+    )
     issue = models.ForeignKey(
         CoinIssue,
         on_delete=models.PROTECT,
@@ -630,6 +643,12 @@ class CoinSpecimen(ValidatedModel):
 
     def clean(self):
         super().clean()
+        if self.is_published:
+            from .services import readiness_errors
+
+            errors = readiness_errors(self)
+            if errors:
+                raise ValidationError({"is_published": errors})
         if self.variant_id:
             if CoinPackVariant.objects.filter(variant_id=self.variant_id).exists():
                 raise ValidationError({"variant": "این واریانت متعلق به پک است."})
@@ -725,6 +744,9 @@ class CoinPack(ValidatedModel):
 
 
 class CoinPackVariant(ValidatedModel):
+    is_published = models.BooleanField(
+        "منتشرشده برای فروش", default=False, db_index=True
+    )
     pack = models.ForeignKey(
         CoinPack,
         on_delete=models.PROTECT,
@@ -757,6 +779,12 @@ class CoinPackVariant(ValidatedModel):
 
     def clean(self):
         super().clean()
+        if self.is_published:
+            from .services import readiness_errors
+
+            errors = readiness_errors(self)
+            if errors:
+                raise ValidationError({"is_published": errors})
         if (
             self.pack_id
             and self.variant_id
@@ -839,6 +867,24 @@ class CoinPackItem(ValidatedModel):
 
     def clean(self):
         super().clean()
+        if self.pack_variant_id and self.pack_variant.assemblies.exists():
+            previous = (
+                type(self).objects.filter(pk=self.pk).first() if self.pk else None
+            )
+            if previous is None or any(
+                getattr(previous, key) != getattr(self, key)
+                for key in (
+                    "pack_variant_id",
+                    "issue_id",
+                    "quantity",
+                    "condition_grade",
+                    "notes",
+                )
+            ):
+                raise ValidationError(
+                    "محتویات نسخه‌ای که پک آن آماده شده قابل تغییر نیست؛ نسخه جدید بسازید."
+                )
+
         # Inline forms may hold an unsaved parent object with no primary key yet.
         has_parent = self.pack_variant_id or "pack_variant" in self._state.fields_cache
         if has_parent and self.issue_id:
@@ -900,3 +946,40 @@ class CoinImageDetail(ValidatedModel):
                 raise ValidationError(
                     {"pack_item": "جزء پک باید متعلق به واریانت تصویر باشد."}
                 )
+
+
+class PackAssembly(ValidatedModel):
+    """Immutable audit event for moving loose internal inventory into ready packs."""
+
+    request_key = models.CharField("کلید یکتای عملیات", max_length=100, unique=True)
+    payload_hash = models.CharField(max_length=64, editable=False)
+    pack_variant = models.ForeignKey(
+        CoinPackVariant, on_delete=models.PROTECT, related_name="assemblies"
+    )
+    quantity = models.PositiveIntegerField(validators=[MinValueValidator(1)])
+    total_cost = models.DecimalField(max_digits=16, decimal_places=0)
+    contents_snapshot = models.JSONField(default=dict)
+    output_lots = models.ManyToManyField(
+        "inventory.InventoryLot", related_name="coin_assemblies"
+    )
+
+    class Meta:
+        verbose_name = "عملیات آماده‌سازی پک"
+        verbose_name_plural = "عملیات آماده‌سازی پک"
+
+
+class PackAssemblyAllocation(ValidatedModel):
+    assembly = models.ForeignKey(
+        PackAssembly, on_delete=models.PROTECT, related_name="allocations"
+    )
+    item = models.ForeignKey(CoinPackItem, on_delete=models.PROTECT)
+    source_variant = models.ForeignKey(
+        "products.ProductVariant", on_delete=models.PROTECT
+    )
+    source_lot = models.ForeignKey("inventory.InventoryLot", on_delete=models.PROTECT)
+    quantity = models.PositiveIntegerField(validators=[MinValueValidator(1)])
+    unit_cost = models.DecimalField(max_digits=14, decimal_places=0)
+
+    class Meta:
+        verbose_name = "مصرف سکه برای پک"
+        verbose_name_plural = "مصرف سکه برای پک"

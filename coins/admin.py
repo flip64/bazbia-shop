@@ -73,7 +73,7 @@ class ReferenceAdmin(BaseAdmin):
 @admin.register(m.CoinSpecimen)
 class SpecimenAdmin(BaseAdmin):
     search_fields = ("variant__sku", "variant__product__name", "certification_number")
-    list_display = ("variant", "issue", "condition_grade", "sale_mode")
+    list_display = ("variant", "issue", "condition_grade", "sale_mode", "is_published")
     list_filter = ("sale_mode", "condition_grade", "cleaned", "corroded")
     autocomplete_fields = ("issue", "variant")
 
@@ -95,7 +95,7 @@ class PackItemInline(admin.TabularInline):
 @admin.register(m.CoinPackVariant)
 class PackVariantAdmin(BaseAdmin):
     search_fields = ("variant__sku", "pack__product__name")
-    list_display = ("variant", "pack", "sale_mode", "coin_count")
+    list_display = ("variant", "pack", "sale_mode", "is_published", "coin_count")
     autocomplete_fields = ("pack", "variant")
     inlines = (PackItemInline,)
 
@@ -113,3 +113,18 @@ class ImageDetailAdmin(BaseAdmin):
     # ProductVariantImage is not registered in the existing admin.
     raw_id_fields = ("image",)
     autocomplete_fields = ("pack_item",)
+
+
+@admin.register(m.PackAssembly)
+class AssemblyAdmin(BaseAdmin):
+    list_display = ("id", "pack_variant", "quantity", "total_cost", "created_at")
+    search_fields = ("request_key", "pack_variant__variant__sku")
+    readonly_fields = tuple(field.name for field in m.PackAssembly._meta.fields) + (
+        "output_lots",
+    )
+
+    def has_add_permission(self, request):
+        return False
+
+    def has_delete_permission(self, request, obj=None):
+        return False

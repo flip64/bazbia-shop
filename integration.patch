@@ -1,0 +1,2593 @@
+diff --git a/bazbia_shop/settings.py b/bazbia_shop/settings.py
+index 98c20e1..43fe3d3 100644
+--- a/bazbia_shop/settings.py
++++ b/bazbia_shop/settings.py
+@@ -206,6 +206,7 @@ INSTALLED_APPS = [
+     'core',
+     'customers',
+     'products',
++    'coins.apps.CoinsConfig',
+     'orders',
+     'payments',
+     'promotions',
+diff --git a/bazbia_shop/urls.py b/bazbia_shop/urls.py
+index 7c46019..b0238c5 100644
+--- a/bazbia_shop/urls.py
++++ b/bazbia_shop/urls.py
+@@ -32,6 +32,7 @@ urlpatterns = [
+     # =========================================================
+     path("api/", include("community.api.urls")),
+     path("api/products/", include("products.api.urls")),
++    path("api/coins/", include("coins.api.urls")),
+     path("api/orders/", include("orders.api.urls", namespace="orders_api")),
+     path("api/customers/", include("customers.api.urls")),
+     path("api/bazbia_packing/", include("bazbia_packing.api.urls")),
+diff --git a/orders/api/serializers.py b/orders/api/serializers.py
+index 6792fa9..204ffe3 100644
+--- a/orders/api/serializers.py
++++ b/orders/api/serializers.py
+@@ -1,339 +1,323 @@
+-from rest_framework import serializers
+-from orders.models import Order, OrderItem, Cart, CartItem, SalesSummary
+-from products.services.variant_stock import calculate_variant_available_stock
+-
+-
+-
+-# ==============================
+-# ورودی ثبت سفارش
+-# ==============================
+-class CreateOrderSerializer(serializers.Serializer):
+-    """
+-    اطلاعاتی که فرانت برای ثبت نهایی سفارش ارسال می‌کند.
+-
+-    مبلغ کالاها و هزینه ارسال از فرانت دریافت نمی‌شوند؛
+-    بک‌اند آن‌ها را دوباره محاسبه می‌کند.
+-    """
+-
+-    address_id = serializers.IntegerField(
+-        min_value=1,
+-        required=True,
+-    )
+-
+-    shipping_quote_id = serializers.CharField(
+-        max_length=100,
+-        required=True,
+-        allow_blank=False,
+-    )
+-
+-    shipping_method_code = serializers.CharField(
+-        max_length=50,
+-        required=True,
+-        allow_blank=False,
+-    )
+-
+-    payment_method = serializers.ChoiceField(
+-        choices=Order.PAYMENT_METHOD_CHOICES,
+-        required=True,
+-    )
+-
+-# ==============================
+-# 🎯 سریالایزر آیتم سبد خرید
+-# ==============================
+-
+-
+-
+-
+-class CartItemSerializer(serializers.ModelSerializer):
+-    """
+-    اطلاعات کامل یک آیتم سبد خرید برای فرانت‌اند.
+-    """
+-
+-    product_name = serializers.CharField(
+-        source="variant.product.name",
+-        read_only=True,
+-    )
+-
+-    product_slug = serializers.CharField(
+-        source="variant.product.slug",
+-        read_only=True,
+-    )
+-
+-    variant_name = serializers.CharField(
+-        source="variant.__str__",
+-        read_only=True,
+-    )
+-
+-    variant_stock = serializers.SerializerMethodField()
+-
+-    price = serializers.SerializerMethodField()
+-    total_price = serializers.SerializerMethodField()
+-    image = serializers.SerializerMethodField()
+-
+-    class Meta:
+-        model = CartItem
+-        fields = [
+-            "id",
+-
+-            # شناسه واریانت
+-            "variant",
+-
+-            # اطلاعات محصول
+-            "product_name",
+-            "product_slug",
+-
+-            # اطلاعات واریانت
+-            "variant_name",
+-            "variant_stock",
+-
+-            # اطلاعات خرید
+-            "quantity",
+-            "price",
+-            "total_price",
+-
+-            # تصویر
+-            "image",
+-        ]
+-
+-    def get_price(self, obj):
+-        """
+-        قیمت نهایی یک عدد کالا.
+-
+-        در صورت وجود تخفیف، قیمت تخفیف‌خورده استفاده می‌شود.
+-        """
+-        variant = obj.variant
+-
+-        if variant.discount_price is not None:
+-            return variant.discount_price
+-
+-        return variant.price
+-
+-    def get_total_price(self, obj):
+-        """
+-        قیمت کل این ردیف سبد خرید.
+-        """
+-        return self.get_price(obj) * obj.quantity
+-
+-    def get_image(self, obj):
+-        """
+-        اول تصویر اصلی واریانت، سپس تصویر اصلی محصول
+-        و در نهایت اولین تصویر محصول را برمی‌گرداند.
+-        """
+-        request = self.context.get("request")
+-
+-        variant = obj.variant
+-        product = variant.product
+-
+-        main_image = (
+-            variant.images.filter(
+-                is_main=True,
+-            ).first()
+-            or product.images.filter(
+-                is_main=True,
+-            ).first()
+-            or product.images.first()
+-        )
+-
+-        if not main_image or not main_image.image:
+-            return None
+-
+-        image_url = main_image.image.url
+-
+-        if request:
+-            return request.build_absolute_uri(
+-                image_url,
+-            )
+-
+-        return image_url
+-
+-
+-    def get_variant_stock(self, obj):
+-     return calculate_variant_available_stock(obj.variant)
+-
+-
+-
+-# ==============================
+-# سبد خرید
+-# ==============================
+-class CartSerializer(serializers.ModelSerializer):
+-    """
+-    نمایش کامل سبد خرید به همراه آیتم‌ها.
+-    """
+-
+-    items = CartItemSerializer(
+-        many=True,
+-        read_only=True,
+-    )
+-
+-    total_price = serializers.SerializerMethodField()
+-    total_items = serializers.SerializerMethodField()
+-
+-    class Meta:
+-        model = Cart
+-        fields = [
+-            "id",
+-            "user",
+-            "session_key",
+-            "items",
+-            "total_price",
+-            "total_items",
+-        ]
+-
+-    def get_total_price(self, obj):
+-        return obj.total_price()
+-
+-    def get_total_items(self, obj):
+-        return sum(
+-            item.quantity
+-            for item in obj.items.all()
+-        )
+-
+-
+-# ==============================
+-# ورودی افزودن به سبد
+-# ==============================
+-class CartItemCreateSerializer(serializers.Serializer):
+-    """
+-    اطلاعات لازم برای افزودن یک واریانت به سبد.
+-    """
+-
+-    variant_id = serializers.IntegerField(
+-        required=True,
+-        min_value=1,
+-    )
+-
+-    quantity = serializers.IntegerField(
+-        required=False,
+-        default=1,
+-        min_value=1,
+-    )
+-
+-
+-# ==============================
+-# ورودی تغییر تعداد
+-# ==============================
+-class CartItemUpdateSerializer(serializers.Serializer):
+-    """
+-    اطلاعات لازم برای تغییر تعداد یک آیتم موجود.
+-    """
+-
+-    quantity = serializers.IntegerField(
+-        required=True,
+-        min_value=1,
+-    )
+-
+-
+-
+-
+-# ==============================
+-# 🎯 سریالایزر آیتم سفارش
+-# ==============================
+-class OrderItemSerializer(serializers.ModelSerializer):
+-    """
+-    نمایش آیتم‌های داخل سفارش
+-    """
+-    variant_name = serializers.CharField(source='variant.__str__', read_only=True)
+-    product_name = serializers.CharField(source='variant.product.name', read_only=True)
+-
+-    class Meta:
+-        model = OrderItem
+-        fields = [
+-            'id',
+-            'variant',
+-            'variant_name',
+-            'product_name',
+-            'quantity',
+-            'price',
+-        ]
+-
+-
+-# ==============================
+-# 🎯 سریالایزر سفارش
+-# ==============================
+-
+-class OrderSerializer(serializers.ModelSerializer):
+-    """
+-    نمایش کامل سفارش به همراه آیتم‌ها،
+-    آدرس، ارسال، کد رهگیری و اطلاعات پرداخت.
+-    """
+-
+-    items = OrderItemSerializer(
+-        many=True,
+-        read_only=True,
+-    )
+-
+-    status_display = serializers.CharField(
+-        source="get_status_display",
+-        read_only=True,
+-    )
+-
+-    payment_method_display = serializers.CharField(
+-        source="get_payment_method_display",
+-        read_only=True,
+-    )
+-
+-    # نام خروجی API برای هماهنگی با Vue
+-    tracking_code = serializers.CharField(
+-        source="shipping_tracking_code",
+-        read_only=True,
+-    )
+-
+-    class Meta:
+-        model = Order
+-
+-        fields = [
+-            "id",
+-            "user",
+-
+-            "status",
+-            "status_display",
+-
+-            "payment_method",
+-            "payment_method_display",
+-
+-            "shipping_address",
+-            "shipping_address_snapshot",
+-
+-            "shipping_method_code",
+-            "shipping_method_title",
+-            "shipping_quote_id",
+-
+-            "tracking_code",
+-            "shipped_at",
+-
+-            "items_total",
+-            "shipping_cost",
+-            "discount_amount",
+-            "total_price",
+-
+-            "created_at",
+-            "updated_at",
+-
+-            "items",
+-        ]
+-
+-        read_only_fields = fields
+-# ==============================
+-# 🎯 سریالایزر خلاصه فروش (SalesSummary)
+-# ==============================
+-class SalesSummarySerializer(serializers.ModelSerializer):
+-    """
+-    نمایش داده‌های آماری خلاصه فروش محصولات
+-    """
+-    product_name = serializers.CharField(source='product.name', read_only=True)
+-    variant_name = serializers.CharField(source='variant.__str__', read_only=True)
+-
+-    class Meta:
+-        model = SalesSummary
+-        fields = [
+-            'id',
+-            'product_name',
+-            'variant_name',
+-            'total_quantity',
+-            'total_amount',
+-            'period_start',
+-            'period_end',
+-        ]
+-
+-
+-
++from rest_framework import serializers
++from orders.models import Order, OrderItem, Cart, CartItem, SalesSummary
++from products.services.variant_stock import calculate_variant_available_stock
++
++
++# ==============================
++# ورودی ثبت سفارش
++# ==============================
++class CreateOrderSerializer(serializers.Serializer):
++    """
++    اطلاعاتی که فرانت برای ثبت نهایی سفارش ارسال می‌کند.
++
++    مبلغ کالاها و هزینه ارسال از فرانت دریافت نمی‌شوند؛
++    بک‌اند آن‌ها را دوباره محاسبه می‌کند.
++    """
++
++    address_id = serializers.IntegerField(
++        min_value=1,
++        required=True,
++    )
++
++    shipping_quote_id = serializers.CharField(
++        max_length=100,
++        required=True,
++        allow_blank=False,
++    )
++
++    shipping_method_code = serializers.CharField(
++        max_length=50,
++        required=True,
++        allow_blank=False,
++    )
++
++    payment_method = serializers.ChoiceField(
++        choices=Order.PAYMENT_METHOD_CHOICES,
++        required=True,
++    )
++
++
++# ==============================
++# 🎯 سریالایزر آیتم سبد خرید
++# ==============================
++
++
++class CartItemSerializer(serializers.ModelSerializer):
++    """
++    اطلاعات کامل یک آیتم سبد خرید برای فرانت‌اند.
++    """
++
++    product_name = serializers.CharField(
++        source="variant.product.name",
++        read_only=True,
++    )
++
++    product_slug = serializers.CharField(
++        source="variant.product.slug",
++        read_only=True,
++    )
++
++    variant_name = serializers.CharField(
++        source="variant.__str__",
++        read_only=True,
++    )
++
++    variant_stock = serializers.SerializerMethodField()
++
++    price = serializers.SerializerMethodField()
++    total_price = serializers.SerializerMethodField()
++    image = serializers.SerializerMethodField()
++
++    class Meta:
++        model = CartItem
++        fields = [
++            "id",
++            # شناسه واریانت
++            "variant",
++            # اطلاعات محصول
++            "product_name",
++            "product_slug",
++            # اطلاعات واریانت
++            "variant_name",
++            "variant_stock",
++            # اطلاعات خرید
++            "quantity",
++            "price",
++            "total_price",
++            # تصویر
++            "image",
++        ]
++
++    def get_price(self, obj):
++        """
++        قیمت نهایی یک عدد کالا.
++
++        در صورت وجود تخفیف، قیمت تخفیف‌خورده استفاده می‌شود.
++        """
++        variant = obj.variant
++
++        if variant.discount_price is not None:
++            return variant.discount_price
++
++        return variant.price
++
++    def get_total_price(self, obj):
++        """
++        قیمت کل این ردیف سبد خرید.
++        """
++        return self.get_price(obj) * obj.quantity
++
++    def get_image(self, obj):
++        """
++        اول تصویر اصلی واریانت، سپس تصویر اصلی محصول
++        و در نهایت اولین تصویر محصول را برمی‌گرداند.
++        """
++        request = self.context.get("request")
++
++        variant = obj.variant
++        product = variant.product
++
++        main_image = (
++            variant.images.filter(
++                is_main=True,
++            ).first()
++            or product.images.filter(
++                is_main=True,
++            ).first()
++            or product.images.first()
++        )
++
++        if not main_image or not main_image.image:
++            return None
++
++        image_url = main_image.image.url
++
++        if request:
++            return request.build_absolute_uri(
++                image_url,
++            )
++
++        return image_url
++
++    def get_variant_stock(self, obj):
++        return calculate_variant_available_stock(obj.variant)
++
++
++# ==============================
++# سبد خرید
++# ==============================
++class CartSerializer(serializers.ModelSerializer):
++    """
++    نمایش کامل سبد خرید به همراه آیتم‌ها.
++    """
++
++    items = CartItemSerializer(
++        many=True,
++        read_only=True,
++    )
++
++    total_price = serializers.SerializerMethodField()
++    total_items = serializers.SerializerMethodField()
++
++    class Meta:
++        model = Cart
++        fields = [
++            "id",
++            "user",
++            "session_key",
++            "items",
++            "total_price",
++            "total_items",
++        ]
++
++    def get_total_price(self, obj):
++        return obj.total_price()
++
++    def get_total_items(self, obj):
++        return sum(item.quantity for item in obj.items.all())
++
++
++# ==============================
++# ورودی افزودن به سبد
++# ==============================
++class CartItemCreateSerializer(serializers.Serializer):
++    """
++    اطلاعات لازم برای افزودن یک واریانت به سبد.
++    """
++
++    variant_id = serializers.IntegerField(
++        required=True,
++        min_value=1,
++    )
++
++    quantity = serializers.IntegerField(
++        required=False,
++        default=1,
++        min_value=1,
++    )
++
++
++# ==============================
++# ورودی تغییر تعداد
++# ==============================
++class CartItemUpdateSerializer(serializers.Serializer):
++    """
++    اطلاعات لازم برای تغییر تعداد یک آیتم موجود.
++    """
++
++    quantity = serializers.IntegerField(
++        required=True,
++        min_value=1,
++    )
++
++
++# ==============================
++# 🎯 سریالایزر آیتم سفارش
++# ==============================
++class OrderItemSerializer(serializers.ModelSerializer):
++    """
++    نمایش آیتم‌های داخل سفارش
++    """
++
++    variant_name = serializers.CharField(source="variant.__str__", read_only=True)
++    product_name = serializers.SerializerMethodField()
++
++    def get_product_name(self, obj):
++        return obj.catalog_snapshot.get("name") or obj.variant.product.name
++
++    class Meta:
++        model = OrderItem
++        fields = [
++            "catalog_snapshot",
++            "id",
++            "variant",
++            "variant_name",
++            "product_name",
++            "quantity",
++            "price",
++        ]
++
++
++# ==============================
++# 🎯 سریالایزر سفارش
++# ==============================
++
++
++class OrderSerializer(serializers.ModelSerializer):
++    """
++    نمایش کامل سفارش به همراه آیتم‌ها،
++    آدرس، ارسال، کد رهگیری و اطلاعات پرداخت.
++    """
++
++    items = OrderItemSerializer(
++        many=True,
++        read_only=True,
++    )
++
++    status_display = serializers.CharField(
++        source="get_status_display",
++        read_only=True,
++    )
++
++    payment_method_display = serializers.CharField(
++        source="get_payment_method_display",
++        read_only=True,
++    )
++
++    # نام خروجی API برای هماهنگی با Vue
++    tracking_code = serializers.CharField(
++        source="shipping_tracking_code",
++        read_only=True,
++    )
++
++    class Meta:
++        model = Order
++
++        fields = [
++            "id",
++            "user",
++            "status",
++            "status_display",
++            "payment_method",
++            "payment_method_display",
++            "shipping_address",
++            "shipping_address_snapshot",
++            "shipping_method_code",
++            "shipping_method_title",
++            "shipping_quote_id",
++            "tracking_code",
++            "shipped_at",
++            "items_total",
++            "shipping_cost",
++            "discount_amount",
++            "total_price",
++            "created_at",
++            "updated_at",
++            "items",
++        ]
++
++        read_only_fields = fields
++
++
++# ==============================
++# 🎯 سریالایزر خلاصه فروش (SalesSummary)
++# ==============================
++class SalesSummarySerializer(serializers.ModelSerializer):
++    """
++    نمایش داده‌های آماری خلاصه فروش محصولات
++    """
++
++    product_name = serializers.CharField(source="product.name", read_only=True)
++    variant_name = serializers.CharField(source="variant.__str__", read_only=True)
++
++    class Meta:
++        model = SalesSummary
++        fields = [
++            "id",
++            "product_name",
++            "variant_name",
++            "total_quantity",
++            "total_amount",
++            "period_start",
++            "period_end",
++        ]
+diff --git a/orders/api/views.py b/orders/api/views.py
+index f6fe8b0..9addd25 100644
+--- a/orders/api/views.py
++++ b/orders/api/views.py
+@@ -1,5 +1,7 @@
+ # orders/api/views.py
+ 
++from django.core.exceptions import ValidationError as ModelValidationError
++from coins.services import assert_purchasable, order_has_coins
+ from datetime import timedelta
+ from decimal import Decimal, InvalidOperation
+ 
+@@ -715,6 +717,11 @@ class AddToCartView(
+             id=variant_id,
+         )
+ 
++        try:
++            assert_purchasable(variant, quantity)
++        except ModelValidationError as error:
++            return Response({'error': error.messages}, status=400)
++
+         available_stock = (
+             calculate_variant_available_stock(
+                 variant
+@@ -950,6 +957,11 @@ class UpdateCartItemView(
+             cart=cart,
+         )
+ 
++        try:
++            assert_purchasable(cart_item.variant, quantity)
++        except ModelValidationError as error:
++            return Response({'error': error.messages}, status=400)
++
+         available_stock = (
+             calculate_variant_available_stock(
+                 cart_item.variant
+@@ -1260,6 +1272,11 @@ class CreateOrderView(
+                     ),
+                 )
+ 
++            try:
++                assert_purchasable(variant, cart_item.quantity)
++            except ModelValidationError as error:
++                return Response({'error': error.messages, 'variant_id': variant.pk}, status=400)
++
+             available_stock = (
+                 calculate_variant_available_stock(
+                     variant
+@@ -1881,6 +1898,10 @@ class CancelOrderView(
+                 ),
+             )
+ 
++        from payments.models import Payment
++        if order_has_coins(order) and Payment.objects.filter(order=order, status=Payment.Status.PROCESSING).exists():
++            return Response({'error': 'پرداخت در حال پردازش است؛ ابتدا نتیجه پرداخت مشخص شود.'}, status=400)
++
+         order_items = list(
+             order.items.all()
+         )
+@@ -1983,6 +2004,11 @@ class CancelOrderView(
+             )
+         }
+ 
++        # Release unique reservations in the same transaction as stock restoration.
++        if order_has_coins(order):
++            order.status = Order.STATUS_CANCELLED
++            order.save(update_fields=['status', 'updated_at'])
++
+         # -------------------------------------------------
+         # بازگرداندن موجودی
+         # -------------------------------------------------
+diff --git a/orders/models.py b/orders/models.py
+index 9dae182..1f110ee 100644
+--- a/orders/models.py
++++ b/orders/models.py
+@@ -1,4 +1,3 @@
+-
+ from django.db import models
+ from django.conf import settings
+ 
+@@ -17,53 +16,27 @@ class Order(models.Model):
+     STATUS_COMPLETED = "completed"
+ 
+     STATUS_CHOICES = [
+-        (
+-            STATUS_PENDING,
+-            "در انتظار پرداخت"
+-        ),
+-        (
+-            STATUS_CANCELLED,
+-            "لغو شده"
+-        ),
+-        (
+-            STATUS_PAID,
+-            "پرداخت شده"
+-        ),
+-        (
+-            STATUS_SHIPPED,
+-            "ارسال شده"
+-        ),
+-        (
+-            STATUS_COMPLETED,
+-            "تحویل داده شده"
+-        ),
++        (STATUS_PENDING, "در انتظار پرداخت"),
++        (STATUS_CANCELLED, "لغو شده"),
++        (STATUS_PAID, "پرداخت شده"),
++        (STATUS_SHIPPED, "ارسال شده"),
++        (STATUS_COMPLETED, "تحویل داده شده"),
+     ]
+ 
+     PAYMENT_ONLINE = "online"
+     PAYMENT_COD = "cod"
+ 
+     PAYMENT_METHOD_CHOICES = [
+-        (
+-            PAYMENT_ONLINE,
+-            "پرداخت آنلاین"
+-        ),
+-        (
+-            PAYMENT_COD,
+-            "پرداخت در محل"
+-        ),
++        (PAYMENT_ONLINE, "پرداخت آنلاین"),
++        (PAYMENT_COD, "پرداخت در محل"),
+     ]
+ 
+     user = models.ForeignKey(
+-        settings.AUTH_USER_MODEL,
+-        on_delete=models.CASCADE,
+-        related_name="orders"
++        settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="orders"
+     )
+ 
+     status = models.CharField(
+-        max_length=20,
+-        choices=STATUS_CHOICES,
+-        default=STATUS_PENDING,
+-        db_index=True
++        max_length=20, choices=STATUS_CHOICES, default=STATUS_PENDING, db_index=True
+     )
+ 
+     # آدرس اصلی انتخاب‌شده توسط مشتری
+@@ -72,100 +45,68 @@ class Order(models.Model):
+         on_delete=models.SET_NULL,
+         null=True,
+         blank=True,
+-        related_name="orders"
++        related_name="orders",
+     )
+ 
+     # نسخه ثابت آدرس در لحظه ثبت سفارش
+-    shipping_address_snapshot = models.JSONField(
+-        default=dict,
+-        blank=True
+-    )
++    shipping_address_snapshot = models.JSONField(default=dict, blank=True)
+ 
+-    shipping_method_code = models.CharField(
+-        max_length=50,
+-        blank=True,
+-        default=""
+-    )
++    shipping_method_code = models.CharField(max_length=50, blank=True, default="")
+ 
+-    shipping_method_title = models.CharField(
+-        max_length=100,
+-        blank=True,
+-        default=""
+-    )
++    shipping_method_title = models.CharField(max_length=100, blank=True, default="")
+ 
+-    shipping_quote_id = models.CharField(
+-        max_length=100,
+-        blank=True,
+-        default=""
+-    )
++    shipping_quote_id = models.CharField(max_length=100, blank=True, default="")
+ 
+     payment_method = models.CharField(
+-        max_length=20,
+-        choices=PAYMENT_METHOD_CHOICES,
+-        default=PAYMENT_ONLINE
++        max_length=20, choices=PAYMENT_METHOD_CHOICES, default=PAYMENT_ONLINE
+     )
+ 
+     # تمام مبلغ‌ها در پروژه بازبیا به تومان هستند
+     items_total = models.DecimalField(
+-        max_digits=14,
+-        decimal_places=2,
+-        default=0,
+-        help_text="جمع مبلغ کالاها به تومان"
++        max_digits=14, decimal_places=2, default=0, help_text="جمع مبلغ کالاها به تومان"
+     )
+ 
+     shipping_cost = models.DecimalField(
+-        max_digits=14,
+-        decimal_places=2,
+-        default=0,
+-        help_text="هزینه ارسال به تومان"
++        max_digits=14, decimal_places=2, default=0, help_text="هزینه ارسال به تومان"
+     )
+ 
+     discount_amount = models.DecimalField(
+         max_digits=14,
+         decimal_places=2,
+         default=0,
+-        help_text="مجموع تخفیف سفارش به تومان"
++        help_text="مجموع تخفیف سفارش به تومان",
+     )
+ 
+     total_price = models.DecimalField(
+         max_digits=14,
+         decimal_places=2,
+         default=0,
+-        help_text="مبلغ نهایی قابل پرداخت به تومان"
++        help_text="مبلغ نهایی قابل پرداخت به تومان",
+     )
+ 
+-    created_at = models.DateTimeField(
+-        auto_now_add=True
+-    )
++    created_at = models.DateTimeField(auto_now_add=True)
+ 
+-    updated_at = models.DateTimeField(
+-        auto_now=True
+-    )
++    updated_at = models.DateTimeField(auto_now=True)
+ 
+     shipping_tracking_code = models.CharField(
+-      max_length=100,
+-      blank=True,
+-      default="",
+-      db_index=True,
+-      verbose_name="کد رهگیری مرسوله",
+-   )
++        max_length=100,
++        blank=True,
++        default="",
++        db_index=True,
++        verbose_name="کد رهگیری مرسوله",
++    )
+ 
+     shipped_at = models.DateTimeField(
+-      null=True,
+-      blank=True,
+-      verbose_name="زمان ارسال",
+-   )
++        null=True,
++        blank=True,
++        verbose_name="زمان ارسال",
++    )
+ 
+-    
+     class Meta:
+         ordering = ["-created_at"]
+         indexes = [
+-            models.Index(
+-                fields=["user", "status"]
+-            ),
+-            models.Index(
+-                fields=["created_at"]
+-            ),
++            models.Index(fields=["user", "status"]),
++            models.Index(fields=["created_at"]),
+         ]
+ 
+     def calculate_total_price(self):
+@@ -174,57 +115,90 @@ class Order(models.Model):
+ 
+         items_total + shipping_cost - discount_amount
+         """
+-        total = (
+-            self.items_total
+-            + self.shipping_cost
+-            - self.discount_amount
+-        )
++        total = self.items_total + self.shipping_cost - self.discount_amount
+ 
+         return max(total, 0)
+ 
+     def save(self, *args, **kwargs):
+-        self.total_price = (
+-            self.calculate_total_price()
+-        )
++        self.total_price = self.calculate_total_price()
+ 
+         super().save(*args, **kwargs)
+ 
+     def __str__(self):
+-        return (
+-            f"Order #{self.pk} - "
+-            f"{self.user}"
+-        )
++        return f"Order #{self.pk} - " f"{self.user}"
++
+ 
+ # ==============================
+ # مدل آیتم‌های سفارش (OrderItem)
+ # ==============================
++class OrderItemQuerySet(models.QuerySet):
++    def update(self, **kwargs):
++        from django.core.exceptions import ValidationError
++
++        if {"catalog_snapshot", "variant", "variant_id"}.intersection(
++            kwargs
++        ) and self.exclude(catalog_snapshot={}).exists():
++            raise ValidationError("مشخصات تاریخی سفارش قابل بازنویسی گروهی نیست.")
++        return super().update(**kwargs)
++
++    def bulk_create(self, objs, *args, **kwargs):
++        from coins.services import listing_for
++        from django.core.exceptions import ValidationError
++
++        objs = list(objs)
++        if any(listing_for(obj.variant_id) is not None for obj in objs):
++            raise ValidationError(
++                "برای سفارش سکه یا پک از create/save استفاده کنید تا مشخصات ثبت شوند."
++            )
++        return super().bulk_create(objs, *args, **kwargs)
++
++
+ class OrderItem(models.Model):
+-    order = models.ForeignKey(
+-        Order, on_delete=models.CASCADE,
+-        related_name='items'
+-    )
++    objects = OrderItemQuerySet.as_manager()
++
++    catalog_snapshot = models.JSONField(default=dict, blank=True, editable=False)
++
++    def save(self, *args, **kwargs):
++        from django.core.exceptions import ValidationError
++        from django.db import transaction
++        from coins.services import order_snapshot, assert_purchasable
++
++        with transaction.atomic():
++            if self.pk:
++                old = type(self).objects.select_for_update().get(pk=self.pk)
++                if old.catalog_snapshot and (
++                    self.catalog_snapshot != old.catalog_snapshot
++                    or self.variant_id != old.variant_id
++                ):
++                    raise ValidationError(
++                        "مشخصات تاریخی سکه یا پک سفارش قابل تغییر نیست."
++                    )
++            else:
++                assert_purchasable(self.variant, self.quantity)
++                self.catalog_snapshot = order_snapshot(self.variant)
++            return super().save(*args, **kwargs)
++
++    order = models.ForeignKey(Order, on_delete=models.CASCADE, related_name="items")
+ 
+     variant = models.ForeignKey(
+-        'products.ProductVariant', on_delete=models.CASCADE,
+-        related_name='order_items'
++        "products.ProductVariant", on_delete=models.CASCADE, related_name="order_items"
+     )
+ 
+     quantity = models.PositiveIntegerField(default=1)
+ 
+     price = models.DecimalField(
+-        max_digits=12, decimal_places=2,
+-        help_text='قیمت نهایی هر آیتم در لحظه خرید'
++        max_digits=12, decimal_places=2, help_text="قیمت نهایی هر آیتم در لحظه خرید"
+     )
+ 
+     def __str__(self):
+         return f"{self.variant} x {self.quantity} (Order #{self.order.id})"
+ 
+ 
+-
+ # ==============================
+ # مدل  ثبت منبع تامین آیتم‌های سفارش (OrderItem)
+ # ==============================
+ 
++
+ class OrderItemCostAllocation(models.Model):
+     """
+     ثبت منبع تأمین و بهای تمام‌شده بخشی از یک OrderItem.
+@@ -298,19 +272,13 @@ class OrderItemCostAllocation(models.Model):
+     )
+ 
+     inventory_lot = models.ForeignKey(
+-     "inventory.InventoryLot",
+-     on_delete=models.SET_NULL,
+-     null=True,
+-     blank=True,
+-     related_name="order_cost_allocations",
+-     verbose_name="لات موجودی داخلی",
+-   )
+-
+-
+-
+-
+-
+-    
++        "inventory.InventoryLot",
++        on_delete=models.SET_NULL,
++        null=True,
++        blank=True,
++        related_name="order_cost_allocations",
++        verbose_name="لات موجودی داخلی",
++    )
+ 
+     created_at = models.DateTimeField(
+         auto_now_add=True,
+@@ -340,20 +308,24 @@ class OrderItemCostAllocation(models.Model):
+ # ==============================
+ class Cart(models.Model):
+     user = models.OneToOneField(
+-        settings.AUTH_USER_MODEL, on_delete=models.CASCADE,
+-        null=True, blank=True, related_name='cart',
+-        help_text='اگر کاربر لاگین نکرده، این مقدار تهی می‌ماند.'
++        settings.AUTH_USER_MODEL,
++        on_delete=models.CASCADE,
++        null=True,
++        blank=True,
++        related_name="cart",
++        help_text="اگر کاربر لاگین نکرده، این مقدار تهی می‌ماند.",
+     )
+     session_key = models.CharField(
+-        max_length=40, null=True, blank=True,
+-        help_text='برای کاربران مهمان، کلید سشن ذخیره می‌شود.'
+-         )
++        max_length=40,
++        null=True,
++        blank=True,
++        help_text="برای کاربران مهمان، کلید سشن ذخیره می‌شود.",
++    )
+     created_at = models.DateTimeField(auto_now_add=True)
+     updated_at = models.DateTimeField(auto_now=True)
+ 
+-
+     is_active = models.BooleanField(default=True)
+-    
++
+     def is_empty(self):
+         return not self.items.exists()
+ 
+@@ -364,27 +336,23 @@ class Cart(models.Model):
+         if self.user:
+             return f"Cart (User: {self.user})"
+         return f"Cart (Session: {self.session_key})"
+-    
+-
+ 
+ 
+ # ==============================
+ # آیتم‌های سبد خرید (CartItem)
+ # ==============================
+ class CartItem(models.Model):
+-    cart = models.ForeignKey(
+-        Cart, on_delete=models.CASCADE,
+-        related_name='items'
+-    )
++    cart = models.ForeignKey(Cart, on_delete=models.CASCADE, related_name="items")
+     variant = models.ForeignKey(
+-        'products.ProductVariant', on_delete=models.CASCADE,
+-        related_name='cart_items'
++        "products.ProductVariant", on_delete=models.CASCADE, related_name="cart_items"
+     )
+     quantity = models.PositiveIntegerField(default=1)
+     added_at = models.DateTimeField(auto_now_add=True)
+ 
+     def price(self):
+-        return self.variant.price  # فرض بر این است که فیلد قیمت در مدل ProductVariant وجود دارد
++        return (
++            self.variant.price
++        )  # فرض بر این است که فیلد قیمت در مدل ProductVariant وجود دارد
+ 
+     def total_price(self):
+         return self.price() * self.quantity
+@@ -393,46 +361,49 @@ class CartItem(models.Model):
+         return f"{self.variant} x {self.quantity}"
+ 
+ 
+-
+-
+ # ==============================
+-#. مدل خلاصه گزارش. فروش (SalesSummery)
++# . مدل خلاصه گزارش. فروش (SalesSummery)
+ # ==============================
+ from django.db import models
+ 
++
+ class SalesSummary(models.Model):
+     """
+     جدول خلاصه گزارش فروش محصولات.
+     هر رکورد نشان‌دهنده جمع فروش یک محصول در یک بازه زمانی مشخص است.
+     """
+-    
++
+     # محصول مربوط به رکورد
+     product = models.ForeignKey(
+-        'products.product',
++        "products.product",
+         on_delete=models.CASCADE,
+-        related_name='sales_summary',
+-        help_text='محصولی که این رکورد خلاصه فروش آن است'
++        related_name="sales_summary",
++        help_text="محصولی که این رکورد خلاصه فروش آن است",
+     )
+ 
+     # اگر محصول دارای واریانت باشد (مثلاً رنگ یا سایز)، مشخص می‌کند
+     variant = models.ForeignKey(
+-        'products.productvariant',
++        "products.productvariant",
+         on_delete=models.CASCADE,
+         blank=True,
+         null=True,
+-        related_name='sales_summary',
+-        help_text='واریانت محصول، اگر وجود داشته باشد'
++        related_name="sales_summary",
++        help_text="واریانت محصول، اگر وجود داشته باشد",
+     )
+ 
+     # بازه زمانی خلاصه
+-    period_start = models.DateField(help_text='تاریخ شروع بازه')
+-    period_end = models.DateField(help_text='تاریخ پایان بازه')
++    period_start = models.DateField(help_text="تاریخ شروع بازه")
++    period_end = models.DateField(help_text="تاریخ پایان بازه")
+ 
+     # تعداد کل فروش در این بازه
+-    total_quantity = models.PositiveIntegerField(default=0, help_text='جمع تعداد فروش در بازه')
++    total_quantity = models.PositiveIntegerField(
++        default=0, help_text="جمع تعداد فروش در بازه"
++    )
+ 
+     # مجموع مبلغ فروش در این بازه
+-    total_amount = models.DecimalField(max_digits=12, decimal_places=2, default=0, help_text='جمع مبلغ فروش در بازه')
++    total_amount = models.DecimalField(
++        max_digits=12, decimal_places=2, default=0, help_text="جمع مبلغ فروش در بازه"
++    )
+ 
+     # تاریخ ایجاد رکورد
+     created_at = models.DateTimeField(auto_now_add=True)
+@@ -441,10 +412,10 @@ class SalesSummary(models.Model):
+     updated_at = models.DateTimeField(auto_now=True)
+ 
+     class Meta:
+-        unique_together = ('product', 'variant', 'period_start', 'period_end')
++        unique_together = ("product", "variant", "period_start", "period_end")
+         indexes = [
+-            models.Index(fields=['product', 'period_start']),
+-            models.Index(fields=['period_start']),
++            models.Index(fields=["product", "period_start"]),
++            models.Index(fields=["period_start"]),
+         ]
+ 
+     def __str__(self):
+diff --git a/payments/admin.py b/payments/admin.py
+index 8c38f3f..7e4dc05 100644
+--- a/payments/admin.py
++++ b/payments/admin.py
+@@ -1,3 +1,19 @@
+ from django.contrib import admin
+ 
+ # Register your models here.
++from .models import Payment
++
++
++@admin.register(Payment)
++class PaymentAdmin(admin.ModelAdmin):
++    list_display = ("id", "order", "status", "amount", "requires_review", "paid_at")
++    list_filter = ("requires_review", "status", "gateway")
++    search_fields = ("authority", "tracking_code", "reference_id")
++    readonly_fields = tuple(field.name for field in Payment._meta.fields)
++    list_select_related = ("order",)
++
++    def has_add_permission(self, request):
++        return False
++
++    def has_delete_permission(self, request, obj=None):
++        return False
+diff --git a/payments/api/serializers/payment_detail_serializer.py b/payments/api/serializers/payment_detail_serializer.py
+index 2b7c3cf..3ed196b 100644
+--- a/payments/api/serializers/payment_detail_serializer.py
++++ b/payments/api/serializers/payment_detail_serializer.py
+@@ -1,77 +1,73 @@
+-from rest_framework import serializers
+-
+-from payments.models import Payment
+-
+-
+-class PaymentSerializer(
+-    serializers.ModelSerializer
+-):
+-    """
+-    نمایش اطلاعات کامل یک تراکنش پرداخت.
+-    """
+-
+-    status_display = serializers.CharField(
+-        source="get_status_display",
+-        read_only=True,
+-    )
+-
+-    payment_method_display = serializers.CharField(
+-        source="get_payment_method_display",
+-        read_only=True,
+-    )
+-
+-    order_status = serializers.CharField(
+-        source="order.status",
+-        read_only=True,
+-    )
+-
+-    is_successful = serializers.BooleanField(
+-        read_only=True,
+-    )
+-
+-    can_retry = serializers.SerializerMethodField()
+-
+-    class Meta:
+-        model = Payment
+-
+-        fields = [
+-            "id",
+-            "order",
+-            "order_status",
+-            "amount",
+-            "payment_method",
+-            "payment_method_display",
+-            "status",
+-            "status_display",
+-            "gateway",
+-            "authority",
+-            "tracking_code",
+-            "reference_id",
+-            "error_message",
+-            "paid_at",
+-            "created_at",
+-            "updated_at",
+-            "is_successful",
+-            "can_retry",
+-        ]
+-
+-        read_only_fields = fields
+-
+-    def get_can_retry(
+-        self,
+-        obj: Payment,
+-    ) -> bool:
+-        """
+-        مشخص می‌کند امکان تلاش مجدد برای پرداخت وجود دارد یا نه.
+-        """
+-
+-        retryable_statuses = {
+-            Payment.Status.PENDING,
+-            Payment.Status.FAILED,
+-            Payment.Status.CANCELLED,
+-        }
+-
+-        return (
+-            obj.status in retryable_statuses
+-            and obj.order.status != "paid"
+-        )
++from rest_framework import serializers
++
++from payments.models import Payment
++
++
++class PaymentSerializer(serializers.ModelSerializer):
++    """
++    نمایش اطلاعات کامل یک تراکنش پرداخت.
++    """
++
++    status_display = serializers.CharField(
++        source="get_status_display",
++        read_only=True,
++    )
++
++    payment_method_display = serializers.CharField(
++        source="get_payment_method_display",
++        read_only=True,
++    )
++
++    order_status = serializers.CharField(
++        source="order.status",
++        read_only=True,
++    )
++
++    is_successful = serializers.BooleanField(
++        read_only=True,
++    )
++
++    can_retry = serializers.SerializerMethodField()
++
++    class Meta:
++        model = Payment
++
++        fields = [
++            "requires_review",
++            "id",
++            "order",
++            "order_status",
++            "amount",
++            "payment_method",
++            "payment_method_display",
++            "status",
++            "status_display",
++            "gateway",
++            "authority",
++            "tracking_code",
++            "reference_id",
++            "error_message",
++            "paid_at",
++            "created_at",
++            "updated_at",
++            "is_successful",
++            "can_retry",
++        ]
++
++        read_only_fields = fields
++
++    def get_can_retry(
++        self,
++        obj: Payment,
++    ) -> bool:
++        """
++        مشخص می‌کند امکان تلاش مجدد برای پرداخت وجود دارد یا نه.
++        """
++
++        retryable_statuses = {
++            Payment.Status.PENDING,
++            Payment.Status.FAILED,
++            Payment.Status.CANCELLED,
++        }
++
++        return obj.status in retryable_statuses and obj.order.status == "pending"
+diff --git a/payments/api/views/payment_verify_view.py b/payments/api/views/payment_verify_view.py
+index 022ce9c..ecc99d1 100644
+--- a/payments/api/views/payment_verify_view.py
++++ b/payments/api/views/payment_verify_view.py
+@@ -1,80 +1,75 @@
+-from django.shortcuts import get_object_or_404
+-
+-from rest_framework import generics, status
+-from rest_framework.permissions import IsAuthenticated
+-from rest_framework.response import Response
+-
+-from payments.api.serializers import (
+-    PaymentSerializer,
+-    VerifyPaymentSerializer,
+-)
+-from payments.models import Payment
+-from payments.services.payment_verify_service import (
+-    PaymentVerifyService,
+-)
+-
+-
+-class VerifyPaymentView(
+-    generics.GenericAPIView
+-):
+-    """
+-    تأیید پرداخت آزمایشی.
+-
+-    POST /api/payments/verify/
+-    """
+-
+-    permission_classes = [IsAuthenticated]
+-    serializer_class = VerifyPaymentSerializer
+-
+-    def post(
+-        self,
+-        request,
+-        *args,
+-        **kwargs,
+-    ):
+-        input_serializer = self.get_serializer(
+-            data=request.data,
+-        )
+-
+-        input_serializer.is_valid(
+-            raise_exception=True,
+-        )
+-
+-        payment = get_object_or_404(
+-            Payment.objects.select_related(
+-                "order",
+-            ),
+-            id=input_serializer.validated_data[
+-                "payment_id"
+-            ],
+-            order__user=request.user,
+-        )
+-
+-        result = PaymentVerifyService(
+-            payment=payment,
+-            authority=input_serializer.validated_data[
+-                "authority"
+-            ],
+-            mock_status=input_serializer.validated_data[
+-                "mock_status"
+-            ],
+-        ).run()
+-
+-        response_status = (
+-            status.HTTP_200_OK
+-            if result.payment.is_successful
+-            else status.HTTP_400_BAD_REQUEST
+-        )
+-
+-        return Response(
+-            {
+-                "message": result.message,
+-                "payment": PaymentSerializer(
+-                    result.payment,
+-                    context={
+-                        "request": request,
+-                    },
+-                ).data,
+-            },
+-            status=response_status,
+-        )
++from django.shortcuts import get_object_or_404
++
++from rest_framework import generics, status
++from rest_framework.permissions import IsAuthenticated
++from rest_framework.response import Response
++
++from payments.api.serializers import (
++    PaymentSerializer,
++    VerifyPaymentSerializer,
++)
++from payments.models import Payment
++from payments.services.payment_verify_service import (
++    PaymentVerifyService,
++)
++
++
++class VerifyPaymentView(generics.GenericAPIView):
++    """
++    تأیید پرداخت آزمایشی.
++
++    POST /api/payments/verify/
++    """
++
++    permission_classes = [IsAuthenticated]
++    serializer_class = VerifyPaymentSerializer
++
++    def post(
++        self,
++        request,
++        *args,
++        **kwargs,
++    ):
++        input_serializer = self.get_serializer(
++            data=request.data,
++        )
++
++        input_serializer.is_valid(
++            raise_exception=True,
++        )
++
++        payment = get_object_or_404(
++            Payment.objects.select_related(
++                "order",
++            ),
++            id=input_serializer.validated_data["payment_id"],
++            order__user=request.user,
++        )
++
++        try:
++            result = PaymentVerifyService(
++                payment=payment,
++                authority=input_serializer.validated_data["authority"],
++                mock_status=input_serializer.validated_data["mock_status"],
++            ).run()
++        except ValueError as error:
++            return Response({"error": str(error)}, status=status.HTTP_400_BAD_REQUEST)
++
++        response_status = (
++            status.HTTP_200_OK
++            if result.payment.is_successful
++            else status.HTTP_400_BAD_REQUEST
++        )
++
++        return Response(
++            {
++                "message": result.message,
++                "payment": PaymentSerializer(
++                    result.payment,
++                    context={
++                        "request": request,
++                    },
++                ).data,
++            },
++            status=response_status,
++        )
+diff --git a/payments/models.py b/payments/models.py
+index a47defa..19128d1 100644
+--- a/payments/models.py
++++ b/payments/models.py
+@@ -1,3 +1,5 @@
++from django.db import transaction
++
+ # payments/models.py
+ 
+ from decimal import Decimal
+@@ -13,6 +15,9 @@ from orders.models import Order
+ # مدل پرداخت
+ # =========================================================
+ class Payment(models.Model):
++    requires_review = models.BooleanField(
++        default=False, verbose_name="نیازمند بررسی پرداخت پس از لغو"
++    )
+     """
+     تراکنش پرداخت مربوط به یک سفارش.
+ 
+@@ -209,10 +214,7 @@ class Payment(models.Model):
+         verbose_name_plural = "پرداخت‌ها"
+ 
+     def __str__(self):
+-        return (
+-            f"پرداخت #{self.pk} "
+-            f"- سفارش #{self.order_id}"
+-        )
++        return f"پرداخت #{self.pk} " f"- سفارش #{self.order_id}"
+ 
+     @property
+     def is_successful(self):
+@@ -220,10 +222,7 @@ class Payment(models.Model):
+         مشخص می‌کند که تراکنش با موفقیت تأیید شده است یا نه.
+         """
+ 
+-        return (
+-            self.status
+-            == self.Status.SUCCESSFUL
+-        )
++        return self.status == self.Status.SUCCESSFUL
+ 
+     @property
+     def is_final(self):
+@@ -253,9 +252,7 @@ class Payment(models.Model):
+         ]
+ 
+         if gateway_response is not None:
+-            self.gateway_response = (
+-                gateway_response
+-            )
++            self.gateway_response = gateway_response
+ 
+             update_fields.append(
+                 "gateway_response",
+@@ -265,6 +262,7 @@ class Payment(models.Model):
+             update_fields=update_fields,
+         )
+ 
++    @transaction.atomic
+     def mark_successful(
+         self,
+         tracking_code="",
+@@ -277,17 +275,25 @@ class Payment(models.Model):
+         بعد از تأیید موفق درگاه، وضعیت سفارش نیز paid می‌شود.
+         """
+ 
++        current_order = Order.objects.select_for_update().get(pk=self.order_id)
++        current_payment = type(self).objects.select_for_update().get(pk=self.pk)
++        if current_payment.status == self.Status.SUCCESSFUL:
++            self.refresh_from_db()
++            return
++        self.requires_review = current_order.status == "cancelled"
++
+         self.status = self.Status.SUCCESSFUL
+-        self.tracking_code = (
+-            str(tracking_code).strip()
+-        )
+-        self.reference_id = (
+-            str(reference_id).strip()
+-        )
++        self.tracking_code = str(tracking_code).strip()
++        self.reference_id = str(reference_id).strip()
+         self.paid_at = timezone.now()
+-        self.error_message = ""
++        self.error_message = (
++            "پرداخت پس از لغو سفارش؛ نیازمند بررسی و استرداد وجه."
++            if self.requires_review
++            else ""
++        )
+ 
+         update_fields = [
++            "requires_review",
+             "status",
+             "tracking_code",
+             "reference_id",
+@@ -297,9 +303,7 @@ class Payment(models.Model):
+         ]
+ 
+         if gateway_response is not None:
+-            self.gateway_response = (
+-                gateway_response
+-            )
++            self.gateway_response = gateway_response
+ 
+             update_fields.append(
+                 "gateway_response",
+@@ -309,15 +313,10 @@ class Payment(models.Model):
+             update_fields=update_fields,
+         )
+ 
+-        if self.order.status != "paid":
+-            self.order.status = "paid"
+-
+-            self.order.save(
+-                update_fields=[
+-                    "status",
+-                    "updated_at",
+-                ],
+-            )
++        self.order = current_order
++        if current_order.status == "pending":
++            current_order.status = "paid"
++            current_order.save(update_fields=["status", "updated_at"])
+ 
+     def mark_failed(
+         self,
+@@ -329,9 +328,7 @@ class Payment(models.Model):
+         """
+ 
+         self.status = self.Status.FAILED
+-        self.error_message = str(
+-            error_message
+-        ).strip()
++        self.error_message = str(error_message).strip()
+ 
+         update_fields = [
+             "status",
+@@ -340,9 +337,7 @@ class Payment(models.Model):
+         ]
+ 
+         if gateway_response is not None:
+-            self.gateway_response = (
+-                gateway_response
+-            )
++            self.gateway_response = gateway_response
+ 
+             update_fields.append(
+                 "gateway_response",
+@@ -362,9 +357,7 @@ class Payment(models.Model):
+         """
+ 
+         self.status = self.Status.CANCELLED
+-        self.error_message = str(
+-            error_message
+-        ).strip()
++        self.error_message = str(error_message).strip()
+ 
+         update_fields = [
+             "status",
+@@ -373,9 +366,7 @@ class Payment(models.Model):
+         ]
+ 
+         if gateway_response is not None:
+-            self.gateway_response = (
+-                gateway_response
+-            )
++            self.gateway_response = gateway_response
+ 
+             update_fields.append(
+                 "gateway_response",
+@@ -508,10 +499,7 @@ class InstallmentPlan(models.Model):
+         verbose_name_plural = "برنامه‌های اقساط"
+ 
+     def __str__(self):
+-        return (
+-            f"اقساط سفارش "
+-            f"#{self.order_id}"
+-        )
++        return f"اقساط سفارش " f"#{self.order_id}"
+ 
+     @property
+     def paid_amount(self):
+@@ -522,10 +510,8 @@ class InstallmentPlan(models.Model):
+         return sum(
+             (
+                 payment.amount
+-                for payment
+-                in self.installments.filter(
+-                    status=
+-                        InstallmentPayment.Status.PAID,
++                for payment in self.installments.filter(
++                    status=InstallmentPayment.Status.PAID,
+                 )
+             ),
+             Decimal("0"),
+@@ -537,10 +523,7 @@ class InstallmentPlan(models.Model):
+         مبلغ باقی‌مانده اقساط.
+         """
+ 
+-        remaining = (
+-            self.total_amount
+-            - self.paid_amount
+-        )
++        remaining = self.total_amount - self.paid_amount
+ 
+         return max(
+             remaining,
+@@ -664,9 +647,7 @@ class InstallmentPayment(models.Model):
+                     "plan",
+                     "installment_number",
+                 ],
+-                name=(
+-                    "unique_installment_number_per_plan"
+-                ),
++                name=("unique_installment_number_per_plan"),
+             ),
+         ]
+ 
+@@ -684,10 +665,7 @@ class InstallmentPayment(models.Model):
+         verbose_name_plural = "اقساط"
+ 
+     def __str__(self):
+-        return (
+-            f"قسط {self.installment_number} "
+-            f"سفارش #{self.plan.order_id}"
+-        )
++        return f"قسط {self.installment_number} " f"سفارش #{self.plan.order_id}"
+ 
+     @property
+     def total_payable(self):
+@@ -695,10 +673,7 @@ class InstallmentPayment(models.Model):
+         مبلغ کل قابل پرداخت شامل جریمه دیرکرد.
+         """
+ 
+-        return (
+-            self.amount
+-            + self.late_fee
+-        )
++        return self.amount + self.late_fee
+ 
+     @property
+     def is_paid(self):
+@@ -706,10 +681,7 @@ class InstallmentPayment(models.Model):
+         سازگاری خواندنی با ساختار قبلی.
+         """
+ 
+-        return (
+-            self.status
+-            == self.Status.PAID
+-        )
++        return self.status == self.Status.PAID
+ 
+     def mark_paid(
+         self,
+@@ -739,18 +711,12 @@ class InstallmentPayment(models.Model):
+             update_fields=update_fields,
+         )
+ 
+-        remaining_installments = (
+-            self.plan.installments
+-            .exclude(
+-                status=self.Status.PAID,
+-            )
+-            .exists()
+-        )
++        remaining_installments = self.plan.installments.exclude(
++            status=self.Status.PAID,
++        ).exists()
+ 
+         if not remaining_installments:
+-            self.plan.status = (
+-                InstallmentPlan.Status.COMPLETED
+-            )
++            self.plan.status = InstallmentPlan.Status.COMPLETED
+ 
+             self.plan.save(
+                 update_fields=[
+diff --git a/payments/services/payment_verify_service.py b/payments/services/payment_verify_service.py
+index 05eeea9..5255ac8 100644
+--- a/payments/services/payment_verify_service.py
++++ b/payments/services/payment_verify_service.py
+@@ -1,82 +1,95 @@
+-from dataclasses import dataclass
+-
+-from django.db import transaction
+-
+-from orders.models import Order
+-from payments.models import Payment
+-from payments.services.gateways.mock_gateway import (
+-    MockPaymentGateway,
+-)
+-
+-
+-@dataclass(frozen=True)
+-class PaymentVerifyResult:
+-    payment: Payment
+-    message: str
+-
+-
+-class PaymentVerifyService:
+-    """
+-    تأیید نتیجه پرداخت و بروزرسانی وضعیت تراکنش و سفارش.
+-    """
+-
+-    def __init__(
+-        self,
+-        payment: Payment,
+-        authority: str,
+-        mock_status: str,
+-    ):
+-        self.payment = payment
+-        self.authority = authority
+-        self.mock_status = mock_status
+-
+-    @transaction.atomic
+-    def run(self) -> PaymentVerifyResult:
+-        payment = (
+-            Payment.objects
+-            .select_for_update()
+-            .select_related("order")
+-            .get(pk=self.payment.pk)
+-        )
+-
+-        if payment.status == Payment.Status.SUCCESSFUL:
+-            return PaymentVerifyResult(
+-                payment=payment,
+-                message="این پرداخت قبلاً تأیید شده است.",
+-            )
+-
+-        gateway = MockPaymentGateway()
+-
+-        result = gateway.verify_payment(
+-            payment=payment,
+-            authority=self.authority,
+-            mock_status=self.mock_status,
+-        )
+-
+-        if result.is_successful:
+-            payment.mark_successful(
+-                tracking_code=result.tracking_code,
+-                reference_id=result.reference_id,
+-                gateway_response=result.raw_response,
+-            )
+-
+-            return PaymentVerifyResult(
+-                payment=payment,
+-                message="پرداخت با موفقیت تأیید شد.",
+-            )
+-
+-        if self.mock_status == "cancelled":
+-            payment.mark_cancelled(
+-                error_message=result.error_message,
+-                gateway_response=result.raw_response,
+-            )
+-        else:
+-            payment.mark_failed(
+-                error_message=result.error_message,
+-                gateway_response=result.raw_response,
+-            )
+-
+-        return PaymentVerifyResult(
+-            payment=payment,
+-            message=result.error_message,
+-        )
++from django.conf import settings
++from dataclasses import dataclass
++
++from django.db import transaction
++
++from orders.models import Order
++from payments.models import Payment
++from payments.services.gateways.mock_gateway import (
++    MockPaymentGateway,
++)
++
++
++@dataclass(frozen=True)
++class PaymentVerifyResult:
++    payment: Payment
++    message: str
++
++
++class PaymentVerifyService:
++    """
++    تأیید نتیجه پرداخت و بروزرسانی وضعیت تراکنش و سفارش.
++    """
++
++    def __init__(
++        self,
++        payment: Payment,
++        authority: str,
++        mock_status: str,
++    ):
++        self.payment = payment
++        self.authority = authority
++        self.mock_status = mock_status
++
++    @transaction.atomic
++    def run(self) -> PaymentVerifyResult:
++        Order.objects.select_for_update().get(pk=self.payment.order_id)
++        payment = (
++            Payment.objects.select_for_update()
++            .select_related("order")
++            .get(pk=self.payment.pk)
++        )
++
++        if (
++            payment.gateway != "mock"
++            or str(getattr(settings, "PAYMENT_GATEWAY", "mock")).lower() != "mock"
++        ):
++            raise ValueError(
++                "تأیید آزمایشی برای پرداخت واقعی یا محیط درگاه واقعی مجاز نیست."
++            )
++
++        if payment.status == Payment.Status.SUCCESSFUL:
++            return PaymentVerifyResult(
++                payment=payment,
++                message="این پرداخت قبلاً تأیید شده است.",
++            )
++
++        gateway = MockPaymentGateway()
++
++        result = gateway.verify_payment(
++            payment=payment,
++            authority=self.authority,
++            mock_status=self.mock_status,
++        )
++
++        if result.is_successful:
++            payment.mark_successful(
++                tracking_code=result.tracking_code,
++                reference_id=result.reference_id,
++                gateway_response=result.raw_response,
++            )
++
++            return PaymentVerifyResult(
++                payment=payment,
++                message=(
++                    "پرداخت پس از لغو سفارش ثبت شد؛ پشتیبانی باید وجه را بررسی کند."
++                    if payment.requires_review
++                    else "پرداخت با موفقیت تأیید شد."
++                ),
++            )
++
++        if self.mock_status == "cancelled":
++            payment.mark_cancelled(
++                error_message=result.error_message,
++                gateway_response=result.raw_response,
++            )
++        else:
++            payment.mark_failed(
++                error_message=result.error_message,
++                gateway_response=result.raw_response,
++            )
++
++        return PaymentVerifyResult(
++            payment=payment,
++            message=result.error_message,
++        )
+diff --git a/payments/services/zarinpal_callback_service.py b/payments/services/zarinpal_callback_service.py
+index 5693741..3f92fb2 100644
+--- a/payments/services/zarinpal_callback_service.py
++++ b/payments/services/zarinpal_callback_service.py
+@@ -1,3 +1,4 @@
++from orders.models import Order
+ from dataclasses import dataclass
+ 
+ from django.db import transaction
+@@ -35,15 +36,13 @@ class ZarinpalCallbackService:
+     ):
+         self.payment = payment
+         self.authority = authority.strip()
+-        self.callback_status = (
+-            callback_status.strip().upper()
+-        )
++        self.callback_status = callback_status.strip().upper()
+ 
+     @transaction.atomic
+     def run(self) -> ZarinpalCallbackResult:
++        Order.objects.select_for_update().get(pk=self.payment.order_id)
+         payment = (
+-            Payment.objects
+-            .select_for_update()
++            Payment.objects.select_for_update()
+             .select_related("order")
+             .get(pk=self.payment.pk)
+         )
+@@ -55,31 +54,20 @@ class ZarinpalCallbackService:
+             return ZarinpalCallbackResult(
+                 payment=payment,
+                 is_successful=True,
+-                message=(
+-                    "این پرداخت قبلاً "
+-                    "با موفقیت تأیید شده است."
+-                ),
++                message=("این پرداخت قبلاً " "با موفقیت تأیید شده است."),
+             )
+ 
+         # -----------------------------------------
+         # بررسی درگاه
+         # -----------------------------------------
+         if payment.gateway != "zarinpal":
+-            raise ValueError(
+-                "این تراکنش متعلق به زرین‌پال نیست."
+-            )
++            raise ValueError("این تراکنش متعلق به زرین‌پال نیست.")
+ 
+         # -----------------------------------------
+         # بررسی Authority
+         # -----------------------------------------
+-        if (
+-            not payment.authority
+-            or payment.authority != self.authority
+-        ):
+-            raise ValueError(
+-                "شناسه Authority با تراکنش "
+-                "ثبت‌شده مطابقت ندارد."
+-            )
++        if not payment.authority or payment.authority != self.authority:
++            raise ValueError("شناسه Authority با تراکنش " "ثبت‌شده مطابقت ندارد.")
+ 
+         # -----------------------------------------
+         # پرداخت توسط کاربر لغو شده
+@@ -87,10 +75,7 @@ class ZarinpalCallbackService:
+         # -----------------------------------------
+         if self.callback_status != "OK":
+             payment.mark_cancelled(
+-                error_message=(
+-                    "پرداخت توسط کاربر لغو شد "
+-                    "یا در درگاه ناموفق بود."
+-                ),
++                error_message=("پرداخت توسط کاربر لغو شد " "یا در درگاه ناموفق بود."),
+                 gateway_response={
+                     "gateway": "zarinpal",
+                     "authority": self.authority,
+@@ -101,10 +86,7 @@ class ZarinpalCallbackService:
+             return ZarinpalCallbackResult(
+                 payment=payment,
+                 is_successful=False,
+-                message=(
+-                    "پرداخت لغو شد یا "
+-                    "ناموفق بود."
+-                ),
++                message=("پرداخت لغو شد یا " "ناموفق بود."),
+             )
+ 
+         # -----------------------------------------
+@@ -124,9 +106,7 @@ class ZarinpalCallbackService:
+                 gateway_response=error.response_data,
+             )
+ 
+-            raise ValueError(
+-                str(error)
+-            ) from error
++            raise ValueError(str(error)) from error
+ 
+         # -----------------------------------------
+         # Verify ناموفق
+@@ -140,10 +120,7 @@ class ZarinpalCallbackService:
+             return ZarinpalCallbackResult(
+                 payment=payment,
+                 is_successful=False,
+-                message=(
+-                    result.error_message
+-                    or "تأیید پرداخت ناموفق بود."
+-                ),
++                message=(result.error_message or "تأیید پرداخت ناموفق بود."),
+             )
+ 
+         # -----------------------------------------
+@@ -185,7 +162,8 @@ class ZarinpalCallbackService:
+             payment=payment,
+             is_successful=True,
+             message=(
+-                "پرداخت با موفقیت "
+-                "تأیید شد."
++                "پرداخت پس از لغو سفارش ثبت شد؛ پشتیبانی باید وجه را بررسی کند."
++                if payment.requires_review
++                else "پرداخت با موفقیت تأیید شد."
+             ),
+         )
+diff --git a/products/models.py b/products/models.py
+index f471f87..e04a5b2 100644
+--- a/products/models.py
++++ b/products/models.py
+@@ -9,14 +9,20 @@ from PIL import Image
+ class Category(models.Model):
+     name = models.CharField(max_length=100, help_text="نام دسته‌بندی")
+     slug = models.SlugField(unique=True, help_text="نامک یکتا برای URL")
+-    image = models.ImageField(upload_to='categories/', blank=True, null=True, help_text="تصویر دسته‌بندی")
++    image = models.ImageField(
++        upload_to="categories/", blank=True, null=True, help_text="تصویر دسته‌بندی"
++    )
+ 
+     # دسته‌بندی والد برای پشتیبانی از ساختار درختی
+     parent = models.ForeignKey(
+-        'self', on_delete=models.SET_NULL,
+-        null=True, blank=True, related_name='subcategories',
+-        help_text="دسته‌بندی والد (اختیاری)"
++        "self",
++        on_delete=models.SET_NULL,
++        null=True,
++        blank=True,
++        related_name="subcategories",
++        help_text="دسته‌بندی والد (اختیاری)",
+     )
++
+     def save(self, *args, **kwargs):
+         super().save(*args, **kwargs)
+ 
+@@ -27,11 +33,7 @@ class Category(models.Model):
+ 
+             img.thumbnail(SIZE)
+ 
+-            background = Image.new(
+-                "RGB",
+-                SIZE,
+-                (255, 255, 255)
+-            )
++            background = Image.new("RGB", SIZE, (255, 255, 255))
+ 
+             x = (SIZE[0] - img.width) // 2
+             y = (SIZE[1] - img.height) // 2
+@@ -39,7 +41,7 @@ class Category(models.Model):
+             background.paste(img, (x, y))
+ 
+             background.save(self.image.path)
+-            
++
+     def __str__(self):
+         return f"{self.parent.name} -> {self.name}" if self.parent else self.name
+ 
+@@ -60,24 +62,35 @@ class Tag(models.Model):
+ # ==============================
+ class Product(models.Model):
+     name = models.CharField(max_length=200, help_text="نام محصول")
+-    slug = models.SlugField(unique=True, help_text="نامک یکتا برای URL",max_length=120)
++    slug = models.SlugField(unique=True, help_text="نامک یکتا برای URL", max_length=120)
+     description = models.TextField(blank=True, null=True, help_text="توضیحات محصول")
+-    base_price = models.DecimalField(max_digits=12, decimal_places=0, help_text="قیمت پایه محصول")
++    base_price = models.DecimalField(
++        max_digits=12, decimal_places=0, help_text="قیمت پایه محصول"
++    )
+ 
+     # دسته‌بندی اصلی محصول
+     category = models.ForeignKey(
+-        Category, on_delete=models.SET_NULL,
+-        null=True, blank=True, related_name='products',
+-        help_text="دسته‌بندی اصلی محصول"
++        Category,
++        on_delete=models.SET_NULL,
++        null=True,
++        blank=True,
++        related_name="products",
++        help_text="دسته‌بندی اصلی محصول",
+     )
+ 
+     # تگ‌های محصول
+-    tags = models.ManyToManyField(Tag, blank=True, related_name='products', help_text="تگ‌های مرتبط با محصول")
++    tags = models.ManyToManyField(
++        Tag, blank=True, related_name="products", help_text="تگ‌های مرتبط با محصول"
++    )
+ 
+-    is_active = models.BooleanField(default=True, help_text="آیا محصول فعال و قابل فروش است")
++    is_active = models.BooleanField(
++        default=True, help_text="آیا محصول فعال و قابل فروش است"
++    )
+ 
+     created_at = models.DateTimeField(auto_now_add=True, help_text="تاریخ ایجاد محصول")
+-    updated_at = models.DateTimeField(auto_now=True, help_text="تاریخ آخرین بروزرسانی محصول")
++    updated_at = models.DateTimeField(
++        auto_now=True, help_text="تاریخ آخرین بروزرسانی محصول"
++    )
+ 
+     def __str__(self):
+         return self.name
+@@ -88,9 +101,10 @@ class Product(models.Model):
+ # ===========================
+ class ProductSpecification(models.Model):
+     product = models.ForeignKey(
+-        Product, on_delete=models.CASCADE,
+-        related_name='specifications',
+-        help_text="محصول مرتبط"
++        Product,
++        on_delete=models.CASCADE,
++        related_name="specifications",
++        help_text="محصول مرتبط",
+     )
+     name = models.CharField(max_length=100, help_text="نام مشخصه (مثلا وزن، جنس)")
+     value = models.TextField(help_text="مقدار مشخصه (مثلا 1 کیلوگرم، فلز)")
+@@ -111,9 +125,10 @@ class Attribute(models.Model):
+ 
+ class AttributeValue(models.Model):
+     attribute = models.ForeignKey(
+-        Attribute, on_delete=models.CASCADE,
+-        related_name='values',
+-        help_text="ویژگی مرتبط"
++        Attribute,
++        on_delete=models.CASCADE,
++        related_name="values",
++        help_text="ویژگی مرتبط",
+     )
+     value = models.CharField(max_length=50, help_text="مقدار ویژگی (مثلا قرمز یا XL)")
+ 
+@@ -125,21 +140,52 @@ class AttributeValue(models.Model):
+ # مدل واریانت محصول (ProductVariant)
+ # برای رنگ/سایز و موجودی و قیمت متفاوت
+ # ===========================
++from coins.guards import GuardedStockQuerySetMixin, inventory_write
++from django.db import router
++
++
++class ProductVariantQuerySet(GuardedStockQuerySetMixin, models.QuerySet):
++    pass
++
++
+ class ProductVariant(models.Model):
++    def clean(self):
++        super().clean()
++        from coins.guards import validate_stock_candidate
++
++        validate_stock_candidate(self)
++
++    objects = ProductVariantQuerySet.as_manager()
++
++    def save(self, *args, **kwargs):
++        fields = kwargs.get("update_fields")
++        if fields is not None and not {"stock", "product", "product_id"}.intersection(
++            fields
++        ):
++            return super().save(*args, **kwargs)
++        using = kwargs.get("using") or router.db_for_write(type(self), instance=self)
++        with inventory_write([self.pk], using):
++            result = super().save(*args, **kwargs)
++            return result
++
+     product = models.ForeignKey(
+-        Product, on_delete=models.CASCADE,
+-        related_name='variants',
+-        help_text="محصول مرتبط"
++        Product,
++        on_delete=models.CASCADE,
++        related_name="variants",
++        help_text="محصول مرتبط",
+     )
+     sku = models.CharField(
+-        max_length=50, unique=True,
+-        help_text='کد اختصاصی واریانت برای انبار'
++        max_length=50, unique=True, help_text="کد اختصاصی واریانت برای انبار"
++    )
++    price = models.DecimalField(
++        max_digits=12, decimal_places=0, help_text="قیمت فروش محصول"
+     )
+-    price = models.DecimalField(max_digits=12, decimal_places=0, help_text="قیمت فروش محصول")
+     discount_price = models.DecimalField(
+-        max_digits=12, decimal_places=0,
+-        blank=True, null=True,
+-        help_text='قیمت پس از تخفیف (اختیاری)'
++        max_digits=12,
++        decimal_places=0,
++        blank=True,
++        null=True,
++        help_text="قیمت پس از تخفیف (اختیاری)",
+     )
+ 
+     # موجودی و آستانه هشدار
+@@ -150,48 +196,66 @@ class ProductVariant(models.Model):
+ 
+     # ویژگی های واریانت (مثلا رنگ یا سایز)
+     attributes = models.ManyToManyField(
+-        AttributeValue, related_name='variants', blank=True,
+-        help_text="ویژگی‌های مرتبط با این واریانت"
++        AttributeValue,
++        related_name="variants",
++        blank=True,
++        help_text="ویژگی‌های مرتبط با این واریانت",
+     )
+ 
+-    expiration_date = models.DateField(blank=True, null=True, help_text="تاریخ انقضای محصول (اختیاری)")
++    expiration_date = models.DateField(
++        blank=True, null=True, help_text="تاریخ انقضای محصول (اختیاری)"
++    )
+ 
+     # =======================
+     # فیلدهای جدید برای مدیریت قیمت
+     # =======================
+-    
++
+     profit_percent = models.DecimalField(
+-        max_digits=5, decimal_places=2, default=30.00,
+-        help_text="درصد سود محصول بر اساس قیمت خرید"
++        max_digits=5,
++        decimal_places=2,
++        default=30.00,
++        help_text="درصد سود محصول بر اساس قیمت خرید",
+     )
+ 
+-    created_at = models.DateTimeField(auto_now_add=True, help_text="تاریخ ایجاد واریانت")
++    created_at = models.DateTimeField(
++        auto_now_add=True, help_text="تاریخ ایجاد واریانت"
++    )
+ 
+     def __str__(self):
+         try:
+-            attrs = ", ".join([f"{attr.attribute.name}: {attr.value}" for attr in self.attributes.all()])
++            attrs = ", ".join(
++                [
++                    f"{attr.attribute.name}: {attr.value}"
++                    for attr in self.attributes.all()
++                ]
++            )
+             return f"{self.product.name} ({attrs})" if attrs else self.product.name
+         except:
+             return self.product.name
+ 
+-  
+ 
+ # ==============================
+ # مدل تصاویر محصول (ProductImage)
+ # ==============================
+ class ProductImage(models.Model):
+     product = models.ForeignKey(
+-        Product, on_delete=models.CASCADE,
+-        related_name='images',
+-        help_text="محصول مرتبط با تصویر"
++        Product,
++        on_delete=models.CASCADE,
++        related_name="images",
++        help_text="محصول مرتبط با تصویر",
++    )
++    image = models.ImageField(
++        upload_to="product_images/", blank=True, null=True, help_text="فایل تصویر محصول"
++    )
++    source_url = models.URLField(
++        blank=True, null=True, help_text="لینک تصویر از تأمین‌کننده"
++    )
++    alt_text = models.CharField(
++        max_length=255, blank=True, null=True, help_text="متن جایگزین تصویر برای SEO"
+     )
+-    image = models.ImageField(upload_to='product_images/', blank=True, null=True, help_text="فایل تصویر محصول")
+-    source_url = models.URLField(blank=True, null=True, help_text="لینک تصویر از تأمین‌کننده")
+-    alt_text = models.CharField(max_length=255, blank=True, null=True, help_text="متن جایگزین تصویر برای SEO")
+     is_main = models.BooleanField(default=False, help_text="آیا تصویر اصلی محصول است؟")
+     created_at = models.DateTimeField(auto_now_add=True, help_text="تاریخ ایجاد تصویر")
+ 
+-
+     def delete(self, *args, **kwargs):
+         image_storage = None
+         image_name = None
+@@ -206,8 +270,6 @@ class ProductImage(models.Model):
+             if image_storage.exists(image_name):
+                 image_storage.delete(image_name)
+ 
+-
+-
+     def __str__(self):
+         return f"Image of {self.product.name} - {self.source_url or 'No URL'}"
+ 
+@@ -217,12 +279,15 @@ class ProductImage(models.Model):
+ # ==============================
+ class ProductVideo(models.Model):
+     product = models.ForeignKey(
+-        Product, on_delete=models.CASCADE,
+-        related_name='videos',
+-        help_text="محصول مرتبط با ویدئو"
++        Product,
++        on_delete=models.CASCADE,
++        related_name="videos",
++        help_text="محصول مرتبط با ویدئو",
++    )
++    video = models.FileField(upload_to="product_videos/", help_text="فایل ویدئو")
++    caption = models.CharField(
++        max_length=255, blank=True, null=True, help_text="توضیح یا کپشن ویدئو"
+     )
+-    video = models.FileField(upload_to='product_videos/', help_text='فایل ویدئو')
+-    caption = models.CharField(max_length=255, blank=True, null=True, help_text="توضیح یا کپشن ویدئو")
+     created_at = models.DateTimeField(auto_now_add=True, help_text="تاریخ ایجاد ویدئو")
+ 
+     def __str__(self):
+@@ -233,10 +298,21 @@ class ProductVideo(models.Model):
+ # محصولات ویژه (SpecialProduct)
+ # ==============================
+ class SpecialProduct(models.Model):
+-    product = models.OneToOneField(Product, on_delete=models.CASCADE, related_name='special', help_text="محصول ویژه")
+-    title = models.CharField(max_length=255, blank=True, null=True, help_text="عنوان ویژه برای نمایش")
+-    start_date = models.DateTimeField(blank=True, null=True, help_text="تاریخ شروع ویژه بودن")
+-    end_date = models.DateTimeField(blank=True, null=True, help_text="تاریخ پایان ویژه بودن")
++    product = models.OneToOneField(
++        Product,
++        on_delete=models.CASCADE,
++        related_name="special",
++        help_text="محصول ویژه",
++    )
++    title = models.CharField(
++        max_length=255, blank=True, null=True, help_text="عنوان ویژه برای نمایش"
++    )
++    start_date = models.DateTimeField(
++        blank=True, null=True, help_text="تاریخ شروع ویژه بودن"
++    )
++    end_date = models.DateTimeField(
++        blank=True, null=True, help_text="تاریخ پایان ویژه بودن"
++    )
+     is_active = models.BooleanField(default=True, help_text="آیا محصول ویژه فعال است؟")
+ 
+     def __str__(self):
+@@ -248,41 +324,42 @@ class SpecialProduct(models.Model):
+ # ==============================
+ class ProductVariantImage(models.Model):
+     variant = models.ForeignKey(
+-        ProductVariant, on_delete=models.CASCADE, related_name='images',
+-        help_text="واریانت مرتبط با تصویر"
++        ProductVariant,
++        on_delete=models.CASCADE,
++        related_name="images",
++        help_text="واریانت مرتبط با تصویر",
+     )
+     image = models.ImageField(
+-        upload_to='variant_images/',
+-        blank=True, null=True,
+-        help_text="فایل تصویر واریانت"
++        upload_to="variant_images/",
++        blank=True,
++        null=True,
++        help_text="فایل تصویر واریانت",
+     )
+     source_url = models.URLField(
+-        blank=True, null=True,
+-        help_text="لینک تصویر اصلی واریانت از تأمین‌کننده (اختیاری)"
++        blank=True,
++        null=True,
++        help_text="لینک تصویر اصلی واریانت از تأمین‌کننده (اختیاری)",
+     )
+     alt_text = models.CharField(
+-        max_length=255,
+-        blank=True, null=True,
+-        help_text="متن جایگزین تصویر برای SEO"
++        max_length=255, blank=True, null=True, help_text="متن جایگزین تصویر برای SEO"
+     )
+     is_main = models.BooleanField(
+         default=False,
+-        help_text="آیا این تصویر به عنوان تصویر اصلی واریانت استفاده شود؟"
++        help_text="آیا این تصویر به عنوان تصویر اصلی واریانت استفاده شود؟",
+     )
+     created_at = models.DateTimeField(
+-        auto_now_add=True,
+-        help_text="تاریخ ایجاد تصویر واریانت"
++        auto_now_add=True, help_text="تاریخ ایجاد تصویر واریانت"
+     )
+ 
+     def __str__(self):
+         return f"Image of {self.variant.product.name} - {self.variant.sku} - {self.source_url or 'No URL'}"
+ 
+ 
+-
+ # ==============================
+ # تصاویر تغیرات قیمت (PriceChangeLog)
+ # ==============================
+ 
++
+ class PriceChangeLog(models.Model):
+     variant = models.ForeignKey(ProductVariant, on_delete=models.CASCADE)
+     old_price = models.DecimalField(max_digits=12, decimal_places=2)
+diff --git a/suppliers/models.py b/suppliers/models.py
+index a3a54a4..925de23 100644
+--- a/suppliers/models.py
++++ b/suppliers/models.py
+@@ -68,7 +68,44 @@ class Supplier(models.Model):
+         return self.name
+ 
+ 
++from coins.guards import GuardedStockQuerySetMixin, inventory_write
++from django.db import router
++
++
++class SupplierOfferQuerySet(GuardedStockQuerySetMixin, models.QuerySet):
++    pass
++
++
+ class SupplierOffer(models.Model):
++    def clean(self):
++        super().clean()
++        from coins.guards import validate_offer_candidate
++
++        validate_offer_candidate(self)
++
++    objects = SupplierOfferQuerySet.as_manager()
++
++    def save(self, *args, **kwargs):
++        fields = kwargs.get("update_fields")
++        if fields is not None and not {
++            "supplier_stock",
++            "is_available",
++            "variant",
++            "variant_id",
++        }.intersection(fields):
++            return super().save(*args, **kwargs)
++        using = kwargs.get("using") or router.db_for_write(type(self), instance=self)
++        ids = [self.variant_id]
++        if self.pk:
++            ids += list(
++                type(self)
++                .objects.using(using)
++                .filter(pk=self.pk)
++                .values_list("variant_id", flat=True)
++            )
++        with inventory_write(ids, using):
++            return super().save(*args, **kwargs)
++
+     """
+     ==========================================================
+     پیشنهاد تأمین‌کننده (Supplier Offer)

@@ -14,9 +14,7 @@ from payments.services.payment_verify_service import (
 )
 
 
-class VerifyPaymentView(
-    generics.GenericAPIView
-):
+class VerifyPaymentView(generics.GenericAPIView):
     """
     تأیید پرداخت آزمایشی.
 
@@ -44,21 +42,18 @@ class VerifyPaymentView(
             Payment.objects.select_related(
                 "order",
             ),
-            id=input_serializer.validated_data[
-                "payment_id"
-            ],
+            id=input_serializer.validated_data["payment_id"],
             order__user=request.user,
         )
 
-        result = PaymentVerifyService(
-            payment=payment,
-            authority=input_serializer.validated_data[
-                "authority"
-            ],
-            mock_status=input_serializer.validated_data[
-                "mock_status"
-            ],
-        ).run()
+        try:
+            result = PaymentVerifyService(
+                payment=payment,
+                authority=input_serializer.validated_data["authority"],
+                mock_status=input_serializer.validated_data["mock_status"],
+            ).run()
+        except ValueError as error:
+            return Response({"error": str(error)}, status=status.HTTP_400_BAD_REQUEST)
 
         response_status = (
             status.HTTP_200_OK

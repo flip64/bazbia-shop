@@ -3,6 +3,12 @@ from . import views
 
 app_name = "coins_api"
 urlpatterns = [
+    path("manage/assemble/", views.ManageAssemblyView.as_view(), name="assemble"),
+    path(
+        "manage/<str:kind>/<int:pk>/publish/",
+        views.ManagePublicationView.as_view(),
+        name="publish",
+    ),
     path("", views.CoinListView.as_view(), name="list"),
     path("filters/", views.FilterView.as_view(), name="filters"),
     path("packs/", views.PackListView.as_view(), name="pack-list"),

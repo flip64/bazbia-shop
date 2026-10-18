@@ -1,3 +1,5 @@
+from django.db import transaction
+
 # payments/models.py
 
 from decimal import Decimal
@@ -13,6 +15,9 @@ from orders.models import Order
 # مدل پرداخت
 # =========================================================
 class Payment(models.Model):
+    requires_review = models.BooleanField(
+        default=False, verbose_name="نیازمند بررسی پرداخت پس از لغو"
+    )
     """
     تراکنش پرداخت مربوط به یک سفارش.
 
@@ -209,10 +214,7 @@ class Payment(models.Model):
         verbose_name_plural = "پرداخت‌ها"
 
     def __str__(self):
-        return (
-            f"پرداخت #{self.pk} "
-            f"- سفارش #{self.order_id}"
-        )
+        return f"پرداخت #{self.pk} " f"- سفارش #{self.order_id}"
 
     @property
     def is_successful(self):
@@ -220,10 +222,7 @@ class Payment(models.Model):
         مشخص می‌کند که تراکنش با موفقیت تأیید شده است یا نه.
         """
 
-        return (
-            self.status
-            == self.Status.SUCCESSFUL
-        )
+        return self.status == self.Status.SUCCESSFUL
 
     @property
     def is_final(self):
@@ -253,9 +252,7 @@ class Payment(models.Model):
         ]
 
         if gateway_response is not None:
-            self.gateway_response = (
-                gateway_response
-            )
+            self.gateway_response = gateway_response
 
             update_fields.append(
                 "gateway_response",
@@ -265,6 +262,7 @@ class Payment(models.Model):
             update_fields=update_fields,
         )
 
+    @transaction.atomic
     def mark_successful(
         self,
         tracking_code="",
@@ -277,17 +275,25 @@ class Payment(models.Model):
         بعد از تأیید موفق درگاه، وضعیت سفارش نیز paid می‌شود.
         """
 
+        current_order = Order.objects.select_for_update().get(pk=self.order_id)
+        current_payment = type(self).objects.select_for_update().get(pk=self.pk)
+        if current_payment.status == self.Status.SUCCESSFUL:
+            self.refresh_from_db()
+            return
+        self.requires_review = current_order.status == "cancelled"
+
         self.status = self.Status.SUCCESSFUL
-        self.tracking_code = (
-            str(tracking_code).strip()
-        )
-        self.reference_id = (
-            str(reference_id).strip()
-        )
+        self.tracking_code = str(tracking_code).strip()
+        self.reference_id = str(reference_id).strip()
         self.paid_at = timezone.now()
-        self.error_message = ""
+        self.error_message = (
+            "پرداخت پس از لغو سفارش؛ نیازمند بررسی و استرداد وجه."
+            if self.requires_review
+            else ""
+        )
 
         update_fields = [
+            "requires_review",
             "status",
             "tracking_code",
             "reference_id",
@@ -297,9 +303,7 @@ class Payment(models.Model):
         ]
 
         if gateway_response is not None:
-            self.gateway_response = (
-                gateway_response
-            )
+            self.gateway_response = gateway_response
 
             update_fields.append(
                 "gateway_response",
@@ -309,15 +313,10 @@ class Payment(models.Model):
             update_fields=update_fields,
         )
 
-        if self.order.status != "paid":
-            self.order.status = "paid"
-
-            self.order.save(
-                update_fields=[
-                    "status",
-                    "updated_at",
-                ],
-            )
+        self.order = current_order
+        if current_order.status == "pending":
+            current_order.status = "paid"
+            current_order.save(update_fields=["status", "updated_at"])
 
     def mark_failed(
         self,
@@ -329,9 +328,7 @@ class Payment(models.Model):
         """
 
         self.status = self.Status.FAILED
-        self.error_message = str(
-            error_message
-        ).strip()
+        self.error_message = str(error_message).strip()
 
         update_fields = [
             "status",
@@ -340,9 +337,7 @@ class Payment(models.Model):
         ]
 
         if gateway_response is not None:
-            self.gateway_response = (
-                gateway_response
-            )
+            self.gateway_response = gateway_response
 
             update_fields.append(
                 "gateway_response",
@@ -362,9 +357,7 @@ class Payment(models.Model):
         """
 
         self.status = self.Status.CANCELLED
-        self.error_message = str(
-            error_message
-        ).strip()
+        self.error_message = str(error_message).strip()
 
         update_fields = [
             "status",
@@ -373,9 +366,7 @@ class Payment(models.Model):
         ]
 
         if gateway_response is not None:
-            self.gateway_response = (
-                gateway_response
-            )
+            self.gateway_response = gateway_response
 
             update_fields.append(
                 "gateway_response",
@@ -508,10 +499,7 @@ class InstallmentPlan(models.Model):
         verbose_name_plural = "برنامه‌های اقساط"
 
     def __str__(self):
-        return (
-            f"اقساط سفارش "
-            f"#{self.order_id}"
-        )
+        return f"اقساط سفارش " f"#{self.order_id}"
 
     @property
     def paid_amount(self):
@@ -522,10 +510,8 @@ class InstallmentPlan(models.Model):
         return sum(
             (
                 payment.amount
-                for payment
-                in self.installments.filter(
-                    status=
-                        InstallmentPayment.Status.PAID,
+                for payment in self.installments.filter(
+                    status=InstallmentPayment.Status.PAID,
                 )
             ),
             Decimal("0"),
@@ -537,10 +523,7 @@ class InstallmentPlan(models.Model):
         مبلغ باقی‌مانده اقساط.
         """
 
-        remaining = (
-            self.total_amount
-            - self.paid_amount
-        )
+        remaining = self.total_amount - self.paid_amount
 
         return max(
             remaining,
@@ -664,9 +647,7 @@ class InstallmentPayment(models.Model):
                     "plan",
                     "installment_number",
                 ],
-                name=(
-                    "unique_installment_number_per_plan"
-                ),
+                name=("unique_installment_number_per_plan"),
             ),
         ]
 
@@ -684,10 +665,7 @@ class InstallmentPayment(models.Model):
         verbose_name_plural = "اقساط"
 
     def __str__(self):
-        return (
-            f"قسط {self.installment_number} "
-            f"سفارش #{self.plan.order_id}"
-        )
+        return f"قسط {self.installment_number} " f"سفارش #{self.plan.order_id}"
 
     @property
     def total_payable(self):
@@ -695,10 +673,7 @@ class InstallmentPayment(models.Model):
         مبلغ کل قابل پرداخت شامل جریمه دیرکرد.
         """
 
-        return (
-            self.amount
-            + self.late_fee
-        )
+        return self.amount + self.late_fee
 
     @property
     def is_paid(self):
@@ -706,10 +681,7 @@ class InstallmentPayment(models.Model):
         سازگاری خواندنی با ساختار قبلی.
         """
 
-        return (
-            self.status
-            == self.Status.PAID
-        )
+        return self.status == self.Status.PAID
 
     def mark_paid(
         self,
@@ -739,18 +711,12 @@ class InstallmentPayment(models.Model):
             update_fields=update_fields,
         )
 
-        remaining_installments = (
-            self.plan.installments
-            .exclude(
-                status=self.Status.PAID,
-            )
-            .exists()
-        )
+        remaining_installments = self.plan.installments.exclude(
+            status=self.Status.PAID,
+        ).exists()
 
         if not remaining_installments:
-            self.plan.status = (
-                InstallmentPlan.Status.COMPLETED
-            )
+            self.plan.status = InstallmentPlan.Status.COMPLETED
 
             self.plan.save(
                 update_fields=[
