@@ -522,6 +522,24 @@ def record_edit(request, kind, pk=None):
         instance=obj,
         initial=initial,
     )
+    variant_picker = model in (m.CoinSpecimen, m.CoinPackVariant)
+    if variant_picker:
+        from products.models import ProductVariant
+
+        selected = (
+            request.POST.get("variant")
+            if request.method == "POST"
+            else getattr(obj, "variant_id", None)
+        )
+        selected = str(selected or "")
+        form.fields["variant"].queryset = (
+            ProductVariant.objects.filter(pk=int(selected)).select_related("product")
+            if selected.isdecimal()
+            else ProductVariant.objects.none()
+        )
+        form.fields["variant"].label_from_instance = (
+            lambda value: f"{value.product.name} · {value.sku}"
+        )
     if not obj and coin_id and coin_id.isdecimal():
         if "issue" in form.fields:
             form.fields["issue"].queryset = m.CoinIssue.objects.filter(
@@ -644,6 +662,13 @@ def record_edit(request, kind, pk=None):
             form=form,
             field_groups=groups,
             parent_coin=parent_coin,
+            variant_picker=variant_picker,
+            can_create_variant=(
+                variant_picker
+                and request.user.has_perm("products.add_productvariant")
+                and request.user.has_perm("products.view_productvariant")
+                and request.user.has_perm("products.view_product")
+            ),
             kind=kind,
             obj=obj,
             title=model._meta.verbose_name,

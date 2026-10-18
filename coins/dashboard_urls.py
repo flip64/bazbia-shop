@@ -1,8 +1,11 @@
 from django.urls import path
 from . import dashboard_views as views
+from . import variant_views
 
 app_name = "coin_catalog"
 urlpatterns = [
+    path("variants/lookup/", variant_views.lookup, name="variant-lookup"),
+    path("variants/create/", variant_views.create, name="variant-create"),
     path("", views.catalog_list, name="list"),
     path("countries/", views.country_browser, name="countries"),
     path("<int:pk>/", views.catalog_detail, name="detail"),
