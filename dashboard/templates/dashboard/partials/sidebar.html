@@ -1,4 +1,5 @@
 <aside class="dashboard-sidebar" id="dashboardSidebar">
+    {% if perms.coins.view_cointype %}<div style="padding:16px"><a href="{% url 'dashboard:coin_catalog:list' %}">کاتالوگ و مدیریت سکه‌ها</a></div>{% endif %}
 
     <div class="sidebar-brand">
         <a href="{% url 'dashboard:home' %}">

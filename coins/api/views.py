@@ -287,70 +287,12 @@ class CoinListView(CardList):
                 | Q(issue__coin_type__reverse_inscription__icontains=text)
             )
         qs = (
-            m.CoinType.objects.filter(is_published=True)
+            m.CoinType.objects.filter(pk__in=selected.values("issue__coin_type_id"))
             .select_related("issuer", "period")
             .prefetch_related("catalog_images")
         )
-        # Catalog metadata is independent of offers; match year/mint on one issue.
-        issue_keys = {"year", "year_min", "year_max", "calendar", "mint", "finish"}
-        type_keys = {
-            "issuer",
-            "period",
-            "ruler",
-            "currency",
-            "material",
-            "theme",
-            "shape",
-            "construction",
-            "issue_kind",
-        }
-        for key in type_keys & p.keys():
-            lookup = next(iter(catalog_q({key: p[key]}).children))[0].removeprefix(
-                "coin_type__"
-            )
-            qs = qs.filter(**{lookup: p[key]})
-        if issue_keys & p.keys():
-            issues = m.CoinIssue.objects.filter(
-                catalog_q({k: p[k] for k in issue_keys & p.keys()})
-            )
-            qs = qs.filter(pk__in=issues.values("coin_type_id"))
-        if p.get("q"):
-            qs = qs.filter(
-                Q(name__icontains=p["q"])
-                | Q(description__icontains=p["q"])
-                | Q(story__icontains=p["q"])
-                | Q(obverse_inscription__icontains=p["q"])
-                | Q(reverse_inscription__icontains=p["q"])
-            )
-        if any(k in p for k in ("condition", "min_price", "max_price")):
-            qs = qs.filter(pk__in=selected.values("issue__coin_type_id"))
-        if "in_stock" in p:
-            available = selected.filter(available_stock__gt=0)
-            qs = (
-                qs.filter(Exists(available.filter(issue__coin_type_id=OuterRef("pk"))))
-                if p["in_stock"]
-                else qs.filter(
-                    ~Exists(
-                        sales(m.CoinSpecimen.objects.all()).filter(
-                            issue__coin_type_id=OuterRef("pk"), available_stock__gt=0
-                        )
-                    )
-                )
-            )
-        qs = qs.distinct()
-
         correlated = selected.filter(issue__coin_type_id=OuterRef("pk"))
-        return card_annotations(qs, correlated, "name", p).order_by(
-            *(
-                {
-                    "price": [F("min_price").asc(nulls_last=True)],
-                    "-price": [F("min_price").desc(nulls_last=True)],
-                    "newest": ["-created_at"],
-                    "-name": ["-name"],
-                }.get(p.get("ordering"), ["name"])
-            ),
-            "pk"
-        )
+        return card_annotations(qs, correlated, "name", p)
 
 
 class CoinDetailView(PublicAPI, generics.RetrieveAPIView):
@@ -360,7 +302,8 @@ class CoinDetailView(PublicAPI, generics.RetrieveAPIView):
     def get_queryset(self):
         public = sales(m.CoinSpecimen.objects.all()).prefetch_related(image_prefetch())
         issues = (
-            m.CoinIssue.objects.select_related("mint")
+            m.CoinIssue.objects.filter(pk__in=public.values("issue_id"))
+            .select_related("mint")
             .prefetch_related(
                 "references",
                 "catalog_images",
@@ -369,7 +312,7 @@ class CoinDetailView(PublicAPI, generics.RetrieveAPIView):
             .order_by("year", "pk")
         )
         return (
-            m.CoinType.objects.filter(is_published=True)
+            m.CoinType.objects.filter(pk__in=public.values("issue__coin_type_id"))
             .select_related("issuer", "period", "ruler", "currency")
             .prefetch_related(
                 "themes",
@@ -453,7 +396,8 @@ class FilterView(PublicAPI, APIView):
             pack_variant_id__in=sales(m.CoinPackVariant.objects.all()).values("pk")
         )
         public_types = m.CoinType.objects.filter(
-            Q(is_published=True) | Q(pk__in=pack_items.values("issue__coin_type_id"))
+            Q(pk__in=public_sales.values("issue__coin_type_id"))
+            | Q(pk__in=pack_items.values("issue__coin_type_id"))
         )
 
         def named(model, ids):
@@ -465,7 +409,8 @@ class FilterView(PublicAPI, APIView):
             return [{"value": value, "label": label} for value, label in values]
 
         issue_ids = m.CoinIssue.objects.filter(
-            Q(coin_type__is_published=True) | Q(pk__in=pack_items.values("issue_id"))
+            Q(pk__in=public_sales.values("issue_id"))
+            | Q(pk__in=pack_items.values("issue_id"))
         ).values("pk")
         years = (
             m.CoinIssue.objects.filter(pk__in=issue_ids, year__isnull=False)

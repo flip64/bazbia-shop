@@ -1,0 +1,1 @@
+<nav class="actions" aria-label="صفحه‌بندی">{% if page.has_previous %}<a href="?q={{ q|urlencode }}&page={{ page.previous_page_number }}">قبلی</a>{% endif %}<span>{{ page.number }} از {{ page.paginator.num_pages }}</span>{% if page.has_next %}<a href="?q={{ q|urlencode }}&page={{ page.next_page_number }}">بعدی</a>{% endif %}</nav>

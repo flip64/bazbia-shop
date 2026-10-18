@@ -215,13 +215,6 @@ class CoinCardSerializer(serializers.ModelSerializer):
         return "IRT"
 
     def get_image(self, obj):
-        if isinstance(obj, m.CoinType):
-            image = next(iter(obj.catalog_images.all()), None)
-            return (
-                CatalogImageSerializer(image, context=self.context).data
-                if image
-                else None
-            )
         image = obj.card_image
         return ImageSerializer(image, context=self.context).data if image else None
 

@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 from dashboard.views.torob_views import torob_variant_management
-from django.urls import path
+from django.urls import path, include
 from dashboard.views import (
     dashboard_home,
     basalam_product_management,
@@ -32,6 +32,7 @@ from dashboard.views import (
 app_name = "dashboard"
 
 urlpatterns = [
+    path("coins/", include("coins.dashboard_urls")),
     path(
         "",
         dashboard_home,
