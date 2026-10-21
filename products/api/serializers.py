@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from rest_framework import serializers
+from coins.storefront import ProductStorefrontMixin
 
 from products.models import (
     Product,
@@ -227,7 +228,7 @@ class ProductVariantSerializer(serializers.ModelSerializer):
 
         return label or obj.sku
 
-class ProductSerializer(serializers.ModelSerializer):
+class ProductSerializer(ProductStorefrontMixin, serializers.ModelSerializer):
     images = ProductImageSerializer(
         many=True,
         read_only=True,
@@ -291,7 +292,7 @@ class ProductSerializer(serializers.ModelSerializer):
         return calculate_product_stock(obj)
 
 
-class SpecialProductSerializer(serializers.ModelSerializer):
+class SpecialProductSerializer(ProductStorefrontMixin, serializers.ModelSerializer):
     name = serializers.CharField(
         source="product.name",
     )
@@ -357,7 +358,7 @@ class SpecialProductSerializer(serializers.ModelSerializer):
         return calculate_product_stock(obj.product)
 
 
-class ProductListSerializer(serializers.ModelSerializer):
+class ProductListSerializer(ProductStorefrontMixin, serializers.ModelSerializer):
     variants = ProductVariantSerializer(
         many=True,
         read_only=True,
@@ -475,7 +476,7 @@ class ProductListSerializer(serializers.ModelSerializer):
         return calculate_product_stock(obj)
 
 
-class ProductDetailSerializer(serializers.ModelSerializer):
+class ProductDetailSerializer(ProductStorefrontMixin, serializers.ModelSerializer):
     category = CategorySerializer(read_only=True)
 
     tags = serializers.SerializerMethodField()
