@@ -1,0 +1,9 @@
+{% extends 'coins/dashboard/base.html' %}{% block content %}
+<section class="panel"><p class="eyebrow">ثبت ساده · پک آماده</p><h1>ثبت پک سکه</h1><p>پک آماده را ثبت کنید. اجزا از کاتالوگ انتخاب می‌شوند؛ موجودی سکه‌های تکی در این مسیر مصرف نمی‌شود.</p>
+<form method="post" enctype="multipart/form-data">{% csrf_token %}{{ form.non_field_errors }}
+<section class="panel"><h2>۱. مشخصات، عکس و قیمت پک</h2>{% for field in form %}<div class="field">{{ field.label_tag }}{{ field }}{{ field.errors }}</div>{% endfor %}</section>
+<section class="panel"><h2>۲. سکه‌های داخل پک</h2><p>هر سکه را انتخاب کنید و تعداد آن در هر پک را بنویسید. عکس کامل پک برای انتشار کافی است؛ عکس جداگانه اجزا اختیاری است.</p>{{ items.management_form }}{{ items.non_form_errors }}
+<div id="pack-items">{% for item in items %}<section class="panel">{{ item.as_p }}</section>{% endfor %}</div>
+<template id="empty-item"><section class="panel">{{ items.empty_form.as_p }}</section></template><button type="button" id="add-item">+ افزودن سکه به پک</button></section>
+<button type="submit">ذخیره پک و ادامه</button></form></section>{% endblock %}
+{% block scripts %}<script>document.getElementById('add-item').addEventListener('click',()=>{const total=document.getElementById('id_items-TOTAL_FORMS');if(Number(total.value)>=100)return;const template=document.getElementById('empty-item');const html=template.innerHTML.replaceAll('__prefix__',total.value);document.getElementById('pack-items').insertAdjacentHTML('beforeend',html);total.value=Number(total.value)+1;});</script>{% endblock %}

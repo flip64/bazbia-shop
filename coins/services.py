@@ -36,10 +36,7 @@ def readiness_errors(listing):
                 errors.append("سال یا کشور یکی از اجزای پک ناسازگار است.")
         if not details.filter(view_type="pack").exists():
             errors.append("تصویر نمای کامل پک الزامی است.")
-        for item in items:
-            for side in ("obverse", "reverse"):
-                if not details.filter(pack_item=item, view_type=side).exists():
-                    errors.append(f"تصویر {side} جزء {item.pk} پک الزامی است.")
+        # A full pack photograph is required; individual coin photos are optional.
     else:
         for side in ("obverse", "reverse"):
             if not details.filter(view_type=side).exists():
