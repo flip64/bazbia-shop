@@ -125,3 +125,57 @@ class SimpleWorkflowTests(TestCase):
         listing = self.create_sale()
         self.assertContains(self.client.get(self.url('simple-sales')), 'قیمت، عکس، موجودی و انتشار')
         self.assertContains(self.client.get(self.url('simple-sales'), {'q':'missing'}), 'هنوز فروش ثبت نشده است.')
+
+    def test_delete_sale_photo_keeps_shared_catalog_file_and_stops_sale(self):
+        from products.signals import files  # production receiver, also in isolated tests
+        listing=self.create_sale()
+        url=self.url('simple-sale',kind='coin',pk=listing.pk)
+        self.client.post(url, {'price':20000,'action':'publish'})
+        photo=listing.variant.images.get(coin_detail__view_type='obverse')
+        storage,name=photo.image.storage,photo.image.name
+        delete=self.url('simple-delete-photo',kind='coin',pk=listing.pk,photo_pk=photo.pk)
+        self.assertEqual(self.client.get(delete).status_code,405)
+        with self.captureOnCommitCallbacks(execute=True):
+            self.assertEqual(self.client.post(delete).status_code,302)
+        self.assertFalse(ProductVariantImage.objects.filter(pk=photo.pk).exists())
+        self.assertTrue(storage.exists(name))
+        self.assertEqual(m.CoinCatalogImage.objects.count(),2)
+        listing.refresh_from_db()
+        self.assertFalse(listing.is_published)
+        self.assertTrue(listing.variant.images.get().is_main)
+
+    def test_delete_catalog_photo_keeps_sale_then_cleans_last_reference(self):
+        listing=self.create_sale()
+        ref=m.CoinCatalogImage.objects.get(view_type='obverse')
+        name,storage=ref.image.name,ref.image.storage
+        with self.captureOnCommitCallbacks(execute=True):
+            r=self.client.post(self.url('simple-delete-photo',kind='catalog',pk=ref.coin_type_id,photo_pk=ref.pk))
+        self.assertEqual(r.status_code,302)
+        self.assertTrue(storage.exists(name))
+        photo=listing.variant.images.get(coin_detail__view_type='obverse')
+        with self.captureOnCommitCallbacks(execute=True):
+            self.client.post(self.url('simple-delete-photo',kind='coin',pk=listing.pk,photo_pk=photo.pk))
+        self.assertFalse(storage.exists(name))
+
+    def test_delete_cannot_target_other_listing_photo(self):
+        listing=self.create_sale()
+        other=m.CoinType.objects.create(name='دیگر',slug='other',issuer=self.issuer)
+        ref=m.CoinCatalogImage.objects.get(view_type='obverse')
+        r=self.client.post(self.url('simple-delete-photo',kind='catalog',pk=other.pk,photo_pk=ref.pk))
+        self.assertEqual(r.status_code,404)
+        self.assertTrue(m.CoinCatalogImage.objects.filter(pk=ref.pk).exists())
+
+    def test_delete_needs_delete_permission_and_csrf(self):
+        from django.contrib.auth.models import Permission
+        from django.test import Client
+        listing=self.create_sale()
+        photo=listing.variant.images.first()
+        url=self.url('simple-delete-photo',kind='coin',pk=listing.pk,photo_pk=photo.pk)
+        c=Client(enforce_csrf_checks=True)
+        c.force_login(self.user)
+        self.assertEqual(c.post(url).status_code,403)
+        staff=get_user_model().objects.create_user('editor',is_staff=True)
+        staff.user_permissions.add(Permission.objects.get(codename='change_coinspecimen'))
+        self.client.force_login(staff)
+        self.assertEqual(self.client.post(url).status_code,403)
+        self.assertTrue(ProductVariantImage.objects.filter(pk=photo.pk).exists())

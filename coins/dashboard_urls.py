@@ -5,6 +5,7 @@ from . import simple_views
 
 app_name = "coin_catalog"
 urlpatterns = [
+    path("photos/<str:kind>/<int:pk>/<int:photo_pk>/delete/", simple_views.delete_photo, name="simple-delete-photo"),
     path("sales/", simple_views.sales, name="simple-sales"),
     path("new/", simple_views.register_coin, name="simple-new"),
     path("simple/<int:pk>/", simple_views.register_coin, name="simple-edit"),

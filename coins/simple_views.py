@@ -282,3 +282,46 @@ def sales(request):
     rows.sort(key=lambda row:row['obj'].created_at, reverse=True)
     page = Paginator(rows, 30).get_page(request.GET.get('page'))
     return render(request, 'coins/dashboard/simple_sales.html', context(request,page=page,q=q))
+
+
+@staff_member_required(login_url='admin:login')
+@require_http_methods(['POST'])
+@csrf_protect
+def delete_photo(request, kind, pk, photo_pk):
+    from django.http import Http404
+    from products.signals.files import cleanup_variant_image_file
+    if kind == 'catalog':
+        check(request.user, m.CoinType, 'change')
+        check(request.user, m.CoinCatalogImage, 'delete')
+        with transaction.atomic():
+            coin = get_object_or_404(m.CoinType.objects.select_for_update(), pk=pk)
+            photo = get_object_or_404(m.CoinCatalogImage, pk=photo_pk, coin_type=coin)
+            file = photo.image
+            photo.delete()
+            if file:
+                cleanup_variant_image_file(file.storage, file.name)
+        messages.success(request, 'عکس از کاتالوگ حذف شد.')
+        return redirect(NS+'detail', pk=pk)
+    model = {'coin':m.CoinSpecimen, 'pack':m.CoinPackVariant}.get(kind)
+    if model is None:
+        raise Http404
+    check(request.user, model, 'change')
+    check(request.user, ProductVariantImage, 'delete')
+    with transaction.atomic():
+        # Use the same lock order as sale updates.
+        parent = get_object_or_404(model, pk=pk)
+        ProductVariant.objects.select_for_update().get(pk=parent.variant_id)
+        listing = get_object_or_404(model.objects.select_for_update(), pk=pk)
+        photo = get_object_or_404(ProductVariantImage, pk=photo_pk, variant_id=listing.variant_id)
+        was_main = photo.is_main
+        photo.delete()
+        if was_main:
+            replacement = listing.variant.images.order_by('pk').first()
+            if replacement:
+                replacement.is_main = True
+                replacement.save(update_fields=['is_main'])
+        stopped = listing.is_published and bool(readiness_errors(listing))
+        if stopped:
+            set_publication(listing, False)
+    messages.success(request, 'عکس حذف شد. فروش به علت ناقص شدن عکس‌های لازم به پیش‌نویس برگشت.' if stopped else 'عکس حذف شد.')
+    return redirect(NS+'simple-sale', kind=kind, pk=pk)
