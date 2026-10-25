@@ -39,6 +39,7 @@ from products.api.serializers import (
     ProductSerializer,
     SpecialProductSerializer,
 )
+from products.services.category_tree import category_subtree_ids
 from products.services.variant_stock import (
     annotate_variant_available_stock,
 )
@@ -127,7 +128,7 @@ class ProductFilterMixin:
 
         if category:
             queryset = queryset.filter(
-                category__slug=category,
+                category_id__in=category_subtree_ids(category),
             )
 
         # تگ
