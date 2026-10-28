@@ -29,6 +29,7 @@ class ProductVariantForm(forms.ModelForm):
     class Meta:
         model = ProductVariant
         fields = [
+            "is_sellable",
             "sku",
             "price",
             "discount_price",

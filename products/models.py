@@ -149,6 +149,8 @@ class ProductVariantQuerySet(GuardedStockQuerySetMixin, models.QuerySet):
 
 
 class ProductVariant(models.Model):
+    is_sellable = models.BooleanField("قابل فروش", default=True, db_index=True)
+
     def clean(self):
         super().clean()
         from coins.guards import validate_stock_candidate

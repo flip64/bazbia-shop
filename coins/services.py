@@ -18,6 +18,11 @@ def readiness_errors(listing):
     )
     if price <= 0:
         errors.append("قیمت فروش باید مثبت باشد.")
+    if getattr(listing, "catalog_link", False):
+        images = variant.images.exclude(image="", source_url__isnull=True).exclude(image="", source_url="")
+        if not images.exists():
+            errors.append("ابتدا عکس واقعی واریانت را در بخش محصولات اضافه کنید.")
+        return errors
     details = m.CoinImageDetail.objects.filter(image__variant_id=variant.pk).exclude(
         image__image="", image__source_url__isnull=True
     )
@@ -55,6 +60,8 @@ def set_publication(listing, published):
 
 
 def assert_purchasable(variant, quantity):
+    if not variant.is_sellable:
+        raise ValidationError("فروش این واریانت متوقف شده است.")
     listing = listing_for(variant.pk)
     if listing is None:
         return
@@ -65,6 +72,8 @@ def assert_purchasable(variant, quantity):
     errors = readiness_errors(listing)
     if errors:
         raise ValidationError(errors)
+    if getattr(listing, "catalog_link", False):
+        return
     from inventory.models import InventoryLot
     from django.db.models import Sum
 

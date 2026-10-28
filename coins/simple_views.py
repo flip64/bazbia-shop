@@ -12,7 +12,7 @@ from products.models import Product, ProductVariant, ProductVariantImage
 from inventory.models import InventoryLot, InventoryMovement
 from . import models as m
 from .dashboard_views import check, context
-from .simple_forms import CoinForm, PackForm, PackItems
+from .simple_forms import PackForm, PackItems
 from .services import readiness_errors, set_publication
 from .guards import inventory_write
 
@@ -68,80 +68,6 @@ def error(form, exc):
     # Model field names often belong to internal records, so show readable messages.
     form.add_error(None, ' / '.join(exc.messages) if isinstance(exc, ValidationError)
         else 'اطلاعات هم‌زمان تغییر کرده یا رکورد تکراری است. صفحه را دوباره باز کنید.')
-
-
-@staff_member_required(login_url='admin:login')
-@require_http_methods(['GET', 'POST'])
-@csrf_protect
-def register_coin(request, pk=None):
-    coin = get_object_or_404(m.CoinType, pk=pk) if pk else None
-    check(request.user, m.CoinType, 'change' if coin else 'add')
-    initial = {}
-    if coin:
-        initial = {k: getattr(coin, k) for k in ('name', 'issuer', 'denomination_label', 'story', 'calendar')}
-        initial['existing'] = coin.pk
-    elif request.GET.get('coin'):
-        initial['existing'] = request.GET['coin']
-        obj = m.CoinType.objects.filter(pk=request.GET['coin']).first()
-        if obj:
-            initial['calendar'] = obj.calendar
-    form = CoinForm(request.POST or None, request.FILES or None, initial=initial)
-    if coin:
-        form.fields['existing'].disabled = True
-        form.fields['name'].required = True
-        form.fields['issuer'].required = True
-    if request.method == 'POST' and form.is_valid():
-        d = form.cleaned_data
-        try:
-            with transaction.atomic():
-                selected = d.get('existing')
-                target = coin or selected
-                if target:
-                    check(request.user, m.CoinType, 'view')
-                    target = m.CoinType.objects.select_for_update().get(pk=target.pk)
-                else:
-                    target = m.CoinType.objects.create(name=d['name'], issuer=d['issuer'],
-                        slug='coin-'+uuid4().hex, calendar=d['calendar'],
-                        denomination_label=d['denomination_label'], story=d['story'])
-                # Choosing an existing catalog entry for a sale must not overwrite it.
-                if coin:
-                    target.name, target.issuer = d['name'], d['issuer']
-                    target.denomination_label, target.story = d['denomination_label'], d['story']
-                    target.save()
-                refs = {}
-                for side in ('obverse', 'reverse'):
-                    file = d.get(side)
-                    if file:
-                        check(request.user, m.CoinCatalogImage, 'add')
-                        ref = m.CoinCatalogImage.objects.create(coin_type=target, image=file, view_type=side)
-                        refs[side] = ref
-                issue = None
-                if d['year'] is not None or d['for_sale']:
-                    check(request.user, m.CoinIssue, 'add')
-                    issue, _ = m.CoinIssue.objects.get_or_create(coin_type=target, year=d['year'],
-                        calendar=target.calendar, date_status='known' if d['year'] is not None else 'unknown',
-                        mint=None, mint_mark='', variety_code='', finish=m.Finish.UNKNOWN)
-                listing = None
-                if d['for_sale']:
-                    sale_permissions(request.user, m.CoinSpecimen)
-                    variant = new_variant(target.name, d['price'], target.story)
-                    listing = m.CoinSpecimen.objects.create(issue=issue, variant=variant,
-                        sale_mode=d['sale_mode'], condition_notes=d['condition_notes'])
-                    for side in ('obverse', 'reverse'):
-                        file = d.get('sale_'+side)
-                        ref = refs.get(side) or target.catalog_images.filter(issue__isnull=True, view_type=side).order_by('-pk').first()
-                        if file or (d['actual_photos'] and ref):
-                            image_permissions(request.user)
-                            # Reuse the stored file path, never duplicate the upload bytes.
-                            upload(listing, file or ref.image.name, side)
-                    enter_stock(request.user, listing, d['quantity'] or 0, d['unit_cost'])
-            messages.success(request, 'ذخیره شد. فروش تا انتخاب «انتشار برای فروش» پیش‌نویس می‌ماند.' if listing else 'سکه و عکس‌ها ذخیره شدند.')
-            if listing:
-                return redirect(NS+'simple-sale', kind='coin', pk=listing.pk)
-            return redirect(NS+'detail', pk=target.pk)
-        except (ValidationError, IntegrityError) as exc:
-            error(form, exc)
-    return render(request, 'coins/dashboard/simple_coin.html', context(request, form=form, coin=coin))
 
 
 @staff_member_required(login_url='admin:login')

@@ -95,7 +95,7 @@ class AttributeValueAdmin(LargeTableAdminMixin, admin.ModelAdmin):
 class ProductVariantAdmin(LargeTableAdminMixin, admin.ModelAdmin):
     list_display = (
         "id", "product", "sku", "get_attributes", "stock",
-        "low_stock_threshold", "price", "discount_price",
+        "low_stock_threshold", "price", "discount_price", "is_sellable",
     )
     list_display_links = ("id", "product", "sku")
     search_fields = (

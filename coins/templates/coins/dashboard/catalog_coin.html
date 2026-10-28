@@ -1,0 +1,15 @@
+{% extends 'coins/dashboard/base.html' %}
+{% block content %}
+<section class="panel">
+  <h1>{% if coin %}ویرایش{% else %}ثبت{% endif %} سکه</h1>
+  <p>این فرم فقط شناسنامه و عکس مرجع سکه را ثبت می‌کند. محصول، قیمت و موجودی جداگانه مدیریت می‌شوند.</p>
+  <form method="post" enctype="multipart/form-data">
+    {% csrf_token %}{{ form.non_field_errors }}
+    {% for field in basic_fields %}<div class="field">{{ field.label_tag }}{{ field }}{{ field.errors }}{% if field.help_text %}<p class="help">{{ field.help_text }}</p>{% endif %}</div>{% endfor %}
+    <details {% if form.errors %}open{% endif %}><summary>مشخصات کامل و اطلاعات تکمیلی سکه</summary>
+      {% for field in advanced_fields %}<div class="field">{{ field.label_tag }}{{ field }}{{ field.errors }}{% if field.help_text %}<p class="help">{{ field.help_text }}</p>{% endif %}</div>{% endfor %}
+    </details>
+    <button type="submit">ذخیره شناسنامه سکه</button>
+  </form>
+</section>
+{% endblock %}

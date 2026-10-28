@@ -2,39 +2,6 @@
 from django import forms
 from . import models as m
 
-class CoinForm(forms.Form):
-    existing = forms.ModelChoiceField(label='سکه ثبت‌شده (اگر قبلاً ثبت کرده‌اید)', queryset=m.CoinType.objects.select_related('issuer'), required=False)
-    name = forms.CharField(label='نام سکه', max_length=200, required=False)
-    issuer = forms.ModelChoiceField(label='کشور', queryset=m.CoinIssuer.objects.all(), required=False)
-    denomination_label = forms.CharField(label='ارزش و واحد پول (مثلاً ۱۰ ین)', max_length=100, required=False)
-    year = forms.IntegerField(label='سال روی سکه (اگر مشخص است)', required=False)
-    calendar = forms.ChoiceField(label='تقویم سال', choices=m.Calendar.choices, initial=m.Calendar.GREGORIAN)
-    story = forms.CharField(label='داستان و توضیحات', widget=forms.Textarea, required=False)
-    obverse = forms.ImageField(label='عکس روی سکه', required=False)
-    reverse = forms.ImageField(label='عکس پشت سکه', required=False)
-    for_sale = forms.BooleanField(label='برای این سکه فروش ثبت شود', required=False)
-    actual_photos = forms.BooleanField(label='عکس‌های بالا مربوط به همین سکه قابل فروش هستند', required=False)
-    sale_obverse = forms.ImageField(label='عکس واقعی روی سکه (اگر با عکس بالا متفاوت است)', required=False)
-    sale_reverse = forms.ImageField(label='عکس واقعی پشت سکه (اگر با عکس بالا متفاوت است)', required=False)
-    price = forms.DecimalField(label='قیمت فروش (تومان)', max_digits=12, decimal_places=0, min_value=0, required=False)
-    condition_notes = forms.CharField(label='کیفیت و ایرادهای سکه', widget=forms.Textarea, required=False)
-    sale_mode = forms.ChoiceField(label='نحوه فروش', choices=m.SaleMode.choices, initial=m.SaleMode.UNIQUE, required=False)
-    quantity = forms.IntegerField(label='تعداد ورودی جدید به انبار', min_value=0, initial=0, required=False)
-    unit_cost = forms.DecimalField(label='قیمت خرید هر عدد (تومان)', max_digits=14, decimal_places=0, min_value=0, required=False)
-
-    def clean(self):
-        d = super().clean()
-        if not d.get('existing'):
-            for field in ('name', 'issuer'):
-                if not d.get(field):
-                    self.add_error(field, 'برای ثبت سکه جدید این مورد را وارد کنید.')
-        if d.get('existing') and d.get('calendar') != d['existing'].calendar:
-            self.add_error('calendar', 'تقویم را مطابق شناسنامه این سکه انتخاب کنید.')
-        if d.get('for_sale'):
-            validate_sale(self, d)
-        return d
-
-
 def validate_sale(form, data):
     if not data.get('sale_mode'):
         form.add_error('sale_mode', 'نحوه فروش را انتخاب کنید.')

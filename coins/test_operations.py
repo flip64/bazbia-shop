@@ -107,6 +107,25 @@ class CoinOperationsTests(TestCase):
         self.assertEqual(response.status_code, 201, str(response.data))
         return Order.objects.get(user=self.user)
 
+    def test_disabled_variant_blocks_add_and_existing_cart_checkout(self):
+        self.ready()
+        added = self.client.post("/api/orders/cart/add/", {"variant_id": self.variant.pk, "quantity": 1}, format="json")
+        self.assertIn(added.status_code, (200, 201))
+        self.variant.is_sellable = False
+        self.variant.save(update_fields=["is_sellable"])
+        added_again = self.client.post("/api/orders/cart/add/", {"variant_id": self.variant.pk, "quantity": 1}, format="json")
+        self.assertEqual(added_again.status_code, 400)
+        checkout = self.client.post("/api/orders/create/", {
+            "address_id": self.address.pk, "shipping_quote_id": "test-quote",
+            "shipping_method_code": "post_pishtaz", "payment_method": "online",
+        }, format="json")
+        self.assertEqual(checkout.status_code, 400)
+        self.assertFalse(Order.objects.exists())
+        self.variant.refresh_from_db()
+        self.lot.refresh_from_db()
+        self.assertEqual(self.variant.stock, 5)
+        self.assertEqual(self.lot.quantity_remaining, 5)
+
     def test_unique_save_and_queryset_update_rejected_atomically(self):
         self.variant.stock = 1
         self.variant.save()

@@ -15,6 +15,7 @@ from .variant_forms import QuickVariantForm
 def check_access(request, create=False):
     model = {
         "specimen": m.CoinSpecimen,
+        "connection": m.CoinSpecimen,
         "pack-variant": m.CoinPackVariant,
         "variant-image": ProductVariantImage,
     }.get(request.GET.get("kind"))
@@ -58,7 +59,7 @@ def lookup(request):
     else:
         # Already linked variants cannot represent a second specimen/pack.
         qs = ProductVariant.objects.select_related("product")
-        if request.GET.get("kind") != "variant-image":
+        if request.GET.get("kind") not in ("variant-image", "connection"):
             qs = qs.exclude(pk__in=m.CoinSpecimen.objects.values("variant_id")).exclude(
                 pk__in=m.CoinPackVariant.objects.values("variant_id")
             )

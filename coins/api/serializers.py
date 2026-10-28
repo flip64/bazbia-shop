@@ -92,6 +92,7 @@ class SaleSerializer(serializers.Serializer):
     product_id = serializers.IntegerField(source="variant.product_id")
     product_slug = serializers.CharField(source="variant.product.slug")
     sku = serializers.CharField(source="variant.sku")
+    variant_label = serializers.SerializerMethodField()
     price = serializers.DecimalField(
         source="variant.price", max_digits=12, decimal_places=0
     )
@@ -108,6 +109,11 @@ class SaleSerializer(serializers.Serializer):
     sale_mode = serializers.CharField()
     condition_notes = serializers.CharField()
     images = ImageSerializer(source="variant.images", many=True)
+
+    def get_variant_label(self, obj):
+        values = obj.variant.attributes.select_related("attribute").all()
+        attributes = " / ".join(f"{value.attribute.name}: {value.value}" for value in values)
+        return f"{obj.variant.product.name} · {attributes}" if attributes else obj.variant.product.name
 
     def get_can_purchase(self, obj):
         return obj.available_stock > 0 and obj.effective_price > 0
@@ -216,7 +222,10 @@ class CoinCardSerializer(serializers.ModelSerializer):
 
     def get_image(self, obj):
         image = obj.card_image
-        return ImageSerializer(image, context=self.context).data if image else None
+        if image:
+            return ImageSerializer(image, context=self.context).data
+        reference = next(iter(obj.catalog_images.all()), None)
+        return CatalogImageSerializer(reference, context=self.context).data if reference else None
 
 
 class CoinDetailSerializer(serializers.ModelSerializer):

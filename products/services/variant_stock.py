@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from django.db.models import (
+    Case, When,
     F,
     IntegerField,
     OuterRef,
@@ -35,6 +36,9 @@ class VariantStockService:
         اگر واریانت قبلاً annotate شده باشد،
         از مقدار آماده available_stock استفاده می‌شود.
         """
+
+        if not variant.is_sellable:
+            return 0
 
         annotated_stock = getattr(
             variant,
@@ -120,14 +124,14 @@ class VariantStockService:
         )
 
         return queryset.annotate(
-            available_stock=(
+            available_stock=Case(When(is_sellable=False, then=Value(0)), default=(
                 Coalesce(
                     F("stock"),
                     Value(0),
                     output_field=IntegerField(),
                 )
                 + F("supplier_available_stock")
-            )
+            ), output_field=IntegerField())
         )
 
     @classmethod

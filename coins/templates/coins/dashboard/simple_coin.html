@@ -1,14 +1,1 @@
-{% extends 'coins/dashboard/base.html' %}
-{% block content %}
-<section class="panel"><p class="eyebrow">ثبت ساده · سکه</p><h1>{% if coin %}ویرایش سکه{% else %}ثبت سکه{% endif %}</h1><p>برای شروع، نام و کشور کافی است. عکس‌ها و فروش را همین‌جا اضافه کنید.</p>
-<form method="post" enctype="multipart/form-data">{% csrf_token %}{{ form.non_field_errors }}
-<section class="panel"><h2>۱. مشخصات سکه</h2><p>اگر شناسنامه این سکه قبلاً ثبت شده، آن را انتخاب کنید. برای یک سال دیگر یا نمونه فروش جدید، شناسنامه تکراری نسازید.</p>
-{% for field in form %}{% if field.name == 'existing' or field.name == 'name' or field.name == 'issuer' or field.name == 'denomination_label' or field.name == 'year' or field.name == 'calendar' or field.name == 'story' %}<div class="field">{{ field.label_tag }}{{ field }}{{ field.errors }}</div>{% endif %}{% endfor %}</section>
-<section class="panel"><h2>۲. عکس‌ها</h2><p>دو جای عکس دارید: رو و پشت. ثبت بدون عکس هم به‌صورت پیش‌نویس ممکن است.</p>
-<div class="filter-grid"><div class="field">{{ form.obverse.label_tag }}{{ form.obverse }}{{ form.obverse.errors }}</div><div class="field">{{ form.reverse.label_tag }}{{ form.reverse }}{{ form.reverse.errors }}</div></div></section>
-<section class="panel"><h2>۳. فروش، در صورت نیاز</h2><div class="field">{{ form.for_sale }} {{ form.for_sale.label_tag }}</div><p>برای ثبت کاتالوگی این قسمت را خالی بگذارید. موجودی از طریق تعداد ورودی و بهای خرید ثبت می‌شود.</p>
-<div class="field">{{ form.actual_photos }} {{ form.actual_photos.label_tag }}</div><p>با تأیید این گزینه، عکس‌های همین بارگذاری برای فروش هم استفاده می‌شوند. عکس‌ها را دوباره انتخاب نکنید. عکس مرجع اینترنتی را به جای عکس کالای واقعی تأیید نکنید.</p>
-{% for field in form %}{% if field.name == 'price' or field.name == 'quantity' or field.name == 'unit_cost' or field.name == 'sale_mode' or field.name == 'condition_notes' %}<div class="field">{{ field.label_tag }}{{ field }}{{ field.errors }}</div>{% endif %}{% endfor %}
-<details {% if form.sale_obverse.errors or form.sale_reverse.errors %}open{% endif %}><summary>عکس واقعی فروش با عکس کاتالوگ متفاوت است</summary><div class="field">{{ form.sale_obverse.label_tag }}{{ form.sale_obverse }}{{ form.sale_obverse.errors }}</div><div class="field">{{ form.sale_reverse.label_tag }}{{ form.sale_reverse }}{{ form.sale_reverse.errors }}</div></details></section>
-<button type="submit">ذخیره سکه و ادامه</button><p>ذخیره به معنی انتشار فروش نیست. موارد ناقص بعد از ذخیره در صفحه فروش مشخص می‌شوند.</p></form></section>
-{% endblock %}
+{% extends 'coins/dashboard/catalog_coin.html' %}

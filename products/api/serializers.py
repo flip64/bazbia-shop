@@ -174,6 +174,7 @@ class ProductVariantSerializer(serializers.ModelSerializer):
             "final_price",
             "stock",
             "in_stock",
+            "is_sellable",
             "low_stock_threshold",
             "expiration_date",
             "label",

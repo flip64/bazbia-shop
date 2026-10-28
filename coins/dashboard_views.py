@@ -59,7 +59,7 @@ def context(request, **values):
             ),
         }
         for key, model in MODELS.items()
-        if allowed(request.user, model, "view")
+        if key != "specimen" and allowed(request.user, model, "view")
     ]
     return values
 
@@ -574,9 +574,9 @@ def record_edit(request, kind, pk=None):
                 coin_type_id=int(coin_id)
             )
     if model is m.CoinType:
-        form.fields["is_published"].label = "اطلاعات کاتالوگی آماده است (وضعیت داخلی)"
+        form.fields["is_published"].label = "انتشار شناسنامه در کاتالوگ"
         form.fields["is_published"].help_text = (
-            "نمایش در فروشگاه فقط با انتشار نمونه فروش انجام می‌شود."
+            "شناسنامه بدون فروش نیز قابل نمایش است. اتصال به واریانت جداگانه مدیریت می‌شود."
         )
     for field in form.fields.values():
         if isinstance(field.widget, forms.Textarea):

@@ -153,18 +153,20 @@ class CoinAPITests(TestCase):
         self.assertEqual(self.get("packs/", condition="vf")["count"], 0)
         self.assertEqual(self.get("packs/", is_complete="true")["count"], 0)
 
-    def test_inactive_products_hidden_everywhere(self):
+    def test_inactive_products_hide_sales_but_keep_published_catalog(self):
         self.product.is_active = False
         self.product.save()
         self.pack_product.is_active = False
         self.pack_product.save()
-        self.assertEqual(self.get()["count"], 0)
+        self.assertEqual(self.get()["count"], 1)
         self.assertEqual(self.get("packs/")["count"], 0)
-        self.assertEqual(self.client.get("/api/coins/250-rial/").status_code, 404)
+        response = self.client.get("/api/coins/250-rial/")
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(all(not issue["specimens"] for issue in response.data["issues"]))
         self.assertEqual(
             self.client.get("/api/coins/packs/pack-1373/").status_code, 404
         )
-        self.assertEqual(self.get("filters/")["issuers"], [])
+        self.assertEqual(len(self.get("filters/")["issuers"]), 1)
 
     def test_inactive_sample_hidden_in_active_type(self):
         self.product.is_active = False
@@ -181,7 +183,8 @@ class CoinAPITests(TestCase):
         data = self.get("250-rial/")
         self.assertEqual(len(data["issues"][0]["specimens"]), 1)
         self.assertEqual(data["issues"][0]["specimens"][0]["variant_id"], variant.pk)
-        self.assertEqual(len(data["issues"]), 1)
+        self.assertEqual(len(data["issues"]), 2)
+        self.assertEqual(data["issues"][1]["specimens"], [])
 
     def test_supplier_stock_agrees_with_existing_service(self):
         self.empty_specimen.sale_mode = "similar"
@@ -235,7 +238,7 @@ class CoinAPITests(TestCase):
         self.variant.price = 0
         self.variant.discount_price = None
         self.variant.save()
-        self.assertEqual(len(self.get("250-rial/")["issues"]), 1)
+        self.assertEqual(len(self.get("250-rial/")["issues"]), 2)
 
     def test_reserved_routes_not_interpreted_as_slugs(self):
         self.assertEqual(self.client.get("/api/coins/filters/").status_code, 200)
@@ -316,10 +319,12 @@ class IndependentCatalogTests(TestCase):
             coin_type=self.coin, year=2000, description="داستان سال"
         )
 
-    def test_internal_catalog_never_public_without_published_offer(self):
-        self.assertEqual(self.client.get("/api/coins/").data["count"], 0)
-        self.assertEqual(self.client.get("/api/coins/catalog-only/").status_code, 404)
-        self.assertEqual(self.client.get("/api/coins/filters/").data["issuers"], [])
+    def test_published_catalog_is_public_without_an_offer(self):
+        self.assertEqual(self.client.get("/api/coins/").data["count"], 1)
+        response = self.client.get("/api/coins/catalog-only/")
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.data["issues"][0]["specimens"], [])
+        self.assertEqual(len(self.client.get("/api/coins/filters/").data["issuers"]), 1)
 
     def test_internal_catalog_status_does_not_gate_published_sales(self):
         self.coin.is_published = False

@@ -594,6 +594,8 @@ class CoinCatalogReference(ValidatedModel):
 
 
 class CoinSpecimen(ValidatedModel):
+    catalog_link = models.BooleanField(default=False, editable=False)
+
     is_published = models.BooleanField(
         "منتشرشده برای فروش", default=False, db_index=True
     )

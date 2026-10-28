@@ -2,13 +2,15 @@ from django.urls import path
 from . import dashboard_views as views
 from . import variant_views
 from . import simple_views
+from . import catalog_views
 
 app_name = "coin_catalog"
 urlpatterns = [
+    path("<int:pk>/connections/", catalog_views.connections, name="connections"),
     path("photos/<str:kind>/<int:pk>/<int:photo_pk>/delete/", simple_views.delete_photo, name="simple-delete-photo"),
     path("sales/", simple_views.sales, name="simple-sales"),
-    path("new/", simple_views.register_coin, name="simple-new"),
-    path("simple/<int:pk>/", simple_views.register_coin, name="simple-edit"),
+    path("new/", catalog_views.register_coin, name="simple-new"),
+    path("simple/<int:pk>/", catalog_views.register_coin, name="simple-edit"),
     path("new-pack/", simple_views.register_pack, name="simple-pack"),
     path("sale/<str:kind>/<int:pk>/", simple_views.sale, name="simple-sale"),
     path("variants/lookup/", variant_views.lookup, name="variant-lookup"),
