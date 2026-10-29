@@ -6,6 +6,7 @@ from django.db.models import (
     Case,
     IntegerField,
     QuerySet,
+    Q,
     When,
 )
 
@@ -38,6 +39,9 @@ class TorobProductSelector:
             price__gt=0,
         )
 
+        from coins.models import CoinSpecimen
+        from coins.api.views import sales
+        queryset = queryset.filter(Q(coin_specimen__isnull=True) | Q(pk__in=sales(CoinSpecimen.objects.all()).values("variant_id")))
         queryset = filter_available_variants(
             queryset
         )
@@ -48,6 +52,8 @@ class TorobProductSelector:
                 "product",
                 "product__category",
                 "torob_config",
+                "coin_specimen__issue__coin_type__group",
+                "coin_specimen__issue__coin_type__issuer",
             )
             .prefetch_related(
                 # ویژگی‌های اختصاصی واریانت

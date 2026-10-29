@@ -62,16 +62,15 @@ class CatalogConnectionTests(TestCase):
         self.assertEqual(self.connect(other).status_code, 302)
         self.assertEqual(m.CoinSpecimen.objects.filter(issue__coin_type=self.coin).count(), 2)
 
-    def test_missing_photo_rolls_back_activation(self):
+    def test_catalog_connection_without_photo_is_allowed(self):
         self.variant.images.all().delete()
         self.variant.is_sellable = False
         self.variant.save(update_fields=['is_sellable'])
         response = self.connect()
-        self.assertEqual(response.status_code, 200)
-        self.assertTrue(response.context['form'].non_field_errors())
-        self.assertFalse(m.CoinSpecimen.objects.exists())
+        self.assertEqual(response.status_code, 302)
+        self.assertTrue(m.CoinSpecimen.objects.get().catalog_link)
         self.variant.refresh_from_db()
-        self.assertFalse(self.variant.is_sellable)
+        self.assertTrue(self.variant.is_sellable)
 
     def test_cannot_take_another_catalogs_variant(self):
         self.connect()

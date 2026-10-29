@@ -54,6 +54,14 @@ class CatalogImageAdmin(BaseAdmin):
     list_display = ("coin_type", "issue", "view_type", "credit")
 
 
+@admin.register(m.CoinGroup)
+class GroupAdmin(BaseAdmin):
+    search_fields = ("name", "issuer__name", "slug")
+    list_display = ("name", "issuer")
+    autocomplete_fields = ("issuer",)
+    prepopulated_fields = {"slug": ("name",)}
+
+
 @admin.register(m.CoinType)
 class TypeAdmin(BaseAdmin):
     search_fields = ("name", "slug", "denomination_label", "issuer__name")
@@ -66,7 +74,7 @@ class TypeAdmin(BaseAdmin):
         "shape",
         "calendar",
     )
-    autocomplete_fields = ("issuer", "period", "ruler", "currency", "themes")
+    autocomplete_fields = ("group", "issuer", "period", "ruler", "currency", "themes")
     inlines = (CompositionInline, CatalogImageInline)
 
 

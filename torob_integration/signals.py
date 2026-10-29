@@ -447,3 +447,55 @@ def handle_attribute_deleting(
     **kwargs,
 ):
     touch_attribute_variants(instance.pk)
+
+
+# Group editorial changes affect exported titles and fallback pictures as well.
+from coins.models import CoinGroup, CoinType, CoinIssue, CoinSpecimen, CoinCatalogImage
+
+
+@receiver(post_save, sender=CoinGroup)
+def touch_coin_group(sender, instance, **kwargs):
+    TorobVariantConfig.objects.filter(
+        variant__coin_specimen__issue__coin_type__group_id=instance.pk,
+    ).update(torob_updated_at=timezone.now())
+
+
+@receiver(post_save, sender=CoinType)
+def touch_coin_year(sender, instance, **kwargs):
+    TorobVariantConfig.objects.filter(
+        variant__coin_specimen__issue__coin_type_id=instance.pk,
+    ).update(torob_updated_at=timezone.now())
+
+
+@receiver(post_save, sender=CoinIssue)
+def touch_coin_issue(sender, instance, **kwargs):
+    TorobVariantConfig.objects.filter(
+        variant__coin_specimen__issue_id=instance.pk,
+    ).update(torob_updated_at=timezone.now())
+
+
+@receiver(post_save, sender=CoinSpecimen)
+@receiver(post_delete, sender=CoinSpecimen)
+def touch_coin_listing(sender, instance, **kwargs):
+    touch_variant(instance.variant_id)
+
+
+@receiver(post_save, sender=CoinCatalogImage)
+@receiver(post_delete, sender=CoinCatalogImage)
+def touch_coin_catalog_picture(sender, instance, **kwargs):
+    TorobVariantConfig.objects.filter(
+        variant__coin_specimen__issue__coin_type_id=instance.coin_type_id,
+    ).update(torob_updated_at=timezone.now())
+
+
+from django.db.models.signals import post_migrate
+
+
+@receiver(post_migrate)
+def refresh_grouped_coin_exports_after_migration(sender, app_config, using, **kwargs):
+    # Historical migration models do not emit the runtime CoinType receivers.
+    # Mark existing exports so incremental Torob polling sees the new URLs/titles.
+    if app_config.label == 'torob_integration':
+        TorobVariantConfig.objects.using(using).filter(
+            variant__coin_specimen__issue__coin_type__group_id__isnull=False,
+        ).update(torob_updated_at=timezone.now())

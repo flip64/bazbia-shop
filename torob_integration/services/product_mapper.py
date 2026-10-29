@@ -40,12 +40,14 @@ class TorobProductMapper:
         """
 
         product = variant.product
+        listing = getattr(variant, "coin_specimen", None)
+        group = listing.issue.coin_type.group if listing else None
         current_price, old_price = cls.get_prices(variant)
 
         return {
             "page_unique": str(variant.id),
             "page_url": cls.build_page_url(variant),
-            "product_group_id": str(product.id),
+            "product_group_id": f"coin-group-{group.pk}" if group else str(product.id),
             "title": cls.build_title(variant),
             "subtitle": cls.get_subtitle(product),
             "current_price": current_price,
@@ -112,6 +114,15 @@ class TorobProductMapper:
         لینک کامل صفحه محصول که همان واریانت را انتخاب می‌کند.
         """
 
+        listing = getattr(variant, "coin_specimen", None)
+        if listing:
+            from urllib.parse import quote
+            coin = listing.issue.coin_type
+            path = "/coins/groups/" + quote(coin.group.slug, safe="") if coin.group_id else "/coins/" + quote(coin.slug, safe="")
+            query = {"variant": variant.pk, "issue": listing.issue_id}
+            if coin.group_id:
+                query["coin"] = coin.slug
+            return cls.STOREFRONT_BASE_URL + path + "?" + urlencode(query)
         product_url = (
             f"{cls.STOREFRONT_BASE_URL}"
             f"/product/{variant.product.slug}/"
@@ -138,6 +149,13 @@ class TorobProductMapper:
         نام محصول به همراه ویژگی‌های همان واریانت.
         """
 
+        listing = getattr(variant, "coin_specimen", None)
+        if listing:
+            coin = listing.issue.coin_type
+            name = coin.group.name if coin.group_id else coin.name
+            year = listing.issue.year
+            grade = listing.get_condition_grade_display()
+            return f"{name} - {coin.issuer.name} - {year if year is not None else listing.issue.get_date_status_display()} - {grade}"[:500]
         product_name = str(
             variant.product.name
         ).strip()
@@ -346,6 +364,12 @@ class TorobProductMapper:
                 cls.normalize_spec_value(value)
             )
 
+        listing = getattr(variant, "coin_specimen", None)
+        if listing:
+            issue = listing.issue
+            result.update({"سال ضرب": issue.year if issue.year is not None else issue.get_date_status_display(),
+                "کشور": issue.coin_type.issuer.name, "کیفیت": listing.get_condition_grade_display(),
+                "نوع عرضه": listing.get_sale_mode_display()})
         return result
 
     @staticmethod
@@ -424,10 +448,13 @@ class TorobProductMapper:
 
         links: list[str] = []
 
-        image_objects = [
-            *cls.get_variant_images(variant),
-            *cls.get_product_images(variant.product),
-        ]
+        listing = getattr(variant, "coin_specimen", None)
+        if listing:
+            image_objects = cls.get_variant_images(variant)
+            if not image_objects:
+                image_objects = list(listing.issue.catalog_images.all()) or list(listing.issue.coin_type.catalog_images.all())
+        else:
+            image_objects = [*cls.get_variant_images(variant), *cls.get_product_images(variant.product)]
 
         for image_object in image_objects:
             image_url = cls.get_image_url(
@@ -444,6 +471,12 @@ class TorobProductMapper:
             if image_url not in links:
                 links.append(image_url)
 
+        if not links and listing and listing.issue.coin_type.group_id:
+            from coins.grouping import group_images
+            from urllib.parse import urljoin
+            links = [urljoin(cls.MEDIA_BASE_URL + '/', image['url'])
+                     for image in group_images(listing.issue.coin_type.group, request)
+                     if image['url'] and not cls.is_thumbnail_url(image['url'])]
         return links
 
     @staticmethod

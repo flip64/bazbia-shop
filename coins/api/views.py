@@ -301,7 +301,7 @@ class CoinListView(CardList):
             matching_issues = m.CoinIssue.objects.filter(catalog_q({k: v for k, v in p.items() if k in issue_keys or k == "calendar"}))
             catalog = catalog.filter(pk__in=matching_issues.values("coin_type_id"))
         if p.get("q"):
-            catalog = catalog.filter(Q(name__icontains=p["q"]) | Q(obverse_inscription__icontains=p["q"]) | Q(reverse_inscription__icontains=p["q"]))
+            catalog = catalog.filter(Q(name__icontains=p["q"]) | Q(group__name__icontains=p["q"]) | Q(obverse_inscription__icontains=p["q"]) | Q(reverse_inscription__icontains=p["q"]))
         requires_sale = any(key in p for key in ("min_price", "max_price", "condition")) or p.get("in_stock") is True
         visible = Q(pk__in=selected.values("issue__coin_type_id"))
         if not requires_sale:
@@ -331,7 +331,7 @@ class CoinDetailView(PublicAPI, generics.RetrieveAPIView):
         )
         return (
             m.CoinType.objects.filter(Q(is_published=True) | Q(pk__in=public.values("issue__coin_type_id")))
-            .select_related("issuer", "period", "ruler", "currency")
+            .select_related("group", "issuer", "period", "ruler", "currency")
             .prefetch_related(
                 "themes",
                 Prefetch(
@@ -521,3 +521,37 @@ class ManagePublicationView(APIView):
         except ModelError as error:
             raise ValidationError(error.messages)
         return Response({"id": listing.pk, "is_published": listing.is_published})
+
+
+class CoinGroupListView(CardList):
+    serializer_class = s.CoinGroupCardSerializer
+
+    def get_queryset(self):
+        p = params(self.request)
+        annual = CoinListView()
+        annual.request = self.request
+        visible = annual.get_queryset()
+        selected = filter_sale(sales(m.CoinSpecimen.objects.all()), p).filter(catalog_q(p, 'issue__'))
+        if 'condition' in p:
+            selected = selected.filter(condition_grade=p['condition'])
+        groups = m.CoinGroup.objects.filter(pk__in=visible.values('group_id')).select_related('issuer')
+        matched = selected.filter(issue__coin_type__group_id=OuterRef('pk'))
+        return card_annotations(groups, matched, 'name', p)
+
+
+class CoinGroupDetailView(PublicAPI, APIView):
+    def get(self, request, slug):
+        from django.shortcuts import get_object_or_404
+        from coins.grouping import group_images
+        group = get_object_or_404(m.CoinGroup.objects.select_related('issuer'), slug=slug)
+        view = CoinDetailView()
+        view.request = request
+        years = view.get_queryset().filter(group=group).order_by('mint_year', 'pk')
+        if not years.exists():
+            from rest_framework.exceptions import NotFound
+            raise NotFound()
+        data = s.CoinDetailSerializer(years, many=True, context={'request': request}).data
+        return Response({'id': group.pk, 'slug': group.slug, 'name': group.name,
+            'introduction': group.introduction, 'story': group.story,
+            'story_sources': group.story_sources, 'images': group_images(group, request),
+            'years': data})

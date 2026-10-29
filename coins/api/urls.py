@@ -3,6 +3,8 @@ from . import views
 
 app_name = "coins_api"
 urlpatterns = [
+    path("groups/", views.CoinGroupListView.as_view(), name="group-list"),
+    path("groups/<slug:slug>/", views.CoinGroupDetailView.as_view(), name="group-detail"),
     path("manage/assemble/", views.ManageAssemblyView.as_view(), name="assemble"),
     path(
         "manage/<str:kind>/<int:pk>/publish/",

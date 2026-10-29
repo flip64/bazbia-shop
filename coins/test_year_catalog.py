@@ -114,7 +114,7 @@ class SplitExistingYearTests(TestCase):
         migration = import_module('coins.migrations.0005_cointype_mint_year')
         # Historical models avoid runtime validation/signals, just like real migrate.
         from django.db.migrations.executor import MigrationExecutor
-        state = MigrationExecutor(connection).loader.project_state([('coins','0005_cointype_mint_year')])
+        state = MigrationExecutor(connection).loader.project_state([('coins','0007_populate_coin_groups')])
         class Editor:
             connection = connection
         migration.separate_years(state.apps,Editor())

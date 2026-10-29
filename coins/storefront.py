@@ -31,6 +31,15 @@ class ProductStorefrontMixin:
                 image = next((row for row in images if row["is_main"]), None) or next(iter(images), None)
                 if image and "thumb" in data:
                     data["thumb"] = image["image"] or image["source_url"]
+        if target and target.get("is_group"):
+            if "price" in data:
+                data["price"] = target["min_price"]
+            if "discount_price" in data:
+                data["discount_price"] = None
+            if "in_stock" in data:
+                data["in_stock"] = target["in_stock"]
+            if "thumb" in data:
+                data["thumb"] = target["images"][0]["url"] if target["images"] else None
         return data
 
     def _destinations(self):
@@ -65,6 +74,7 @@ class ProductStorefrontMixin:
                 })
                 target["variants"][str(row.variant_id)] = url
                 if kind == "coin":
+                    target.setdefault("group_id", row.issue.coin_type.group_id)
                     target.setdefault("year", row.issue.year)
                     target.setdefault("issuer", row.issue.coin_type.issuer.name)
                     target.setdefault("label", row.issue.coin_type.name)
@@ -79,7 +89,32 @@ class ProductStorefrontMixin:
                 "kind": "coin",
                 "url": "/coins/" + quote(coin.slug, safe="") + "?issue=" + str(row.issue_id),
                 "variants": {}, "catalog_only": True,
-                "year": row.issue.year, "issuer": coin.issuer.name, "label": coin.name,
+                "group_id": coin.group_id, "year": row.issue.year, "issuer": coin.issuer.name, "label": coin.name,
             })
+        group_ids = {target.get("group_id") for target in result.values()} - {None}
+        if group_ids:
+            from django.db.models import OuterRef
+            from .api.views import card_annotations
+            from .grouping import group_images
+            from .models import CoinGroup
+            matched = sales(CoinSpecimen.objects.filter(issue__coin_type__group_id=OuterRef("pk")))
+            groups = card_annotations(CoinGroup.objects.filter(pk__in=group_ids).select_related("issuer"), matched, "name", {})
+            summaries = {group.pk: group for group in groups}
+            for target in result.values():
+                group = summaries.get(target.get("group_id"))
+                if not group:
+                    continue
+                base = "/coins/groups/" + quote(group.slug, safe="")
+                for key, url in list(target["variants"].items()):
+                    # Preserve variant and issue from historical product links.
+                    from urllib.parse import urlsplit, parse_qs, urlencode, unquote
+                    query = parse_qs(urlsplit(url).query)
+                    old_slug = unquote(urlsplit(url).path.rstrip("/").rsplit("/", 1)[-1])
+                    query["coin"] = [old_slug]
+                    target["variants"][key] = base + "?" + urlencode({k: v[0] for k, v in query.items()})
+                target.update(url=base, is_group=True, label=group.name, year=None,
+                    issuer=group.issuer.name, images=group_images(group, self.context.get("request")),
+                    min_price=str(group.min_price) if group.min_price is not None else None,
+                    in_stock=group.in_stock, catalog_only=group.min_price is None)
         cache_owner._coin_destinations = result
         return result

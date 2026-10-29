@@ -73,6 +73,9 @@ class TorobVariantConfig(models.Model):
         شناسه مشترک تمام واریانت‌های یک محصول.
         در دیتابیس ذخیره نمی‌شود چون از محصول والد قابل محاسبه است.
         """
+        listing = getattr(self.variant, "coin_specimen", None)
+        if listing and listing.issue.coin_type.group_id:
+            return f"coin-group-{listing.issue.coin_type.group_id}"
         return str(self.variant.product_id)
 
     def touch(self, save=True):

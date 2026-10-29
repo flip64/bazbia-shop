@@ -4,6 +4,8 @@
   <h1>{% if source %}ثبت سکه برای سال دیگر{% elif coin %}ویرایش سکه{% else %}ثبت سکه{% endif %}</h1>
   {% if source %}<p>مشخصات مشترک «{{ source.name }}» کپی شده‌اند. سال جدید و عکس‌های مخصوص آن را وارد کنید؛ عکس‌ها و اتصال‌های فروش کپی نمی‌شوند.</p>{% endif %}
   <p>هر سال ضرب یک شناسنامه و عکس مستقل دارد. این فرم فقط شناسنامه و عکس مرجع همین سال را ثبت می‌کند. محصول، قیمت و موجودی جداگانه مدیریت می‌شوند.</p>
+  <p><a href="{% url 'dashboard:coin_catalog:create' 'group' %}">ساخت گروه سکه با داستان و عکس مشترک</a> · <a href="{% url 'dashboard:coin_catalog:records' 'group' %}">مدیریت گروه‌ها</a></p>
+  <p>برای سال دیگر، همان گروه را انتخاب کنید. داستان سال فقط برای توضیح اختصاصی همان سال است؛ داستان اصلی را در گروه بنویسید.</p>
   <form method="post" enctype="multipart/form-data">
     {% csrf_token %}{{ form.non_field_errors }}
     {% for field in basic_fields %}<div class="field">{{ field.label_tag }}{{ field }}{{ field.errors }}{% if field.help_text %}<p class="help">{{ field.help_text }}</p>{% endif %}</div>{% endfor %}

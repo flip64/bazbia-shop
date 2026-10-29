@@ -210,7 +210,38 @@ class CoinTheme(NamedModel):
         verbose_name_plural = "موضوع‌ها"
 
 
+class CoinGroup(ValidatedModel):
+    """Shared editorial identity; inventory belongs to annual specimens."""
+    name = models.CharField("نام گروه سکه", max_length=200)
+    slug = models.SlugField("نامک", max_length=180, unique=True)
+    issuer = models.ForeignKey(CoinIssuer, on_delete=models.PROTECT, verbose_name="کشور")
+    introduction = models.TextField("معرفی مشترک", blank=True)
+    story = models.TextField("داستان مشترک", blank=True)
+    story_sources = models.TextField("منابع داستان", blank=True)
+    obverse = models.ImageField("عکس مرجع روی گروه", upload_to="coins/groups/", blank=True)
+    reverse = models.ImageField("عکس مرجع پشت گروه", upload_to="coins/groups/", blank=True)
+    obverse_url = models.URLField("لینک عکس روی گروه", max_length=1000, blank=True)
+    reverse_url = models.URLField("لینک عکس پشت گروه", max_length=1000, blank=True)
+
+    class Meta:
+        verbose_name = "گروه سکه"
+        verbose_name_plural = "گروه‌های سکه"
+        ordering = ["name", "pk"]
+
+    def __str__(self):
+        return self.name
+
+    def clean(self):
+        super().clean()
+        if self.pk and self.coins.exclude(issuer_id=self.issuer_id).exists():
+            raise ValidationError({"issuer": "کشور گروه باید با تمام سال‌های عضو یکسان باشد."})
+
+
 class CoinType(ValidatedModel):
+    group = models.ForeignKey(CoinGroup, on_delete=models.PROTECT, related_name="coins",
+        null=True, blank=True, verbose_name="گروه سکه",
+        help_text="داستان و عکس عمومی از گروه خوانده می‌شود؛ عکس‌ها و فروش این سال مستقل است.")
+    year_story = models.TextField("داستان یا توضیح اختصاصی این سال", blank=True)
     mint_year = models.IntegerField("سال ضرب", null=True, blank=True, db_index=True)
 
     class Kind(models.TextChoices):
@@ -370,6 +401,8 @@ class CoinType(ValidatedModel):
 
     def clean(self):
         super().clean()
+        if self.group_id and self.group.issuer_id != self.issuer_id:
+            raise ValidationError({"group": "کشور سکه و گروه باید یکسان باشد."})
         if self.period_id and self.period.issuer_id != self.issuer_id:
             raise ValidationError({"period": "دوره باید متعلق به صادرکننده باشد."})
         if self.pk:

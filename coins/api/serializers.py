@@ -231,6 +231,7 @@ class CoinCardSerializer(serializers.ModelSerializer):
 
 
 class CoinDetailSerializer(serializers.ModelSerializer):
+    group_slug = serializers.CharField(source="group.slug", default=None, allow_null=True)
     related_years = serializers.SerializerMethodField()
 
     def get_related_years(self, obj):
@@ -243,6 +244,9 @@ class CoinDetailSerializer(serializers.ModelSerializer):
             period_id=obj.period_id, ruler_id=obj.ruler_id, series_name=obj.series_name,
             construction=obj.construction, shape=obj.shape,
         ).filter(Q(is_published=True) | Q(pk__in=public_ids)).order_by("mint_year", "pk")
+        if obj.group_id:
+            rows = m.CoinType.objects.filter(group_id=obj.group_id, mint_year__isnull=False).filter(
+                Q(is_published=True) | Q(pk__in=public_ids)).order_by("mint_year", "pk")
         return [{"slug": row.slug, "year": row.mint_year} for row in rows]
 
     images = CatalogImageSerializer(source="catalog_images", many=True)
@@ -262,6 +266,7 @@ class CoinDetailSerializer(serializers.ModelSerializer):
         model = m.CoinType
         fields = (
             "id",
+            "group_slug",
             "name",
             "mint_year",
             "related_years",
@@ -305,6 +310,7 @@ class CoinDetailSerializer(serializers.ModelSerializer):
             "series_name",
             "introduction",
             "story",
+            "year_story",
             "story_sources",
             "images",
             "description",
@@ -406,3 +412,15 @@ class PackDetailSerializer(serializers.ModelSerializer):
             "description",
             "variants",
         )
+
+
+class CoinGroupCardSerializer(serializers.BaseSerializer):
+    def to_representation(self, obj):
+        from coins.grouping import group_images
+        images = group_images(obj, self.context.get('request'))
+        return {'id': obj.pk, 'name': obj.name, 'slug': obj.slug, 'is_group': True,
+            'issuer': NamedSerializer(obj.issuer).data, 'period': None,
+            'denomination_label': '', 'mint_year': None, 'calendar': '',
+            'min_price': str(obj.min_price) if obj.min_price is not None else None,
+            'in_stock': obj.in_stock, 'currency': 'IRT',
+            'image': images[0] if images else None, 'images': images}

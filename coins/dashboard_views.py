@@ -18,6 +18,7 @@ from products.models import ProductVariantImage
 NS = "dashboard:coin_catalog:"
 # Fixed allowlist: a URL can never select an unrelated application/model.
 MODELS = {
+    "group": m.CoinGroup,
     "type": m.CoinType,
     "issue": m.CoinIssue,
     "image": m.CoinCatalogImage,
@@ -518,7 +519,10 @@ def record_edit(request, kind, pk=None):
     model = model_for(kind)
     check(request.user, model, "change" if pk else "add")
     obj = get_object_or_404(model, pk=pk) if pk else None
-    if model is ProductVariantImage:
+    if model is m.CoinGroup:
+        from .catalog_forms import CoinGroupForm
+        Form = CoinGroupForm
+    elif model is ProductVariantImage:
         check(request.user, m.CoinImageDetail, "change" if pk else "add")
         from .variant_forms import CoinVariantImageForm
 

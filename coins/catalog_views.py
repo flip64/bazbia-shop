@@ -24,12 +24,17 @@ def register_coin(request, pk=None):
     check(request.user, m.CoinType, "change" if coin else "add")
     source = None
     initial = {}
+    group_id = request.GET.get("group", "")
+    if not coin and group_id.isdecimal():
+        check(request.user, m.CoinGroup, "view")
+        group = get_object_or_404(m.CoinGroup, pk=int(group_id))
+        initial.update(group=group.pk, name=group.name, issuer=group.issuer_id)
     copy_id = request.GET.get("copy", "")
     if not coin and copy_id.isdecimal():
         check(request.user, m.CoinType, "view")
         source = get_object_or_404(m.CoinType, pk=copy_id)
         from django.forms.models import model_to_dict
-        initial = model_to_dict(source, exclude=("id", "slug", "mint_year", "year_start", "year_end", "is_published"))
+        initial = model_to_dict(source, exclude=("id", "slug", "mint_year", "year_start", "year_end", "is_published", "year_story"))
         initial["is_published"] = False
     form = CatalogCoinForm(request.POST if request.method == "POST" else None,
                            request.FILES if request.method == "POST" else None, instance=coin, initial=initial)
@@ -40,6 +45,11 @@ def register_coin(request, pk=None):
                 creating = not obj.pk
                 if not obj.pk:
                     obj.slug = "coin-" + uuid4().hex
+                if not obj.group_id:
+                    check(request.user, m.CoinGroup, "add")
+                    obj.group = m.CoinGroup.objects.create(name=obj.name, issuer=obj.issuer,
+                        slug="group-" + uuid4().hex, introduction=obj.introduction,
+                        story=obj.story, story_sources=obj.story_sources)
                 obj.save()
                 form.save_m2m()
                 if creating or not obj.issues.exists():
@@ -68,7 +78,7 @@ def register_coin(request, pk=None):
             return redirect(NS + "detail", pk=obj.pk)
         except (ValidationError, IntegrityError) as exc:
             form.add_error(None, " / ".join(exc.messages) if isinstance(exc, ValidationError) else "اطلاعات تکراری یا ناسازگار است.")
-    basic = {"mint_year", "name", "issuer", "denomination_label", "calendar", "introduction", "story", "obverse", "reverse", "is_published"}
+    basic = {"group", "mint_year", "name", "issuer", "denomination_label", "calendar", "introduction", "year_story", "obverse", "reverse", "is_published"}
     return render(request, "coins/dashboard/catalog_coin.html", context(request, coin=coin, source=source, form=form,
         basic_fields=[field for field in form if field.name in basic],
         advanced_fields=[field for field in form if field.name not in basic]))

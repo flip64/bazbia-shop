@@ -5,6 +5,7 @@ from django.db.models import (
     Min,
     OuterRef,
     Prefetch,
+    Q,
 )
 from django.http import (
     HttpResponseBadRequest,
@@ -150,7 +151,8 @@ class ProductFilterMixin:
 
         if search:
             queryset = queryset.filter(
-                name__icontains=search,
+                Q(name__icontains=search)
+                | Q(variants__coin_specimen__issue__coin_type__group__name__icontains=search),
             )
 
         # حداقل قیمت
@@ -254,7 +256,8 @@ class ProductFilterMixin:
             *selected_ordering,
         )
 
-        return queryset.distinct()
+        from coins.grouping import collapse_products
+        return collapse_products(queryset.distinct())
 
 
 # =============================
