@@ -50,7 +50,7 @@ class StorefrontDestinationTests(TestCase):
         second = m.CoinSpecimen.objects.create(issue=self.issue, variant=other)
         publish_fixture(second)
         products = [self.product, Product.objects.create(name="عادی", slug="normal", base_price=100)]
-        with self.assertNumQueries(2):
+        with self.assertNumQueries(3):
             data = MinimalProductSerializer(products, many=True).data
         self.assertEqual(set(data[0]["storefront"]["variants"]), {str(other.pk), str(self.variant.pk)})
         self.assertIsNone(data[1]["storefront"])
@@ -70,3 +70,14 @@ class StorefrontDestinationTests(TestCase):
         self.assertIsNotNone(MinimalProductSerializer(self.product).data["storefront"])
         Product.objects.filter(pk=self.product.pk).update(is_active=False)
         self.assertIsNone(MinimalProductSerializer(self.product).data["storefront"])
+
+    def test_published_catalog_without_sale_has_canonical_destination(self):
+        self.coin.is_published = True
+        self.coin.save()
+        target = MinimalProductSerializer(self.product).data['storefront']
+        self.assertTrue(target['catalog_only'])
+        self.assertEqual(target['url'], f'/coins/coin?issue={self.issue.pk}')
+        self.assertEqual(target['variants'], {})
+
+    def test_hidden_catalog_and_unpublished_sale_do_not_leak(self):
+        self.assertIsNone(MinimalProductSerializer(self.product).data['storefront'])

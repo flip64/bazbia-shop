@@ -8,6 +8,15 @@ class ProductStorefrontMixin:
         product = getattr(instance, "product", instance)
         target = self._destinations().get(product.pk)
         data["storefront"] = target
+        if target and target.get("label") and "name" in data:
+            year = target.get("year")
+            data["name"] = target["label"] + (f" · {year}" if year is not None else "")
+        if target and target.get("catalog_only"):
+            for key in ("price", "discount_price"):
+                if key in data:
+                    data[key] = None
+            if "in_stock" in data:
+                data["in_stock"] = False
         if target and "variants" in data:
             by_id = {str(row["id"]): row for row in data["variants"]}
             data["variants"] = [by_id[key] for key in target["variants"] if key in by_id]
@@ -42,7 +51,7 @@ class ProductStorefrontMixin:
             rows = sales(model.objects.filter(variant__product_id__in=ids))
             rows = rows.order_by("-available_stock", "variant_id")
             if kind == "coin":
-                rows = rows.select_related("issue__coin_type", "variant__product")
+                rows = rows.select_related("issue__coin_type__issuer", "variant__product")
             else:
                 rows = rows.select_related("pack__product", "variant__product")
             for row in rows:
@@ -55,5 +64,22 @@ class ProductStorefrontMixin:
                     "kind": kind, "url": url, "variants": {}
                 })
                 target["variants"][str(row.variant_id)] = url
+                if kind == "coin":
+                    target.setdefault("year", row.issue.year)
+                    target.setdefault("issuer", row.issue.coin_type.issuer.name)
+                    target.setdefault("label", row.issue.coin_type.name)
+        # Catalog connections still have one canonical page when no public sale exists.
+        links = CoinSpecimen.objects.filter(
+            variant__product_id__in=ids, variant__product__is_active=True,
+            issue__coin_type__is_published=True,
+        ).select_related("issue__coin_type__issuer").order_by("pk")
+        for row in links:
+            coin = row.issue.coin_type
+            result.setdefault(row.variant.product_id, {
+                "kind": "coin",
+                "url": "/coins/" + quote(coin.slug, safe="") + "?issue=" + str(row.issue_id),
+                "variants": {}, "catalog_only": True,
+                "year": row.issue.year, "issuer": coin.issuer.name, "label": coin.name,
+            })
         cache_owner._coin_destinations = result
         return result

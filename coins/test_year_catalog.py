@@ -130,3 +130,16 @@ class SplitExistingYearTests(TestCase):
         self.assertEqual(other.catalog_images.get(issue__isnull=True).source_url,shared.source_url)
         self.assertEqual(variant.stock,3)
         self.assertEqual(m.CoinSpecimen.objects.count(),1)
+
+    def test_year_navigation_excludes_private_and_other_countries(self):
+        self.issuer = m.CoinIssuer.objects.create(name='test issuer', slug='test-issuer')
+        first = m.CoinType.objects.create(name='same', slug='same-2001', issuer=self.issuer, mint_year=2001, is_published=True)
+        second = m.CoinType.objects.create(name='same', slug='same-2002', issuer=self.issuer, mint_year=2002, is_published=True)
+        m.CoinType.objects.create(name='same', slug='private', issuer=self.issuer, mint_year=2003)
+        other = m.CoinIssuer.objects.create(name='other', slug='other')
+        m.CoinType.objects.create(name='same', slug='other', issuer=other, mint_year=2004, is_published=True)
+        response = self.client.get('/api/coins/' + first.slug + '/')
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json()['related_years'], [
+            {'slug': first.slug, 'year': 2001}, {'slug': second.slug, 'year': 2002},
+        ])

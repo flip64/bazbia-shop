@@ -1,5 +1,6 @@
 """Explicit public field lists: never expose purchase costs or storage locations."""
 
+from django.db.models import Q
 from rest_framework import serializers
 from coins import models as m
 
@@ -230,6 +231,20 @@ class CoinCardSerializer(serializers.ModelSerializer):
 
 
 class CoinDetailSerializer(serializers.ModelSerializer):
+    related_years = serializers.SerializerMethodField()
+
+    def get_related_years(self, obj):
+        from .views import sales
+        public_ids = sales(m.CoinSpecimen.objects.all()).values("issue__coin_type_id")
+        rows = m.CoinType.objects.filter(
+            name=obj.name, issuer_id=obj.issuer_id, calendar=obj.calendar,
+            currency_id=obj.currency_id, face_value=obj.face_value,
+            denomination_label=obj.denomination_label, mint_year__isnull=False,
+            period_id=obj.period_id, ruler_id=obj.ruler_id, series_name=obj.series_name,
+            construction=obj.construction, shape=obj.shape,
+        ).filter(Q(is_published=True) | Q(pk__in=public_ids)).order_by("mint_year", "pk")
+        return [{"slug": row.slug, "year": row.mint_year} for row in rows]
+
     images = CatalogImageSerializer(source="catalog_images", many=True)
     issuer = NamedSerializer()
     period = NamedSerializer(allow_null=True)
@@ -249,6 +264,7 @@ class CoinDetailSerializer(serializers.ModelSerializer):
             "id",
             "name",
             "mint_year",
+            "related_years",
             "slug",
             "issuer",
             "period",
