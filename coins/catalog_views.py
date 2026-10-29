@@ -123,6 +123,10 @@ def connections(request, pk):
                     else:
                         link = m.CoinSpecimen.objects.create(issue=form.cleaned_data["issue"], variant=variant,
                             sale_mode=m.SaleMode.SIMILAR, catalog_link=True)
+                    if not link.catalog_link:
+                        # Reconnecting an older listing uses the same optional-photo workflow.
+                        link.catalog_link = True
+                        link.save(update_fields=["catalog_link"])
                     variant.is_sellable = True
                     variant.save(update_fields=["is_sellable"])
                     set_publication(link, True)

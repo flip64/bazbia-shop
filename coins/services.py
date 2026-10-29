@@ -19,9 +19,7 @@ def readiness_errors(listing):
     if price <= 0:
         errors.append("قیمت فروش باید مثبت باشد.")
     if getattr(listing, "catalog_link", False):
-        images = variant.images.exclude(image="", source_url__isnull=True).exclude(image="", source_url="")
-        if not images.exists():
-            errors.append("ابتدا عکس واقعی واریانت را در بخش محصولات اضافه کنید.")
+        # Catalog connections can be published before variant photos are uploaded.
         return errors
     details = m.CoinImageDetail.objects.filter(image__variant_id=variant.pk).exclude(
         image__image="", image__source_url__isnull=True

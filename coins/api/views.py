@@ -150,9 +150,6 @@ def sales(queryset):
                     )
                 ))
             )
-        gallery = ProductVariantImage.objects.filter(variant_id=OuterRef("variant_id")).exclude(
-            image="", source_url__isnull=True).exclude(image="", source_url="")
-        queryset = queryset.filter(Q(catalog_link=False) | Q(Exists(gallery)))
     else:
         queryset = queryset.filter(
             Exists(
