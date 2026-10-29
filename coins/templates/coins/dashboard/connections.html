@@ -2,11 +2,11 @@
 {% block content %}
 <nav class="breadcrumb"><a href="{% url 'dashboard:coin_catalog:detail' coin.pk %}">{{ coin.name }}</a> ‹ اتصال به فروش</nav>
 <section class="panel">
-  <h1>اتصال واریانت به {{ coin.name }}</h1>
+  <h1>اتصال واریانت به {{ coin.name }}{% if coin.mint_year != None %} · {{ coin.mint_year }}{% endif %}</h1>
   <p>ابتدا محصول و واریانت را در <a href="/dashboard/products/">بخش محصولات</a> بسازید. قیمت، عکس واقعی و موجودی همان‌جا مدیریت می‌شوند.</p>
   <form method="post">{% csrf_token %}{{ form.non_field_errors }}
-    <div class="field">{{ form.issue.label_tag }}{{ form.issue }}{{ form.issue.errors }}</div>
-    <p><a href="{% url 'dashboard:coin_catalog:create' 'issue' %}?coin={{ coin.pk }}">افزودن سال و نوع ضرب</a></p>
+    {% if form.issue.is_hidden %}{{ form.issue }}{{ form.issue.errors }}<p>سال ضرب این سکه: {{ coin.mint_year|default_if_none:"نامشخص" }}</p>{% else %}<div class="field">{{ form.issue.label_tag }}{{ form.issue }}{{ form.issue.errors }}</div>{% endif %}
+    <p><a href="{% url 'dashboard:coin_catalog:simple-new' %}?copy={{ coin.pk }}">ثبت سکه مستقل برای سال دیگر</a></p>
     <div class="field">{{ form.variant.label_tag }}{% include 'coins/dashboard/variant_picker.html' with field=form.variant %}{{ form.variant.errors }}</div>
     <button name="action" value="connect">اتصال و فعال‌کردن فروش</button>
   </form>

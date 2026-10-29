@@ -1,8 +1,9 @@
 {% extends 'coins/dashboard/base.html' %}
 {% block content %}
 <section class="panel">
-  <h1>{% if coin %}ویرایش{% else %}ثبت{% endif %} سکه</h1>
-  <p>این فرم فقط شناسنامه و عکس مرجع سکه را ثبت می‌کند. محصول، قیمت و موجودی جداگانه مدیریت می‌شوند.</p>
+  <h1>{% if source %}ثبت سکه برای سال دیگر{% elif coin %}ویرایش سکه{% else %}ثبت سکه{% endif %}</h1>
+  {% if source %}<p>مشخصات مشترک «{{ source.name }}» کپی شده‌اند. سال جدید و عکس‌های مخصوص آن را وارد کنید؛ عکس‌ها و اتصال‌های فروش کپی نمی‌شوند.</p>{% endif %}
+  <p>هر سال ضرب یک شناسنامه و عکس مستقل دارد. این فرم فقط شناسنامه و عکس مرجع همین سال را ثبت می‌کند. محصول، قیمت و موجودی جداگانه مدیریت می‌شوند.</p>
   <form method="post" enctype="multipart/form-data">
     {% csrf_token %}{{ form.non_field_errors }}
     {% for field in basic_fields %}<div class="field">{{ field.label_tag }}{{ field }}{{ field.errors }}{% if field.help_text %}<p class="help">{{ field.help_text }}</p>{% endif %}</div>{% endfor %}

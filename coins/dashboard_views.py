@@ -537,6 +537,7 @@ def record_edit(request, kind, pk=None):
             initial["coin_type"] = coin.pk
         if model is m.CoinIssue:
             initial["calendar"] = coin.calendar
+            initial["year"] = coin.mint_year
         if "issue" in Form.base_fields and request.GET.get("issue", "").isdecimal():
             issue = get_object_or_404(
                 m.CoinIssue, pk=int(request.GET["issue"]), coin_type=coin

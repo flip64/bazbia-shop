@@ -201,6 +201,7 @@ class CoinCardSerializer(serializers.ModelSerializer):
         fields = (
             "id",
             "name",
+            "mint_year",
             "slug",
             "issuer",
             "period",
@@ -247,6 +248,7 @@ class CoinDetailSerializer(serializers.ModelSerializer):
         fields = (
             "id",
             "name",
+            "mint_year",
             "slug",
             "issuer",
             "period",

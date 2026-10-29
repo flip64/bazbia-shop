@@ -30,7 +30,7 @@ class SimpleWorkflowTests(TestCase):
         return SimpleUploadedFile('coin.jpg', b.getvalue(), content_type='image/jpeg')
 
     def data(self, **kw):
-        return dict(name='۱۰ ین', issuer=self.issuer.pk, calendar='gregorian', issue_kind='circulation', construction='unknown', shape='unknown', edge_type='unknown', **kw)
+        return dict(name='۱۰ ین', issuer=self.issuer.pk, calendar='gregorian', mint_year=2000, issue_kind='circulation', construction='unknown', shape='unknown', edge_type='unknown', **kw)
 
     def create_sale(self, **kw):
         # Historical listings remain valid; registration no longer creates sales.
@@ -51,7 +51,7 @@ class SimpleWorkflowTests(TestCase):
     def test_catalog_only_needs_no_sale_records(self):
         r = self.client.post(self.url('simple-new'), self.data())
         self.assertEqual(r.status_code,302)
-        self.assertFalse(m.CoinIssue.objects.exists())
+        self.assertEqual(m.CoinIssue.objects.get().year, 2000)
         self.assertFalse(Product.objects.exists())
 
     def test_photos_parent_stock_and_publish(self):
@@ -102,7 +102,7 @@ class SimpleWorkflowTests(TestCase):
 
     def test_new_pack_and_images_share_one_form(self):
         self.client.post(self.url('simple-new'),self.data())
-        issue=m.CoinIssue.objects.create(coin_type=m.CoinType.objects.get(), year=2000)
+        issue=m.CoinIssue.objects.get()
         d=dict(name='پک ژاپن',year=2000,calendar='gregorian',issuer=self.issuer.pk,
             price=1000,sale_mode='similar',quantity=2,unit_cost=500,photo=self.photo(),
             **{'items-TOTAL_FORMS':1,'items-INITIAL_FORMS':0,'items-0-issue':issue.pk,

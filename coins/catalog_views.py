@@ -22,16 +22,44 @@ NS = "dashboard:coin_catalog:"
 def register_coin(request, pk=None):
     coin = get_object_or_404(m.CoinType, pk=pk) if pk else None
     check(request.user, m.CoinType, "change" if coin else "add")
+    source = None
+    initial = {}
+    copy_id = request.GET.get("copy", "")
+    if not coin and copy_id.isdecimal():
+        check(request.user, m.CoinType, "view")
+        source = get_object_or_404(m.CoinType, pk=copy_id)
+        from django.forms.models import model_to_dict
+        initial = model_to_dict(source, exclude=("id", "slug", "mint_year", "year_start", "year_end", "is_published"))
+        initial["is_published"] = False
     form = CatalogCoinForm(request.POST if request.method == "POST" else None,
-                           request.FILES if request.method == "POST" else None, instance=coin)
+                           request.FILES if request.method == "POST" else None, instance=coin, initial=initial)
     if request.method == "POST" and form.is_valid():
         try:
             with transaction.atomic():
                 obj = form.save(commit=False)
+                creating = not obj.pk
                 if not obj.pk:
                     obj.slug = "coin-" + uuid4().hex
                 obj.save()
                 form.save_m2m()
+                if creating or not obj.issues.exists():
+                    check(request.user, m.CoinIssue, "add")
+                    m.CoinIssue.objects.create(coin_type=obj, year=obj.mint_year,
+                        calendar=obj.calendar, date_status=m.CoinIssue.DateStatus.KNOWN)
+                if source:
+                    # Copy shared specifications only. Photos and sale links belong to the new year.
+                    if source.composition_parts.exists():
+                        check(request.user, m.CoinCompositionPart, "add")
+                        for part in source.composition_parts.all():
+                            part.pk = None
+                            part.coin_type = obj
+                            part.save()
+                    if source.references.exists():
+                        check(request.user, m.CoinCatalogReference, "add")
+                        for reference in source.references.all():
+                            reference.pk = None
+                            reference.coin_type = obj
+                            reference.save()
                 for side in ("obverse", "reverse"):
                     if form.cleaned_data.get(side):
                         check(request.user, m.CoinCatalogImage, "add")
@@ -40,8 +68,8 @@ def register_coin(request, pk=None):
             return redirect(NS + "detail", pk=obj.pk)
         except (ValidationError, IntegrityError) as exc:
             form.add_error(None, " / ".join(exc.messages) if isinstance(exc, ValidationError) else "اطلاعات تکراری یا ناسازگار است.")
-    basic = {"name", "issuer", "denomination_label", "calendar", "introduction", "story", "obverse", "reverse", "is_published"}
-    return render(request, "coins/dashboard/catalog_coin.html", context(request, coin=coin, form=form,
+    basic = {"mint_year", "name", "issuer", "denomination_label", "calendar", "introduction", "story", "obverse", "reverse", "is_published"}
+    return render(request, "coins/dashboard/catalog_coin.html", context(request, coin=coin, source=source, form=form,
         basic_fields=[field for field in form if field.name in basic],
         advanced_fields=[field for field in form if field.name not in basic]))
 

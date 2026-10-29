@@ -211,6 +211,8 @@ class CoinTheme(NamedModel):
 
 
 class CoinType(ValidatedModel):
+    mint_year = models.IntegerField("سال ضرب", null=True, blank=True, db_index=True)
+
     class Kind(models.TextChoices):
         CIRCULATION = "circulation", "رایج"
         COMMEMORATIVE = "commemorative", "یادبود"
@@ -362,6 +364,8 @@ class CoinType(ValidatedModel):
         ]
 
     def __str__(self):
+        if self.mint_year is not None:
+            return f"{self.name} ({self.mint_year} {self.get_calendar_display()})"
         return self.name
 
     def clean(self):
@@ -370,6 +374,8 @@ class CoinType(ValidatedModel):
             raise ValidationError({"period": "دوره باید متعلق به صادرکننده باشد."})
         if self.pk:
             for issue in self.issues.all():
+                if self.mint_year is not None and issue.year != self.mint_year:
+                    raise ValidationError({"mint_year": "سال سکه ثبت‌شده قابل تغییر نیست؛ برای سال دیگر یک شناسنامه مستقل بسازید."})
                 if issue.calendar != self.calendar:
                     raise ValidationError(
                         {"calendar": "ابتدا تقویم نوبت‌های ضرب مرتبط را اصلاح کنید."}
@@ -522,6 +528,8 @@ class CoinIssue(ValidatedModel):
             coin = self.coin_type
             if self.calendar != coin.calendar:
                 raise ValidationError({"calendar": "تقویم باید با نوع سکه یکسان باشد."})
+            if coin.mint_year is not None and self.year != coin.mint_year:
+                raise ValidationError({"year": "هر سال ضرب شناسنامه مستقل دارد؛ از گزینه کپی برای سال دیگر استفاده کنید."})
             if self.year is not None and (
                 (coin.year_start is not None and self.year < coin.year_start)
                 or (coin.year_end is not None and self.year > coin.year_end)

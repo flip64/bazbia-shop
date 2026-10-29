@@ -90,7 +90,7 @@ class CatalogConnectionTests(TestCase):
         self.assertNotIn('for_sale', fields)
         self.assertNotIn('variant', fields)
         data = {'name':'سکه جدید', 'issuer':self.issuer.pk, 'calendar':'gregorian',
-                'issue_kind':'circulation', 'construction':'unknown', 'shape':'unknown', 'edge_type':'unknown'}
+                'issue_kind':'circulation', 'construction':'unknown', 'shape':'unknown', 'edge_type':'unknown', 'mint_year':2000}
         response = self.client.post(self.url('simple-new'), data)
         self.assertEqual(response.status_code, 302, response.context['form'].errors if response.status_code == 200 else '')
         self.assertEqual(Product.objects.count(), 1)
